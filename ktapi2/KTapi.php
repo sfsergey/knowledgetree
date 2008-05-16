@@ -15,7 +15,7 @@ class KTapi
      * @todo ...
      */
     public static
-    function init()
+    function init($standalone = false)
     {
         // Root directory
         define('KTAPI2_DIR', dirname(__FILE__) . DIRECTORY_SEPARATOR);
@@ -106,14 +106,49 @@ class KTapi
 
 }
 
-// Random test :)
+KTapi::init();
+
+class CustomAddDocumentTrigger extends Trigger
+{
+    public
+    function __construct()
+    {
+        parent::__construct();
+
+    }
+
+    public
+    function execute($context, $action_namespace, $action_params, $runningWhen)
+    {
+
+    }
+
+    function GetParameters()
+    {
+        return array(
+            'extra'=>array('insert_after'=>'title','type'=>'string', 'required'=>false),
+        );
+    }
+
+    function AppliesToNamespaces()
+    {
+        return array('action.document.checkin','action.document.add');
+    }
+}
+
+
+$manager = PluginManager::registerTrigger(new CustomAddDocumentTrigger());
+
+
+
+/* Random test :)
 
 KTapi::init();
 
 $manager = PluginManager::get();
 
-$namespaces = $manager->getNamespaces();
+$namespaces = $manager->getAction('Action.AddDocument');
 
-echo "\n".$namespaces[0]->display_name;
-
+print_r($namespaces);
+*/
 ?>

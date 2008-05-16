@@ -3,14 +3,19 @@
 define('KT_ROOT_DIR', realpath(__FILE__ . '../../') . DIRECTORY_SEPARATOR);
 ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . KT_ROOT_DIR.'/thirdparty/Doctrine');
 
-define('KT_DOCTRINE_BASE_DIR', KT_DIR.'/sql/doctrine/base');
+define('KT_DOCTRINE_BASE_DIR', KT_ROOT_DIR.'/sql/doctrine/base');
 
 require_once('lib/Doctrine.php');
 spl_autoload_register(array('Doctrine', 'autoload'));
 
-
 class ModelManager
 {
+    /**
+     * Establish connection to database using doctrine
+     *
+     * @param unknown_type $dsn
+     * @return unknown
+     */
     static private
     function connect($dsn)
     {
@@ -19,6 +24,12 @@ class ModelManager
         return $db;
     }
 
+    /**
+     * Fetch the database connection
+     *
+     * @param unknown_type $db
+     * @return unknown
+     */
     static public
     function &getDB($db = null) {
         global $default;
@@ -35,7 +46,6 @@ class ModelManager
         }
         return $db;
     }
-
     static public
     function exportTables($dir = null)
     {
@@ -50,7 +60,7 @@ class ModelManager
             }
         }
 
-        $db = ModelManager::getDB();
+        $db = DoctrineUtil::getDB();
         Doctrine::generateModelsFromDb($dir);
     }
 
@@ -65,10 +75,13 @@ class ModelManager
             throw new Exception('Cannot find import directory for models');
         }
 
-        $db = ModelManager::getDB();
+        $db = DoctrineUtil::getDB();
         $manager->setAttribute(Doctrine::ATTR_EXPORT, Doctrine::EXPORT_ALL); // Doctrine::EXPORT_TABLES | Doctrine::EXPORT_CONSTRAINTS
 
         Doctrine::createTablesFromModels($dir);
     }
 }
+
+DoctrineUtil::
+
 ?>
