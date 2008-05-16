@@ -167,6 +167,85 @@ class KTPluginUtil {
         $aPluginHelpers = array();
         $aDisabled = array();
 
+/*
+
+        $query = "SELECT h.classname, h.pathname, h.plugin FROM plugin_helper h
+           WHERE h.classtype='plugin'";
+
+//        $query = "SELECT h.classname, h.pathname, h.plugin FROM plugin_helper h
+//            INNER JOIN plugins p ON (p.namespace = h.plugin)
+//            WHERE p.disabled = 0 AND h.classtype='plugin' ORDER BY p.orderby";
+
+        $aPluginHelpers = DBUtil::getOneResult($query);
+
+
+        echo '<prE>';
+        print_r($aPluginHelpers);
+        die;
+
+
+
+
+        $query = new Doctrine_RawSql();
+
+        $query->select('{h.classname}, {h.pathname}, {h.plugin}, {p.version}')
+            ->from('plugin_helper h INNER JOIN plugins p ON p.namespace = h.plugin')
+            ->where("h.classtype = 'plugin'")
+            ->addComponent('h', 'PluginHelper h')
+            ->addComponent('p', 'h.Plugins p');
+
+        $aPluginHelpers = $query->execute(array(), Doctrine::FETCH_ARRAY);
+
+        echo '<prE>';
+        print_r($aPluginHelpers);
+        die;
+
+
+        // Create plugin objects
+        foreach ($aPluginHelpers as $aItem){
+            $classname = $aItem->classname;
+            $path = $aItem->pathname;
+
+            echo '<p>Namespace '.$aItem->namespace.'<br>Class '.$classname.' path '.$path.'</p>';
+
+
+            if (!empty($path)) {
+                $path = KT_DIR.'/'.$path;
+                echo $path;
+                require_once($path);
+
+            	//$oPlugin = new $classname($path);
+            	/*
+            	if($oPlugin->load()){
+            	   $aPlugins[] = $oPlugin;
+            	}else{
+            	    $aDisabled[] = "'{$aItem->plugin}'";
+            	}
+            	*
+            }
+        }
+
+        echo '<prE>';
+        print_r($aPluginHelpers[1]->classname);
+//        var_dump($res);
+        die;
+
+
+        $q = Doctrine_Query::create();
+        $q->select('h.classname, h.pathname, h.plugin')
+          ->from('plugin_helper h')
+          ->innerJoin('plugins p')
+          ->where("p.disabled = 0 AND h.classtype='plugin'")
+          ->orderBy('p.orderby');
+
+        $users = $q->execute();
+
+        die;
+
+        */
+
+        /* *** Old sql *** */
+
         // Get the list of enabled plugins
         $query = "SELECT h.classname, h.pathname, h.plugin FROM plugin_helper h
             INNER JOIN plugins p ON (p.namespace = h.plugin)
