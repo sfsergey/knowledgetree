@@ -522,9 +522,12 @@ class DBUtil {
 
     function &escapeSimple($sString, $db = null) {
         // TODO: Check outside quotes ...
+        return addslashes($sString);
+
+        /*
         $conn = DBUtil::getDoctrineConnection($db);
         return $conn->quote($sString);
-        /*
+
         $db =& DBUtil::getDB();
         return $db->escapeSimple($sString);
         */
