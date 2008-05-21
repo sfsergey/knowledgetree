@@ -181,6 +181,26 @@ class KTInit {
     function setupDB () {
         global $default;
 
+        // DBUtil is the preferred database abstraction
+        require_once(KT_LIB_DIR . '/database/dbutil.inc');
+
+        // KTEntity is the database-backed base class
+        require_once(KT_LIB_DIR . '/ktentity.inc');
+
+        if(defined('USE_DB_ADMIN_USER')){
+            $default->_db = DBUtil::setupAdminDatabase();
+        }else{
+            $default->_db = DBUtil::getDB();
+        }
+
+        if (PEAR::isError($default->_db)) {
+            $this->handleInitError($default->_db);
+            // returns only in checkup
+            return $default->_db;
+        }
+
+
+        /*
         require_once('DB.php');
 
         // DBCompat allows phplib API compatibility
@@ -219,6 +239,7 @@ class KTInit {
             return $default->_db;
         }
         $default->_db->setFetchMode(DB_FETCHMODE_ASSOC);
+        */
 
     }
     /// }}}
@@ -708,6 +729,7 @@ function catchFatalErrors()
 $KTInit = new KTInit();
 $KTInit->prependPath(KT_DIR . '/thirdparty/ZendFramework/library');
 $KTInit->prependPath(KT_DIR . '/thirdparty/pear');
+$KTInit->prependPath(KT_DIR . '/thirdparty/Doctrine');
 $KTInit->prependPath(KT_DIR . '/thirdparty/Smarty');
 $KTInit->prependPath(KT_DIR . '/thirdparty/simpletest');
 $KTInit->prependPath(KT_DIR . '/thirdparty/xmlrpc-2.2/lib');

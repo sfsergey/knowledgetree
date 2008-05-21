@@ -60,7 +60,8 @@ class DBUtil {
         }
 
         if (is_null($default->_conn)) {
-            $conn = DBUtil::connect("mysql://root:root@localhost/kt_refactor");
+            $dsn = "{$default->dbType}://{$default->dbUser}:{$default->dbPass}@{$default->dbHost}/{$default->dbName}";
+            $conn = DBUtil::connect($dsn);
             $default->_conn = $conn;
         }else{
             $conn = $default->_conn;
@@ -71,14 +72,12 @@ class DBUtil {
     static function &getDB($db = null) {
         global $default;
         if (is_null($db)) {
-            $db =& $default->_db;
+            $db = $default->_db;
         }
-
-    	if(!isset($db->_kt_initialized) || !$db->_kt_initialized) {
-    	    $db->query("SET NAMES 'utf8'");
-    	    $db->_kt_initialized = true;
-    	}
-
+        if(is_null($db)){
+            $db = DBUtil::getDoctrineConnection();
+            $default->_db = $db;
+        }
         return $db;
     }
 
@@ -567,6 +566,16 @@ class DBUtil {
 
     function setupAdminDatabase() {
         global $default;
+
+        // Create connection dsn
+        $dsn = "{$default->dbType}://{$default->dbAdminUser}:{$default->dbAdminPass}@{$default->dbHost}/{$default->dbName}";
+
+        $conn = DBUtil::connect($dsn);
+        $default->_admindb = $conn;
+        return $conn;
+
+        /*
+        global $default;
         $dsn = array(
             'phptype'  => $default->dbType,
             'username' => $default->dbAdminUser,
@@ -587,6 +596,7 @@ class DBUtil {
         }
         $default->_admindb->setFetchMode(DB_FETCHMODE_ASSOC);
         return;
+        */
     }
 }
 
