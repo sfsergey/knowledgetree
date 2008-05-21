@@ -95,19 +95,88 @@ class KTapi
     public static
     function getDb($dsn = null)
     {
-        if(is_null(KTAPI::db)){
+        if(is_null(KTAPI::$db)){
             $db = KTAPI::connect($dsn);
             if(is_null($db)){
                 throw new KTapiException('Database connection not established.');
             }
         }
-        return KTAPI::db;
+        return KTAPI::$db;
     }
 
 }
 
 KTapi::init();
 
+/* Straight sql test */
+
+$conn = KTapi::getDb();
+
+$manager = Doctrine_Manager::getInstance();
+
+/*
+$c = $conn->fetchAll('
+    SELECT * FROM entity E
+    INNER JOIN details D ON E.id = D.entity_id
+    ');
+*/
+/*
+$c = $conn->fetchOne('SELECT E.name FROM entity E
+    INNER JOIN details D ON E.id = D.entity_id
+    WHERE D.id = ?', array(3));
+*/
+/*
+$c = $conn->fetchColumn('SELECT name FROM entity E
+    INNER JOIN details D ON E.id = D.entity_id');
+*/
+/*
+$c = $conn->fetchArray('SELECT * FROM entity E
+    INNER JOIN details D ON E.id = D.entity_id');
+*/
+/*
+$c = $conn->fetchRow('SELECT * FROM entity E
+    INNER JOIN details D ON E.id = D.entity_id');
+*/
+$c = $conn->fetchAssoc('SELECT * FROM entity E
+    INNER JOIN details D ON E.id = D.entity_id');
+
+echo "\n";
+print_r($c);
+
+
+
+/*
+$conn->exec('DROP TABLE entity');
+$conn->exec('CREATE TABLE entity (id INT, name TEXT)');
+
+$conn->exec("INSERT INTO entity (id, name) VALUES (1, 'zYne')");
+$conn->exec("INSERT INTO entity (id, name) VALUES (2, 'John')");
+$conn->exec("INSERT INTO entity (id, name) VALUES (3, 'Gareth')");
+$conn->exec("INSERT INTO entity (id, name) VALUES (4, 'Brat')");
+
+$a = $conn->fetchAll('SELECT * FROM entity');
+
+echo "\n";
+print_r($a);
+
+$conn->exec('DROP TABLE details');
+$conn->exec('CREATE TABLE details (id INT, entity_id INT, cell INT)');
+
+$conn->exec("INSERT INTO details (id, entity_id, cell) VALUES (1, 1, 0823456789)");
+$conn->exec("INSERT INTO details (id, entity_id, cell) VALUES (2, 2, 0831234567)");
+$conn->exec("INSERT INTO details (id, entity_id, cell) VALUES (3, 3, 0728765432)");
+$conn->exec("INSERT INTO details (id, entity_id, cell) VALUES (4, 4, 0734569872)");
+
+$d = $conn->fetchAll('SELECT * FROM details');
+
+echo "\n";
+print_r($d);
+
+*/
+
+
+
+/* Trigger test
 class CustomAddDocumentTrigger extends Trigger
 {
     public
@@ -138,7 +207,7 @@ class CustomAddDocumentTrigger extends Trigger
 
 
 $manager = PluginManager::registerTrigger(new CustomAddDocumentTrigger());
-
+*/
 
 
 /* Random test :)

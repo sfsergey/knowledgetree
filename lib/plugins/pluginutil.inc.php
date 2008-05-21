@@ -167,8 +167,84 @@ class KTPluginUtil {
         $aPluginHelpers = array();
         $aDisabled = array();
 
-/*
 
+        /*
+        DBUtil::deReference('plugins', 35);
+
+        /*
+        $query = 'A neat \' escape " string with & | stuff.';
+
+        $res = DBUtil::escapeSimple($query);
+
+        var_dump($res);
+
+        echo $res;
+
+        die;
+
+
+        */
+        //$query = "UPDATE plugin_helper SET pathname = 'path' WHERE namespace = 'doctrine.test.where.update.helper'";
+        //$query = "INSERT INTO plugins (id, namespace) VALUES (36, 'doctrine.plugin.test')";
+//        $query = "DELETE FROM plugin_helper
+//            WHERE namespace = 'doctrine.test.where.update.helper'";
+
+/*
+        $query = 'SELECT * FROM plugins_helper WHERE plugin = \'doctrine.plugin.test\'';
+
+        $res = DBUtil::runQuery($query);
+
+        //$last = DBUtil::lastQuery();
+
+        print_r($res);
+        //print_r($last);
+
+        die;
+
+
+
+        /*
+        DBUtil::startTransaction();
+        $res = DBUtil::whereDelete('plugin_helper', array(
+                'namespace' => 'doctrine.test.helper',
+                'id' => 285
+            ));
+
+        DBUtil::rollback();
+        DBUtil::commit();
+
+        print_r($res);
+        die;
+
+        /*
+        $res = DBUtil::autoDelete('plugin_helper', 283);
+
+        /*
+        $res = DBUtil::whereUpdate('plugin_helper', array(
+                'namespace' => 'doctrine.test.where.update.helper',
+                'plugin' => 'doctrine.plugin.test',
+                'classtype' => 'test'),
+            array(
+                'plugin' => 'doctrine.plugin.test',
+                'id' => 284
+            ));
+
+
+        print_r($res);
+        die;
+
+
+        $res = DBUtil::autoInsert('plugin_helper',
+            array('namespace' => 'doctrine.test.insert.helper',
+                'plugin' => 'doctrine.plugin.test',
+                'classtype' => 'test'
+            ));
+
+        print_r($res);
+        die;
+
+
+/*
         $query = "SELECT h.classname, h.pathname, h.plugin FROM plugin_helper h
            WHERE h.classtype='plugin'";
 
@@ -184,7 +260,7 @@ class KTPluginUtil {
         die;
 
 
-
+/*
 
         $query = new Doctrine_RawSql();
 
@@ -250,6 +326,7 @@ class KTPluginUtil {
         $query = "SELECT h.classname, h.pathname, h.plugin FROM plugin_helper h
             INNER JOIN plugins p ON (p.namespace = h.plugin)
            WHERE p.disabled = 0 AND h.classtype='plugin' ORDER BY p.orderby";
+
         $aPluginHelpers = DBUtil::getResultArray($query);
 
         if(PEAR::isError($aPluginHelpers)){
