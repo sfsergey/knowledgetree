@@ -103,7 +103,7 @@ class DBUtil {
             $res = $conn->exec($sQuery, $aParams);
 
         } catch (Exception  $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e);  // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError($sQuery, $e);  // DBUtil::lastQuery($conn)
             $res = PEAR::raiseError($e->getMessage());
         }
 
@@ -139,7 +139,7 @@ class DBUtil {
             $conn = DBUtil::getDoctrineConnection($conn);
             $aRow = $conn->fetchRow($sQuery, $aParams);
         }catch (Exception $e){
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError($sQuery, $e); // DBUtil::lastQuery($conn)
             $aRow = PEAR::raiseError($e->getMessage());
         }
 
@@ -192,7 +192,7 @@ class DBUtil {
             $conn = DBUtil::getDoctrineConnection($conn);
             $aRow = $conn->fetchAssoc($sQuery, $aParams);
         } catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError($sQuery, $e); // DBUtil::lastQuery($conn)
             $aRow = PEAR::raiseError($e->getMessage());
         }
 
@@ -237,7 +237,7 @@ class DBUtil {
      */
     function logQueryError($query, $result) {
         global $default;
-        $default->log->error('Problem Query: ' . $query . " \nParameters: " . print_r($aParams));
+        $default->log->error('Problem Query: ' . $query);
         $default->log->error('Problem: ' . $result->getMessage());
     }
 
@@ -300,7 +300,7 @@ class DBUtil {
             $bNoId = KTUtil::arrayGet($aOptions, 'noid', false);
 
             if (!array_key_exists('id', $aFieldValues) && ($bNoId === false)) {
-                $res = DBUtil::nextId($sTable, null, $db);
+                $res = DBUtil::nextId($sTable, null, $conn);
                 if (PEAR::isError($res)) {
                     return $res;
                 }
@@ -309,17 +309,18 @@ class DBUtil {
 
             $oTable = new Doctrine_Table($sTable, $conn);
 
-            $res = $conn->insert($oTable, $aFieldValues);
+            $result = $conn->insert($oTable, $aFieldValues);
+            $result = $aFieldValues['id'];
         } catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
-            $res = PEAR::raiseError($e->getMessage());
+            DBUtil::logQueryError('Insert '.$sTable, $e); // DBUtil::lastQuery($conn)
+            $result = PEAR::raiseError($e->getMessage());
         }
 
         if ($default->queryLog) {
             $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
         }
 
-        return $res;
+        return $result;
     }
 
     function &autoUpdate($sTable, $aFieldValues, $iId, $db = null) {
@@ -331,7 +332,7 @@ class DBUtil {
 
             $res = $conn->update($oTable, $aFieldValues, $aIdentifier);
         } catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError('Update '.$sTable.' '.$iId, $e); // DBUtil::lastQuery($conn)
             $res = PEAR::raiseError($e->getMessage());
         }
 
@@ -375,7 +376,7 @@ class DBUtil {
 
             $res = $conn->exec($sql, $aParams);
         } catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError($sql, $e); // DBUtil::lastQuery($conn)
             $res = PEAR::raiseError($e->getMessage());
         }
 
@@ -405,7 +406,7 @@ class DBUtil {
             $oTable->initIdentifier();
             $aIdentifier = array('id' => $iId);
         } catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), '', $e); // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError('Delete '.$sTable.' '.$iId, '', $e); // DBUtil::lastQuery($conn)
             $res = PEAR::raiseError($e->getMessage());
         }
 
@@ -436,7 +437,7 @@ class DBUtil {
             $sQuery = "DELETE FROM {$sTable} WHERE {$sWhere}";
             $res = $conn->exec($sQuery, $aValues);
         }catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            DBUtil::logQueryError($sQuery, $e); // DBUtil::lastQuery($conn)
             $res = PEAR::raiseError($e->getMessage());
         }
 
