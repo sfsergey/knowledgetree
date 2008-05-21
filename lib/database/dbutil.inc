@@ -103,12 +103,12 @@ class DBUtil {
             $res = $conn->exec($sQuery, $aParams);
 
         } catch (Exception  $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e);
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e);  // DBUtil::lastQuery($conn)
             $res = PEAR::raiseError($e->getMessage());
         }
 
         if ($default->queryLog) {
-            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+            $default->queryLog->debug('Query: ' . $sQuery, $aParams);  // DBUtil::lastQuery($conn)
         }
 
         return $res;
@@ -139,12 +139,12 @@ class DBUtil {
             $conn = DBUtil::getDoctrineConnection($conn);
             $aRow = $conn->fetchRow($sQuery, $aParams);
         }catch (Exception $e){
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e);
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
             $aRow = PEAR::raiseError($e->getMessage());
         }
 
         if ($default->queryLog) {
-            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+            $default->queryLog->debug('Query: ' . $sQuery, $aParams);  // DBUtil::lastQuery($conn)
         }
 
         return $aRow;
@@ -192,12 +192,12 @@ class DBUtil {
             $conn = DBUtil::getDoctrineConnection($conn);
             $aRow = $conn->fetchAssoc($sQuery, $aParams);
         } catch (Exception $e) {
-            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e);
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
             $aRow = PEAR::raiseError($e->getMessage());
         }
 
         if ($default->queryLog) {
-            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+            $default->queryLog->debug('Query: ' . $sQuery, $aParams); // DBUtil::lastQuery($conn)
         }
 
         return $aRow;
@@ -237,7 +237,7 @@ class DBUtil {
      */
     function logQueryError($query, $result) {
         global $default;
-        $default->log->error('Problem Query: ' . $query);
+        $default->log->error('Problem Query: ' . $query . " \nParameters: " . print_r($aParams));
         $default->log->error('Problem: ' . $result->getMessage());
     }
 
@@ -290,108 +290,56 @@ class DBUtil {
      * @return unknown
      */
     function &autoInsert($sTable, $aFieldValues, $aOptions = null) {
-        $conn = DBUtil::getDoctrineConnection();
+        try {
+            $conn = DBUtil::getDoctrineConnection();
 
-        if (is_null($aOptions)) {
-            $aOptions = array();
-        }
-
-        $bNoId = KTUtil::arrayGet($aOptions, 'noid', false);
-
-        if (!array_key_exists('id', $aFieldValues) && ($bNoId === false)) {
-            $res = DBUtil::nextId($sTable, null, $db);
-            if (PEAR::isError($res)) {
-                return $res;
+            if (is_null($aOptions)) {
+                $aOptions = array();
             }
-            $aFieldValues['id'] = $res;
+
+            $bNoId = KTUtil::arrayGet($aOptions, 'noid', false);
+
+            if (!array_key_exists('id', $aFieldValues) && ($bNoId === false)) {
+                $res = DBUtil::nextId($sTable, null, $db);
+                if (PEAR::isError($res)) {
+                    return $res;
+                }
+                $aFieldValues['id'] = $res;
+            }
+
+            $oTable = new Doctrine_Table($sTable, $conn);
+
+            $res = $conn->insert($oTable, $aFieldValues);
+        } catch (Exception $e) {
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            $res = PEAR::raiseError($e->getMessage());
         }
 
-        $oTable = new Doctrine_Table($sTable, $conn);
+        if ($default->queryLog) {
+            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+        }
 
-        $res = $conn->insert($oTable, $aFieldValues);
         return $res;
-
-
-        /*
-        if ($default->queryLog) {
-            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($db));
-        }
-        if ($res === DB_OK) {
-            return $aFieldValues['id'];
-        }
-        if (PEAR::isError($res)) {
-        	DBUtil::logQueryError(DBUtil::lastQuery($db), $res);
-            return $res;
-        }
-        return PEAR::raiseError(_kt('Unknown return value for autoInsert'));
-
-        /*
-        if (is_null($aOptions)) {
-            $aOptions = array();
-        }
-
-        $bNoId = KTUtil::arrayGet($aOptions, 'noid', false);
-        global $default;
-        // $default->log->debug('AutoInsert called for table ' . $sTable);
-        $db =& DBUtil::getDB();
-        if (!array_key_exists('id', $aFieldValues) && ($bNoId === false)) {
-            $res = DBUtil::nextId($sTable, null, $db);
-            if (PEAR::isError($res)) {
-                return $res;
-            }
-            $aFieldValues['id'] = $res;
-        }
-        $res = $db->autoExecute($sTable, $aFieldValues);
-        if ($default->queryLog) {
-            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($db));
-        }
-        if ($res === DB_OK) {
-            return $aFieldValues['id'];
-        }
-        if (PEAR::isError($res)) {
-        	DBUtil::logQueryError(DBUtil::lastQuery($db), $res);
-            return $res;
-        }
-        return PEAR::raiseError(_kt('Unknown return value for autoInsert'));
-        */
     }
 
     function &autoUpdate($sTable, $aFieldValues, $iId, $db = null) {
-        $conn = DBUtil::getDoctrineConnection($db);
-        $oTable = new Doctrine_Table($sTable, $conn);
-        $oTable->initIdentifier();
-        $aIdentifier = array('id' => $iId);
+        try {
+            $conn = DBUtil::getDoctrineConnection($db);
+            $oTable = new Doctrine_Table($sTable, $conn);
+            $oTable->initIdentifier();
+            $aIdentifier = array('id' => $iId);
 
-        $res = $conn->update($oTable, $aFieldValues, $aIdentifier);
+            $res = $conn->update($oTable, $aFieldValues, $aIdentifier);
+        } catch (Exception $e) {
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            $res = PEAR::raiseError($e->getMessage());
+        }
+
+        if ($default->queryLog) {
+            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+        }
+
         return $res;
-
-        /*
-        $res = $db->autoExecute($sTable, $aFieldValues, DB_AUTOQUERY_UPDATE, 'id = ' . $iId);
-        $default->queryLog->debug('Query: ' . DBUtil::lastQuery($db));
-        if ($res === DB_OK) {
-            return $res;
-        }
-        if (PEAR::isError($res)) {
-        	DBUtil::logQueryError(DBUtil::lastQuery($db), $res);
-        	return $res;
-        }
-        return PEAR::raiseError(_kt('Unknown return value for autoUpdate'));
-
-        /*
-        global $default;
-        // $default->log->debug('AutoUpdate called for table ' . $sTable . ' with id ' . $iId);
-        $db =& DBUtil::getDB();
-        $res = $db->autoExecute($sTable, $aFieldValues, DB_AUTOQUERY_UPDATE, 'id = ' . $iId);
-        $default->queryLog->debug('Query: ' . DBUtil::lastQuery($db));
-        if ($res === DB_OK) {
-            return $res;
-        }
-        if (PEAR::isError($res)) {
-        	DBUtil::logQueryError(DBUtil::lastQuery($db), $res);
-        	return $res;
-        }
-        return PEAR::raiseError(_kt('Unknown return value for autoUpdate'));
-        */
     }
 
     function &whereUpdate($sTable, $aFieldValues, $aWhereFieldValues, $db = null) {
@@ -399,58 +347,43 @@ class DBUtil {
             return PEAR::raiseError(_kt('No fields are being updated'));
         }
 
-        $conn = DBUtil::getDoctrineConnection($db);
+        try {
+            $conn = DBUtil::getDoctrineConnection($db);
 
-        /* Can't use the table identifier, the identifier columns need to be set somewhere ... ?
-        $oTable = new Doctrine_Table($sTable, $conn);
-        $oTable->initIdentifier();
-        $res = $conn->update($oTable, $aFieldValues, $aWhereFieldValues);
-        */
+            /* Can't use the table identifier, the identifier columns need to be set somewhere ... ?
+            $oTable = new Doctrine_Table($sTable, $conn);
+            $oTable->initIdentifier();
+            $res = $conn->update($oTable, $aFieldValues, $aWhereFieldValues);
+            */
 
-        // Create the sql
-        $aWhereFields = array();
-        foreach (array_keys($aWhereFieldValues) as $k) {
-            $aWhereFields[] = $k . ' = ?';
+            // Create the sql
+            $aWhereFields = array();
+            foreach (array_keys($aWhereFieldValues) as $k) {
+                $aWhereFields[] = $k . ' = ?';
+            }
+            $sWhere = join(' AND ', $aWhereFields);
+
+            $aFields = array();
+            foreach (array_keys($aFieldValues) as $key){
+                $aFields[] = $key . ' = ?';
+            }
+            $sFields = join(', ', $aFields);
+
+            $aParams = array_merge(array_values($aFieldValues), array_values($aWhereFieldValues));
+
+            $sql = "UPDATE {$sTable} SET {$sFields} WHERE {$sWhere}";
+
+            $res = $conn->exec($sql, $aParams);
+        } catch (Exception $e) {
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            $res = PEAR::raiseError($e->getMessage());
         }
-        $sWhere = join(' AND ', $aWhereFields);
 
-        $aFields = array();
-        foreach (array_keys($aFieldValues) as $key){
-            $aFields[] = $key . ' = ?';
+        if ($default->queryLog) {
+            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
         }
-        $sFields = join(', ', $aFields);
 
-        $aParams = array_merge(array_values($aFieldValues), array_values($aWhereFieldValues));
-
-        $sql = "UPDATE {$sTable} SET {$sFields} WHERE {$sWhere}";
-
-        $res = $conn->exec($sql, $aParams);
         return $res;
-
-        /*
-        global $default;
-        //$default->log->debug('WhereUpdate called for table ' . $sTable);
-        $db =& DBUtil::getDB();
-        $aWhereFields = array();
-        foreach (array_keys($aWhereFieldValues) as $k) {
-            $aWhereFields[] = $k . ' = ?';
-        }
-        $sWhere = join(' AND ', $aWhereFields);
-        $aValues = kt_array_merge(array_values($aFieldValues), array_values($aWhereFieldValues));
-
-        $sth = $db->autoPrepare($sTable, array_keys($aFieldValues), DB_AUTOQUERY_UPDATE, $sWhere);
-        $res =& $db->execute($sth, array_values($aValues));
-        $db->freePrepared($sth);
-
-        $default->queryLog->debug('Query: ' . DBUtil::lastQuery($db));
-        if ($res === DB_OK) {
-            return $res;
-        }
-        if (PEAR::isError($res)) {
-            return $res;
-        }
-        return PEAR::raiseError(_kt('Unknown return value for whereUpdate'));
-        */
     }
 
     static function &lastQuery($db = null) {
@@ -466,49 +399,52 @@ class DBUtil {
     }
 
     function autoDelete($sTable, $iId, $db = null) {
-        $conn = DBUtil::getDoctrineConnection($db);
-        $oTable = new Doctrine_Table($sTable, $conn);
-        $oTable->initIdentifier();
-        $aIdentifier = array('id' => $iId);
+        try {
+            $conn = DBUtil::getDoctrineConnection($db);
+            $oTable = new Doctrine_Table($sTable, $conn);
+            $oTable->initIdentifier();
+            $aIdentifier = array('id' => $iId);
+        } catch (Exception $e) {
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), '', $e); // DBUtil::lastQuery($conn)
+            $res = PEAR::raiseError($e->getMessage());
+        }
+
+        if ($default->queryLog) {
+            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+        }
 
         return $conn->delete($oTable, $aIdentifier);
-
-        /*
-        global $default;
-        // $default->log->debug('AutoDelete called for table ' . $sTable . ' with id ' . $iId);
-        $db =& DBUtil::getDB();
-        $sQuery = "DELETE FROM " . $sTable . " WHERE id = ?";
-        $aParams = array($iId);
-        return DBUtil::runQuery(array($sQuery, $aParams), $db);
-        */
     }
 
     function deReference($sTable, $iId, $db = null) {
         $aFieldValues = array('disabled' => true);
-        return DBUtil::autoUpdate($sTable, $aFieldValues, $iId);
-
-        /*
-        global $default;
-        // $default->log->debug('AutoDelete called for table ' . $sTable . ' with id ' . $iId);
-        $db =& DBUtil::getDB();
-        $sQuery = "UPDATE " . $sTable . " SET disabled = true WHERE id = ?";
-        $aParams = array($iId);
-        return DBUtil::runQuery(array($sQuery, $aParams), $db);
-        */
+        $res = DBUtil::autoUpdate($sTable, $aFieldValues, $iId);
+        return $res;
     }
 
     function &whereDelete($sTable, $aWhereFieldValues, $db = null) {
-        $conn = DBUtil::getDoctrineConnection($db);
+        try {
+            $conn = DBUtil::getDoctrineConnection($db);
 
-        $aWhereFields = array();
-        foreach (array_keys($aWhereFieldValues) as $k) {
-            $aWhereFields[] = $k . ' = ?';
+            $aWhereFields = array();
+            foreach (array_keys($aWhereFieldValues) as $k) {
+                $aWhereFields[] = $k . ' = ?';
+            }
+            $sWhere = join(' AND ', $aWhereFields);
+            $aValues = array_values($aWhereFieldValues);
+
+            $sQuery = "DELETE FROM {$sTable} WHERE {$sWhere}";
+            $res = $conn->exec($sQuery, $aValues);
+        }catch (Exception $e) {
+            DBUtil::logQueryError(DBUtil::lastQuery($conn), $e); // DBUtil::lastQuery($conn)
+            $res = PEAR::raiseError($e->getMessage());
         }
-        $sWhere = join(' AND ', $aWhereFields);
-        $aValues = array_values($aWhereFieldValues);
 
-        $sQuery = "DELETE FROM {$sTable} WHERE {$sWhere}";
-        return $conn->exec($sQuery, $aValues);
+        if ($default->queryLog) {
+            $default->queryLog->debug('Query: ' . DBUtil::lastQuery($conn));
+        }
+
+        return $res;
     }
 
     function paramArray($aArray) {
@@ -522,14 +458,6 @@ class DBUtil {
     function &escapeSimple($sString, $db = null) {
         // TODO: Check outside quotes ...
         return addslashes($sString);
-
-        /*
-        $conn = DBUtil::getDoctrineConnection($db);
-        return $conn->quote($sString);
-
-        $db =& DBUtil::getDB();
-        return $db->escapeSimple($sString);
-        */
     }
 
     function compactQuery($sQuery) {
@@ -539,29 +467,14 @@ class DBUtil {
     function startTransaction() {
         $conn = DBUtil::getDoctrineConnection();
         $conn->beginTransaction();
-        /*
-        DBUtil::runQuery("START TRANSACTION");
-        $oCache =& KTCache::getSingleton();
-        $oCache->startTransaction();
-        */
     }
     function rollback() {
         $conn = DBUtil::getDoctrineConnection();
         $conn->rollback();
-        /*
-        DBUtil::runQuery("ROLLBACK");
-        $oCache =& KTCache::getSingleton();
-        $oCache->rollback();
-        */
     }
     function commit() {
         $conn = DBUtil::getDoctrineConnection();
         $conn->commit();
-        /*
-        DBUtil::runQuery("COMMIT");
-        $oCache =& KTCache::getSingleton();
-        $oCache->commit();
-        */
     }
 
     function setupAdminDatabase() {
@@ -573,30 +486,6 @@ class DBUtil {
         $conn = DBUtil::connect($dsn);
         $default->_admindb = $conn;
         return $conn;
-
-        /*
-        global $default;
-        $dsn = array(
-            'phptype'  => $default->dbType,
-            'username' => $default->dbAdminUser,
-            'password' => $default->dbAdminPass,
-            'hostspec' => $default->dbHost,
-            'database' => $default->dbName,
-        );
-
-        $options = array(
-            'debug'       => 2,
-            'portability' => DB_PORTABILITY_ERRORS,
-            'seqname_format' => 'zseq_%s',
-        );
-
-        $default->_admindb = &DB::connect($dsn, $options);
-        if (PEAR::isError($default->_admindb)) {
-            die($default->_admindb->toString());
-        }
-        $default->_admindb->setFetchMode(DB_FETCHMODE_ASSOC);
-        return;
-        */
     }
 }
 
