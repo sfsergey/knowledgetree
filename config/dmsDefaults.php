@@ -413,7 +413,7 @@ class KTInit {
 
 function catchFatalErrors()
 {
-
+    print_r(get_call_stack());
 	$CustomErrorPage = KTCustomErrorViewer::getCustomErrorRedirectPage();
 	if($CustomErrorPage != '0')
 	{

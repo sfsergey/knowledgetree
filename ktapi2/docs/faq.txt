@@ -1,0 +1,28 @@
+
+
+
+
+Exceptions:
+
+1)
+
+e.g.
+<b>Fatal error</b>:  Uncaught exception 'Doctrine_Connection_Exception' with message 'Couldn't locate driver named mysql' in /knowledgetree/ktdms.3.6.megan/thirdparty/Doctrine/lib/Doctrine/Connection.php:469
+
+This is normally a result of pdo not being installed.
+
+Edit the php.ini and enable the pdo.so and pdo_mysql.so.
+If using another db driver, the appropriate pdo driver must be included.
+
+2) Relation Alias
+
+e.g.
+<b>Fatal error</b>:  Uncaught exception 'Doctrine_Table_Exception' with message 'Unknown relation alias ' in /knowledgetree/ktdms.3.6.megan/thirdparty/Doctrine/lib/Doctrine/Relation/Parser.php:189
+
+This only appears when dealing with joins. (touch wood)
+
+problem:
+$query->select('pm.*')->from('Plugin_Module pm') ->innerJoin('Plugin p');
+
+solution:
+$query->select('pm.*')->from('Plugin_Module pm') ->innerJoin('pm.Plugin p'); // NOTE THE pm.Plugin
