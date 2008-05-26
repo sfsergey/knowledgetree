@@ -1,0 +1,14 @@
+Namespaces
+==========
+
+1) Actions
+
+Actions have namespaces associated with them.
+
+If they operate on a specific kind of item, then their primary item should follow immediately after
+the action.
+
+
+e.g. action.add.document should become action.folder.add.document
+action.delete.document should become action.document.delete
+action.delete.folder should become actiond.folder.delete

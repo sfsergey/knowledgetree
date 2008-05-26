@@ -13,6 +13,8 @@ function _kt($format)
     return Util_i18n::translate(func_get_args());
 }
 
+
+
 function _str($format)
 {
     $params = func_get_args();
@@ -39,6 +41,15 @@ function _path($path, $append=true)
 function _ktpath($path, $append=true)
 {
     return KT_ROOT_DIR . _path($path,$append);
+}
+
+function _relativepath($path)
+{
+    if (strpos($path, KT_ROOT_DIR) === 0)
+    {
+        $path = substr($path, strlen(KT_ROOT_DIR));
+    }
+    return $path;
 }
 
 function _ktapipath($path, $append=true)
@@ -210,7 +221,7 @@ final class KTapi
         $properties = @parse_ini_file(LOG4PHP_CONFIGURATION);
         $properties['log4php.appender.default'] = 'LoggerAppenderDailyFile';
         $properties['log4php.appender.default.layout'] = 'LoggerPatternLayout';
-        $properties['log4php.appender.default.layout.conversionPattern'] = '%d{Y-m-d|H:i:s}|%p|%t|%r|%X{username}|%c|%M|%m%n';
+        $properties['log4php.appender.default.layout.conversionPattern'] = '%d{Y-m-d | H:i:s} | %p | %t | %r | %X{username} | %c | %M | %m%n';
         $properties['log4php.appender.default.datePattern'] = 'Y-m-d';
         $properties['log4php.appender.default.file'] = KT_ROOT_DIR . 'var/log/kt%s.log.txt';
 
@@ -260,6 +271,7 @@ final class KTapi
 
         require_once('lib/Doctrine.php');
         spl_autoload_register(array('Doctrine', 'autoload'));
+        KTapi::initModule('doctrine');
     }
 
     private static
@@ -378,19 +390,16 @@ final class KTapi
             return false;
         }
 
-        $directory = KTAPI2_DIR . 'lib/';
+        $directory = KTAPI2_DIR . 'Lib/';
         $filename = $classname;
 
         if(strpos($classname, 'KTAPI_') === 0) {
             $filename = substr($classname, 6);
         }
-
-
-        if(strpos($classname, 'Base') === 0){
-            $directory .=  'Base' . DIRECTORY_SEPARATOR;
-        }
-
-        if (substr($classname, -9) == 'Exception')
+//        if(strpos($classname, 'Base') === 0){
+//            $directory .=  'Base' . DIRECTORY_SEPARATOR;
+//        }
+        elseif (substr($classname, -9) == 'Exception')
         {
             $directory .= 'Exception' . DIRECTORY_SEPARATOR;
             if (strpos($classname,'KTapi') === 0)
@@ -398,9 +407,17 @@ final class KTapi
                 $filename = substr($classname, 5);
             }
         }
+        elseif (substr($classname, -9) == 'Parameter')
+        {
+            $directory .= 'Parameter' . DIRECTORY_SEPARATOR;
+            if (strpos($classname,'KTapi') === 0)
+            {
+                $filename = substr($classname, 5);
+            }
+        }
 
 
-        $source = array('', 'Commercial' . DIRECTORY_SEPARATOR);
+        $source = array('');
         foreach ($source as $dir) {
 
             $class_file = $directory . $dir . str_replace('_', DIRECTORY_SEPARATOR, $filename) . '.php';
@@ -448,47 +465,18 @@ final class KTapi
     public static
     function getDb($dsn = null)
     {
-        if(is_null(KTAPI::db)){
+        if(is_null(KTAPI::$db)){
             $db = KTAPI::connect($dsn);
             if(is_null($db)){
                 throw new KTapiException('Database connection not established.');
             }
         }
-        return KTAPI::db;
+        return KTAPI::$db;
     }
 
 }
 
 KTapi::init();
-
-
-class CustomAddDocumentTrigger extends Trigger
-{
-    public
-    function __construct()
-    {
-        parent::__construct();
-
-    }
-
-    public
-    function execute($context, $action_namespace, $action_params, $runningWhen)
-    {
-
-    }
-
-    function GetParameters()
-    {
-        return array(
-            'extra'=>array('insert_after'=>'title','type'=>'string', 'required'=>false),
-        );
-    }
-
-    function AppliesToNamespaces()
-    {
-        return array('action.document.checkin','action.document.add');
-    }
-}
 
 
 //$manager = PluginManager::registerTrigger(new CustomAddDocumentTrigger());
