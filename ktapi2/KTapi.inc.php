@@ -289,7 +289,7 @@ final class KTapi
 
         if ($init == KTapi::PRE_INIT)
         {
-            define('KTAPI2_DIR', dirname(__FILE__) . DIRECTORY_SEPARATOR);
+            define('KTAPI2_DIR', realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR);
             define('KT_ROOT_DIR', realpath(KTAPI2_DIR . '..') . DIRECTORY_SEPARATOR);
             KTapi::registerPostInit('initPaths');
             return;

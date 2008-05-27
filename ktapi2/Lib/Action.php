@@ -66,6 +66,11 @@ abstract class Action
     protected abstract
     function executeAction($context, $params);
 
+    public
+    function isActive()
+    {
+        return true;
+    }
 
     public
     function execute($context, $params)
@@ -79,14 +84,14 @@ abstract class Action
 
             foreach($triggers as $trigger)
             {
-                $trigger->fullExecute($context, $params, $this->namespace, Action::TRIGGER_BEFORE);
+                $trigger->fullExecute($context, $params, $this->namespace, Trigger::BEFORE);
             }
 
             self::executeAction($params);
 
             foreach($triggers as $trigger)
             {
-                $trigger->fullExecute($context, $params, $this->namespace, Action::TRIGGER_AFTER);
+                $trigger->fullExecute($context, $params, $this->namespace, Trigger::AFTER);
             }
 
             $connection->commit();
@@ -100,9 +105,6 @@ abstract class Action
         }
     }
 
-
-
-
     protected
     function setReturn($return)
     {
@@ -112,7 +114,7 @@ abstract class Action
     public
     function register($plugin, $path)
     {
-        $this->base = Plugin_Module::register($plugin, 'Action', $this, $path);
+        $this->base = Plugin_Module::registerObject($plugin, 'Action', $this, $path);
     }
 
     function getOrder()

@@ -28,12 +28,16 @@ abstract class Plugin
         return 1;
     }
 
+    public
+    function getBaseVersion()
+    {
+        return $this->basePlugin->version;
+    }
+
 
     public
     function register($path)
     {
-
-
         $db = KTapi::getDb();
 
         $record = $db->create('Base_Plugin');
@@ -82,6 +86,20 @@ abstract class Plugin
     }
 
     protected
+    function registerTable($tableName, $baseClass, $path)
+    {
+        $table = new TableModule();
+        $table->register($this, $path, $tableName, $baseClass);
+    }
+
+    protected
+    function registerField($tableName, $fieldName, $className, $property)
+    {
+        $field = new FieldModule();
+        $field->register($this, $tableName, $fieldName, $className, $property);
+    }
+
+    protected
     function registerAction($class, $path)
     {
         if (!empty($path) && dirname($path) == '.')
@@ -101,7 +119,7 @@ abstract class Plugin
         }
 
         $action = new $class;
-        PluginManager::registerAction($this, $action, $path);
+        $action->register($plugin, $path);
     }
 }
 ?>

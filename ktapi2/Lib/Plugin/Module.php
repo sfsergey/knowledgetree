@@ -14,8 +14,16 @@ interface ModuleInterface
 class Plugin_Module extends Base_PluginModule
 {
     public static
-    function register($plugin, $moduleType, $obj, $path)
+    function registerObject($plugin, $moduleType, $obj, $path)
     {
+        if (!$plugin instanceof Plugin)
+        {
+            throw new KTapiException('Plugin expected, but was passed %s', get_class($plugin));
+        }
+        if (!is_object($plugin instanceof Plugin))
+        {
+            throw new KTapiException('Plugin expected, but was passed %s', get_class($plugin));
+        }
         $db = KTapi::getDb();
 
         $record = $db->create('Base_PluginModule');
@@ -23,7 +31,7 @@ class Plugin_Module extends Base_PluginModule
         $record->plugin_id = $plugin->getId();
         $record->module_type = $moduleType;
         $record->display_name = $obj->getDisplayName();
-        $record->status = 'Disabled';
+        $record->status = 'Enabled';
         $record->classname = get_class($obj);
         $record->namespace = $obj->getNamespace();
         $record->path = _relativepath($path);
@@ -36,5 +44,45 @@ class Plugin_Module extends Base_PluginModule
 
         return $record;
     }
+
+    public static
+    function registerParams($plugin, $moduleType, $path, $params)
+    {
+        if (!$plugin instanceof Plugin)
+        {
+            throw new KTapiException('Plugin expected, but was passed %s', get_class($plugin));
+        }
+        if (!is_array($params))
+        {
+            throw new KTapiException('Array expected, but was passed %s', get_class($plugin));
+        }
+        $db = KTapi::getDb();
+
+        $record = $db->create('Base_PluginModule');
+
+        $record->plugin_id = $plugin->getId();
+        $record->module_type = $moduleType;
+        $record->status = 'Enabled';
+        $record->namespace = $obj->getNamespace();
+        $record->path = _relativepath($path);
+
+        $valid_keys = array('classname','display_name','module_config','ordering','can_disable','dependencies');
+
+        foreach($params as $key=>$value)
+        {
+            if (!in_array($key, $valid_keys))
+            {
+                throw new KTapiException(_kt('Invalid key: %s', $key));
+            }
+            $record->$key = $value;
+        }
+
+        $record->save();
+
+        return $record;
+    }
+
+
+
 }
 ?>

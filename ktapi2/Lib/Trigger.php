@@ -1,8 +1,8 @@
 <?php
 abstract class Trigger extends Action
 {
-//    const BEFORE            = 1; // can easily do bitwise - to resolve when trigger must run
-//    const AFTER             = 2;
+    const BEFORE            = 1; // can easily do bitwise - to resolve when trigger must run
+    const AFTER             = 2;
 //
 //    protected $params;
 //    // extends

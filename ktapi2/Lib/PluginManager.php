@@ -23,6 +23,11 @@ class PluginManager
         return $singleton;
     }
 
+    /**
+     * Register a plugin location with the plugin manager. When calling readAllPluginLocations, all locations added will be scanned.
+     *
+     * @param string $location
+     */
     public static
     function addPluginLocation($location)
     {
@@ -44,7 +49,6 @@ class PluginManager
     {
         foreach(self::$pluginLocations as $location)
         {
-
             self::readPluginLocation($location);
         }
     }
@@ -52,6 +56,7 @@ class PluginManager
     public static
     function readPluginLocation($location)
     {
+        $logger = LoggerManager::getLogger('plugin.manager');
         if (strpos($location, KT_ROOT_DIR) === false)
         {
             $location = KT_ROOT_DIR . $location . DIRECTORY_SEPARATOR;
@@ -64,23 +69,26 @@ class PluginManager
 
         if (!is_dir($location))
         {
+            $logger->error(_str('Plugin location does not exist: %s', $location));
             throw new KTapiException(_kt('Plugin location does not exist: %s', $location));
         }
 
         $plugins = glob($location . '*Plugin.inc.php');
         foreach($plugins as $plugin)
         {
-            require_once($plugin);
-
-            $pluginClass = basename(substr($plugin, 0, -8)); // stripping .inc.php
-            if (!class_exists($pluginClass))
+            try
             {
-                // todo: log something
-                continue;
+                self::installPlugin($plugin);
             }
-            $class = new $pluginClass;
-
-            $class->register();
+            catch(Doctrine_Exception $ex)
+            {
+                $logger->error(_str('readPluginLocation: exception: %s', $ex->getMessage()));
+                throw $ex;
+            }
+            catch(Exception $ex)
+            {
+                 $logger->warn(_str('readPluginLocation: exception: %s', $ex->getMessage()));
+            }
         }
 
         $subdirs = glob($location . '*', GLOB_ONLYDIR);
@@ -90,37 +98,39 @@ class PluginManager
         }
     }
 
-    /**
-     * Adds an action to the plugin registry
-     *
-     * @param Action $action
-     */
     public static
-    function registerAction($plugin, $action, $path)
+    function installPlugin($path)
     {
-        if(!$action instanceof Action) {
-            throw new KTapiException('Action object expected.');
+        if (!file_exists($path))
+        {
+            throw new KTapiException(_kt('Plugin path does not exist: %s', $path));
         }
-        $action->register($plugin, $path);
+        require_once($path);
+
+        $pluginClass = basename(substr($path, 0, -8)); // stripping .inc.php
+        if (!class_exists($pluginClass))
+        {
+            throw new KTapiException(_kt('Class does not exist: %s', $pluginClass));
+        }
+        $class = new $pluginClass;
+
+        $class->register();
     }
 
-    public static
-    function registerActionCategory($namespace, $name)
-    {
-    }
 
-    /**
-     * Adds a trigger to the plugin registry
-     *
-     * @param Trigger $trigger
-     */
     public static
-    function registerTrigger($trigger)
+    function uninstallPlugin($namespace)
     {
-        if(!$trigger instanceof Trigger) {
-            throw new KTapiException('Trigger object expected.');
+        $query = Doctrine_Query::create();
+        $rows = $query->delete('Base_Plugin')
+                ->from('Base_Plugin bp')
+                ->where('bp.namespace = :namespace')
+                ->execute(array(':namespace'=>$namespace));
+
+        if ($rows === 0)
+        {
+            throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
         }
-        $trigger->register();
     }
 
     /**
@@ -150,9 +160,6 @@ class PluginManager
         $trigger = $table->findOneByNamespace($namespace);
         return $trigger;
     }
-
-
-
 
     public static
     function getActionsByCategory($namespace)
