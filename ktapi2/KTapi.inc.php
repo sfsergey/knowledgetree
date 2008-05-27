@@ -21,7 +21,7 @@ function _str($format)
     $format = array_shift($params);
     if (!is_string($format))
     {
-        throw new KTapiException('_str expected first parameter to be a string.');
+        throw new KTapiException(_kt('_str expected first parameter to be a string.'));
     }
 
     array_unshift($params,$format);
@@ -85,7 +85,7 @@ final class KTapi
     public
     function __construct()
     {
-        throw new KTapiException('Doctrine is static class. No instances can be created.');
+        throw new KTapiException(_kt('Doctrine is static class. No instances can be created.'));
     }
 
     private static
@@ -183,7 +183,7 @@ final class KTapi
         $fullPath = _ktpath('thirdparty/simpletest');
         if (!is_dir($fullPath))
         {
-            throw new KTapiException('SimpleTest framework not resolved.');
+            throw new KTapiException(_kt('SimpleTest framework not resolved.'));
         }
 
         require_once(_path($fullPath . 'simpletest/autorun.php'));
@@ -289,6 +289,7 @@ final class KTapi
 
         if ($init == KTapi::PRE_INIT)
         {
+            //define('KTAPI2_DIR', '/Users/megan/Sites/kt/kt_refactor/ktapi2/');
             define('KTAPI2_DIR', realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR);
             define('KT_ROOT_DIR', realpath(KTAPI2_DIR . '..') . DIRECTORY_SEPARATOR);
             KTapi::registerPostInit('initPaths');
@@ -331,7 +332,7 @@ final class KTapi
     {
         if (in_array($func, KTapi::$postInitModules))
         {
-            throw new KTapiException('Post initialisation function already registerd: %s', $func);
+            throw new KTapiException(_kt('Post initialisation function already registerd: %s', $func));
         }
         KTapi::$postInitModules[] = $func;
     }
@@ -399,7 +400,7 @@ final class KTapi
 //        if(strpos($classname, 'Base') === 0){
 //            $directory .=  'Base' . DIRECTORY_SEPARATOR;
 //        }
-        elseif (substr($classname, -9) == 'Exception')
+        if (substr($classname, -9) == 'Exception')
         {
             $directory .= 'Exception' . DIRECTORY_SEPARATOR;
             if (strpos($classname,'KTapi') === 0)
@@ -468,7 +469,7 @@ final class KTapi
         if(is_null(KTAPI::$db)){
             $db = KTAPI::connect($dsn);
             if(is_null($db)){
-                throw new KTapiException('Database connection not established.');
+                throw new KTapiException(_kt('Database connection not established.'));
             }
         }
         return KTAPI::$db;

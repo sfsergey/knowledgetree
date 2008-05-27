@@ -18,11 +18,11 @@ class Plugin_Module extends Base_PluginModule
     {
         if (!$plugin instanceof Plugin)
         {
-            throw new KTapiException('Plugin expected, but was passed %s', get_class($plugin));
+            throw new KTapiException(_kt('Plugin expected, but was passed %s', get_class($plugin)));
         }
         if (!is_object($plugin instanceof Plugin))
         {
-            throw new KTapiException('Plugin expected, but was passed %s', get_class($plugin));
+            throw new KTapiException(_kt('Plugin expected, but was passed %s', get_class($plugin)));
         }
         $db = KTapi::getDb();
 
@@ -50,11 +50,11 @@ class Plugin_Module extends Base_PluginModule
     {
         if (!$plugin instanceof Plugin)
         {
-            throw new KTapiException('Plugin expected, but was passed %s', get_class($plugin));
+            throw new KTapiException(_kt('Plugin expected, but was passed %s', get_class($plugin)));
         }
         if (!is_array($params))
         {
-            throw new KTapiException('Array expected, but was passed %s', get_class($plugin));
+            throw new KTapiException(_kt('Array expected, but was passed %s', get_class($plugin)));
         }
         $db = KTapi::getDb();
 

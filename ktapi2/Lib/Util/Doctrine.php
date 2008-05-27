@@ -61,11 +61,11 @@ class Util_Doctrine
     function getColumnFromArray($column, $array)
     {
         if(!is_array($array)){
-            throw new KTapiException('Array expected.');
+            throw new KTapiException(_kt('Array expected.'));
         }
 
         if(empty($column)) {
-            throw new KTapiException('Column name must be specified.');
+            throw new KTapiException(_kt('Column name must be specified.'));
         }
 
         $temp = array();

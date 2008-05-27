@@ -16,12 +16,12 @@ class StructureParameter extends Parameter
     {
         if (!$parameter instanceof Parameter)
         {
-            throw new KTapiException('Parameter object expected.');
+            throw new KTapiException(_kt('Parameter object expected.'));
         }
 
         if (in_array($parameter, $this->contents))
         {
-            throw new KTapiException('Parameter already in use.');
+            throw new KTapiException(_kt('Parameter already in use.'));
         }
 
         $this->contents[] = $parameter;

@@ -56,7 +56,7 @@ abstract class Action
     {
         if (!$parameter instanceof Parameter)
         {
-            throw new KTapiException('Parameter object expected.');
+            throw new KTapiException(_kt('Parameter object expected.'));
         }
         $this->parameters[] = $parameter;
         return $parameter;
