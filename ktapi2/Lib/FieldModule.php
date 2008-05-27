@@ -30,7 +30,7 @@ class FieldModule
         return $this->module->namespace;
     }
 
-    public abstract
+    public
     function getDisplayName()
     {
         return $this->module->name;
@@ -39,8 +39,11 @@ class FieldModule
     public
     function register($plugin, $tableName, $fieldName, $className, $property)
     {
+        $namespace = strtolower($plugin->getNamespace() . '.field.' . $tableName . '.' . $fieldName);
+
         $this->base = Plugin_Module::registerParams($plugin, 'Field', '',
             array(
+                'namespace'=>$namespace,
                 'classname'=>$className,
                 'display_name'=>$property,
                 'module_config'=>array('tablename'=>$tableName, 'fieldname'=>$fieldName),

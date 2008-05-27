@@ -17,7 +17,7 @@ abstract class Plugin
     function getNamespace();
 
     protected
-    function includeFile()
+    function includeFile($fileName)
     {
 
     }
@@ -49,7 +49,7 @@ abstract class Plugin
         $record->can_disable = $this->canDisable();
         $record->can_delete = $this->canDelete();
         $record->namespace = $this->getNamespace();
-        $record->dependencies = $this->getDependencies();
+        $record->dependencies = _serialize($this->getDependencies());
 
         $record->save();
 
@@ -119,7 +119,7 @@ abstract class Plugin
         }
 
         $action = new $class;
-        $action->register($plugin, $path);
+        $action->register($this, $path);
     }
 }
 ?>

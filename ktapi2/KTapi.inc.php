@@ -13,7 +13,10 @@ function _kt($format)
     return Util_i18n::translate(func_get_args());
 }
 
-
+function _serialize($mixed)
+{
+    return serialize($mixed);
+}
 
 function _str($format)
 {

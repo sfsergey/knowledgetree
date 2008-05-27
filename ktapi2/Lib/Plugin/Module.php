@@ -16,33 +16,23 @@ class Plugin_Module extends Base_PluginModule
     public static
     function registerObject($plugin, $moduleType, $obj, $path)
     {
-        if (!$plugin instanceof Plugin)
+        if (!is_object($obj))
         {
-            throw new KTapiException(_kt('Plugin expected, but was passed %s', get_class($plugin)));
-        }
-        if (!is_object($plugin instanceof Plugin))
-        {
-            throw new KTapiException(_kt('Plugin expected, but was passed %s', get_class($plugin)));
+            throw new KTapiException(_kt('Object expected, but was passed %s', print_r($obj)));
         }
         $db = KTapi::getDb();
 
-        $record = $db->create('Base_PluginModule');
+        $record = array();
 
-        $record->plugin_id = $plugin->getId();
-        $record->module_type = $moduleType;
-        $record->display_name = $obj->getDisplayName();
-        $record->status = 'Enabled';
-        $record->classname = get_class($obj);
-        $record->namespace = $obj->getNamespace();
-        $record->path = _relativepath($path);
-        $record->module_config = $obj->getConfig();
-        $record->ordering = $obj->getOrder();
-        $record->can_disable = $obj->canDisable();
-        $record->dependencies = $obj->getDependencies();
+        $record['display_name'] = $obj->getDisplayName();
+        $record['classname'] = get_class($obj);
+        $record['namespace'] = $obj->getNamespace();
+        $record['module_config'] = $obj->getConfig();
+        $record['ordering'] = $obj->getOrder();
+        $record['can_disable'] = $obj->canDisable();
+        $record['dependencies'] = $obj->getDependencies();
 
-        $record->save();
-
-        return $record;
+        return self::registerParams($plugin, $moduleType, $path, $record);
     }
 
     public static
@@ -54,7 +44,7 @@ class Plugin_Module extends Base_PluginModule
         }
         if (!is_array($params))
         {
-            throw new KTapiException(_kt('Array expected, but was passed %s', get_class($plugin)));
+            throw new KTapiException(_kt('Array expected, but was passed %s', print_r($params, true)));
         }
         $db = KTapi::getDb();
 
@@ -63,10 +53,12 @@ class Plugin_Module extends Base_PluginModule
         $record->plugin_id = $plugin->getId();
         $record->module_type = $moduleType;
         $record->status = 'Enabled';
-        $record->namespace = $obj->getNamespace();
         $record->path = _relativepath($path);
 
-        $valid_keys = array('classname','display_name','module_config','ordering','can_disable','dependencies');
+        $valid_keys = array('classname','display_name','module_config','ordering','can_disable','dependencies', 'namespace');
+
+        $params['module_config'] = (isset($params['module_config'])) ? _serialize($params['module_config']) : '';
+        $params['dependencies'] = (isset($params['dependencies'])) ? _serialize($params['dependencies']) : '';
 
         foreach($params as $key=>$value)
         {

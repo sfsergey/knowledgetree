@@ -30,19 +30,22 @@ class TableModule
         return $this->module->namespace;
     }
 
-    public abstract
+    public
     function getDisplayName()
     {
         return $this->module->name;
     }
 
     public
-    function register($plugin, $path, $tablename, $baseClass)
+    function register($plugin, $path, $tableName, $baseClass)
     {
+        $namespace = strtolower($plugin->getNamespace() . '.table.' . $tableName);
+
         $this->base = Plugin_Module::registerParams($plugin, 'Table', $path,
             array(
+                'namespace'=>$namespace,
                 'classname'=>$baseClass,
-                'display_name'=>$tablename,
+                'display_name'=>$tableName,
                 'module_config'=>null,
                 'dependencies'=>''));
     }
