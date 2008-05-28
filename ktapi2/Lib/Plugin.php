@@ -121,5 +121,28 @@ abstract class Plugin
         $action = new $class;
         $action->register($this, $path);
     }
+
+    protected
+    function registerTrigger($class, $path)
+    {
+        if (!empty($path) && dirname($path) == '.')
+        {
+            $path = dirname($this->basePlugin->path) . DIRECTORY_SEPARATOR . $path;
+        }
+
+        if (!file_exists($path))
+        {
+            throw new KTapiException(_kt('File expected: %s', $path));
+        }
+
+        require_once($path);
+        if (!class_exists($class))
+        {
+           throw new KTapiException(_kt('Class %s was expected in: %s', $class, $path));
+        }
+
+        $trigger = new $class;
+        $trigger->register($this, $path);
+    }
 }
 ?>

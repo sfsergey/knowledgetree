@@ -8,16 +8,16 @@ class TestTrigger extends Trigger
         parent::__construct($module);
     }
 
-    protected
+    public
     function getNamespace()
     {
         return 'trigger.test';
     }
 
-    protected
-    function getName()
+    public
+    function getDisplayName()
     {
-        return 'Test Trigger';
+        return _kt('Test Trigger');
     }
 
     protected
@@ -29,12 +29,13 @@ class TestTrigger extends Trigger
     protected
     function getParameters()
     {
-        $this->addStringParameter('extra')->setAllowNull(true);
+        //$this->addStringParameter('extra')->setAllowNull(true);
+        return '';
     }
 
 
     protected
-    function executeTrigger($context, $action_namespace, $action_params, $runningWhen)
+    function fullExecute($context, $action_namespace, $action_params, $runningWhen)
     {
 
     }

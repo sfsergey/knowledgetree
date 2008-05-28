@@ -109,12 +109,23 @@ final class KTapi
         {
             throw new KTapiConfigurationException('KTapi::loadDBConfig() requires config/config-path to exist.');
         }
-        $configPath = KT_ROOT_DIR .  $path;
-        $config = file_get_contents($configPath);
+        /* TODO:
+            Change config-path to contain the directory only?
+            Or add a new file for dbconfig-path?
+        */
+        $path = 'config/dbconfig.inc.php';
 
-        if ($config === false)
+        $configPath = KT_ROOT_DIR .  $path;
+        if(!file_exists($configPath))
         {
-            throw new KTapiConfigurationException('KTapi::loadDBConfig() requires config.ini to exist in %s relative to %s.', $path, KT_ROOT_DIR);
+            throw new KTapiConfigurationException('KTapi::loadDBConfig() requires dbconfig.ini.php to exist in %s relative to %s.', $path, KT_ROOT_DIR);
+        }
+
+        require_once($configPath);
+
+        if (!defined('DSN'))
+        {
+            throw new KTapiConfigurationException('KTapi::loadDBConfig() requires the DSN to be defined in dbconfig.inc.php');
         }
     }
 
@@ -292,7 +303,6 @@ final class KTapi
 
         if ($init == KTapi::PRE_INIT)
         {
-            //define('KTAPI2_DIR', '/Users/megan/Sites/kt/kt_refactor/ktapi2/');
             define('KTAPI2_DIR', realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR);
             define('KT_ROOT_DIR', realpath(KTAPI2_DIR . '..') . DIRECTORY_SEPARATOR);
             KTapi::registerPostInit('initPaths');
@@ -452,8 +462,7 @@ final class KTapi
         }
 
         if(is_null($dsn)){
-            // TODO: Get from dbconfig file
-            $dsn = "mysql://root:@localhost/ktdms_kt36";
+            $dsn = DSN;
         }
         $db = Doctrine_Manager::connection($dsn);
         $db->setCharset('utf8');
