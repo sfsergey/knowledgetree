@@ -13,6 +13,13 @@ function _kt($format)
     return Util_i18n::translate(func_get_args());
 }
 
+/**
+ * Function to serialise php objects.
+ * Currently it wraps serialize(). We can change to another format needs be.
+ *
+ * @param mixed $mixed
+ * @return string
+ */
 function _serialize($mixed)
 {
     return serialize($mixed);
@@ -32,6 +39,14 @@ function _str($format)
     return call_user_func_array('sprintf', $params);
 }
 
+/**
+ * Ensures the path ends with the appropriate slash depending on operating system and
+ * that all slashes are the same.
+ *
+ * @param string $path
+ * @param boolean $append [optional] default true
+ * @return string
+ */
 function _path($path, $append=true)
 {
     if ($append && substr($path, -1) != DIRECTORY_SEPARATOR)
@@ -41,11 +56,24 @@ function _path($path, $append=true)
     return str_replace('/', DIRECTORY_SEPARATOR, $path);
 }
 
+/**
+ * Prepends KT_ROOT_DIR to the path and ensures that slashes are correct.
+ *
+ * @param string $path
+ * @param boolean $append [optional] default true
+ * @return string
+ */
 function _ktpath($path, $append=true)
 {
     return KT_ROOT_DIR . _path($path,$append);
 }
 
+/**
+ * Removes KT_ROOT_DIR from the path if it is present.
+ *
+ * @param string $path
+ * @return string
+ */
 function _relativepath($path)
 {
     if (strpos($path, KT_ROOT_DIR) === 0)
@@ -55,11 +83,33 @@ function _relativepath($path)
     return $path;
 }
 
+/**
+ * Prepends KTAPI2_DIR to the path and ensures that slashes are correct.
+ *
+ * @param string $path
+ * @param boolean $append [optional] default true
+ * @return string
+ */
 function _ktapipath($path, $append=true)
 {
     return KTAPI2_DIR . _path($path,$append);
 }
 
+
+
+function _require($path, $parent)
+{
+    if (!empty($path) && dirname($path) == '.')
+    {
+        $path = _path($parent) . $path;
+    }
+
+    if (!file_exists($path))
+    {
+        throw new KTapiException(_kt('File expected: %s', $path));
+    }
+    return $path;
+}
 
 final class KTapi
 {
@@ -118,14 +168,14 @@ final class KTapi
         $configPath = KT_ROOT_DIR .  $path;
         if(!file_exists($configPath))
         {
-            throw new KTapiConfigurationException('KTapi::loadDBConfig() requires dbconfig.ini.php to exist in %s relative to %s.', $path, KT_ROOT_DIR);
+            throw new KTapiConfigurationException(_kt('KTapi::loadDBConfig() requires dbconfig.ini.php to exist in %s relative to %s.', $path, KT_ROOT_DIR));
         }
 
         require_once($configPath);
 
         if (!defined('DSN'))
         {
-            throw new KTapiConfigurationException('KTapi::loadDBConfig() requires the DSN to be defined in dbconfig.inc.php');
+            throw new KTapiConfigurationException(_kt('KTapi::loadDBConfig() requires the DSN to be defined in dbconfig.inc.php'));
         }
     }
 
@@ -381,8 +431,12 @@ final class KTapi
         // Connect to DB
         KTAPI::connect();
 
-        // Plugin manager if required
-        // Any other initialisation
+        $logger = LoggerManager::getLogger('sql');
+        if ($logger->isDebugEnabled())
+        {
+            $db = KTapi::getDb();
+            $db->setListener(new KTAPI_LogListener());
+        }
 
         $logger = LoggerManager::getLogger('page');
         if ($logger->isDebugEnabled())

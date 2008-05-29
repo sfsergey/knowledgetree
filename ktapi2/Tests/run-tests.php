@@ -4,6 +4,9 @@ require_once('../KTapi.inc.php');
 
 KTapi::initTestFramework();
 
+class KTAPI_TestCase extends UnitTestCase
+{
+}
 
 class UnitTests extends TestSuite
 {

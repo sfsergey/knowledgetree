@@ -3,9 +3,15 @@ class PluginManager
 {
     private static $pluginLocations = array(); // 'plugins'
 
+    private $plugins;
+    private $modules;
+
     private
     function __construct()
     {
+        $this->plugins = array();
+        $this->modules = array();
+        $this->load();
     }
 
     /**
@@ -21,6 +27,25 @@ class PluginManager
             $singleton = new PluginManager();
         }
         return $singleton;
+    }
+
+    public
+    function load($activeOnly = true)
+    {
+        $db = KTapi::getDb();
+
+        $dql = 'FROM Base_Plugin bp WHERE bp.status = :status AND bp.PluginModules.status = :status';
+
+        $plugins = $db->query($dql, array('status'=>'Enabled'));
+
+        foreach($plugins as $plugin)
+        {
+            print "{$plugin->namespace}\n";
+            foreach($plugin->PluginModules as $module)
+            {
+                print "\t{$module->namespace}\n";
+            }
+        }
     }
 
     /**
@@ -131,6 +156,40 @@ class PluginManager
         {
             throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
         }
+    }
+
+    public static
+    function enableModule($namespace)
+    {
+
+    }
+    public static
+    function disableModule($namespace)
+    {
+
+    }
+
+    public static
+    function isModuleEnabled($namespace)
+    {
+
+    }
+
+    public static
+    function isPluginRegistered($namespace)
+    {
+    }
+
+    public static
+    function isPluginEnabled($namespace)
+    {
+
+    }
+
+    public static
+    function isPluginCompatible($namespace)
+    {
+
     }
 
     /**

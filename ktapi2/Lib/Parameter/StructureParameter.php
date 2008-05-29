@@ -4,11 +4,28 @@ class StructureParameter extends Parameter
 {
     private $contents;
 
+    /**
+     * Constructor for a structure
+     *
+     * @param string $name
+     */
     protected
-    function __construct($name, $type, $default = null, $allowNull = false)
+    function __construct($name)
     {
-        parent::__construct($name, $type, $default, $allowNull);
+        parent::__construct($name, 'struct');
         $this->contents = array();
+    }
+
+    /**
+     * Returns a structure
+     *
+     * @param string $name
+     * @return StructureParameter
+     */
+    public
+    function create($name = 'return')
+    {
+        return new StringParameter($name);
     }
 
     public
@@ -16,7 +33,7 @@ class StructureParameter extends Parameter
     {
         if (!$parameter instanceof Parameter)
         {
-            throw new KTapiException(_kt('Parameter object expected.'));
+            throw new KTapiException(_kt('Parameter object expected, but was passed: %s', get_class($parameter)));
         }
 
         if (in_array($parameter, $this->contents))
@@ -26,6 +43,13 @@ class StructureParameter extends Parameter
 
         $this->contents[] = $parameter;
     }
+
+    public
+    function getContents()
+    {
+        return $this->contents;
+    }
+
 }
 
 ?>

@@ -1,41 +1,7 @@
 <?php
 
-class FieldModule
+class FieldModule extends PluginModule
 {
-    private $module;
-
-    public
-    function __construct($module = null)
-    {
-        $this->module = $module;
-    }
-
-    protected
-    function __get($property)
-    {
-        switch ($property)
-        {
-            case 'Namespace':
-            case 'Name':
-            case 'CategoryNamespace':
-                return call_user_func_array('get' . $property);
-            default:
-                throw new KTapiUnknownPropertyException($this, $property);
-        }
-    }
-
-    public
-    function getNamespace()
-    {
-        return $this->module->namespace;
-    }
-
-    public
-    function getDisplayName()
-    {
-        return $this->module->name;
-    }
-
     public
     function register($plugin, $tableName, $fieldName, $className, $property)
     {
@@ -72,24 +38,6 @@ class FieldModule
     function getPropertyName()
     {
         return $this->getDisplayName();
-    }
-
-    public
-    function getOrder()
-    {
-        return $this->module->order;
-    }
-
-    public
-    function canDisable()
-    {
-        return $this->module->can_disable;
-    }
-
-    public
-    function getDependencies()
-    {
-        return array();
     }
 }
 ?>

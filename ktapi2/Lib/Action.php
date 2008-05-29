@@ -1,75 +1,41 @@
 <?php
 
-abstract class Action
+abstract class Action extends PluginModule
 {
-    const TRIGGER_BEFORE            = 1; // can easily do bitwise - to resolve when trigger must run
-    const TRIGGER_AFTER             = 2;
-
-    private $return;
-
-    private $parameters;
-
-    private $module;
-
-    public
-    function __construct($module = null)
-    {
-        $this->module = $module;
-        $this->parameters = array();
-        $this->return = array();
-    }
-
-    protected
-    function __get($property)
-    {
-        switch ($property)
-        {
-            case 'Namespace':
-            case 'Name':
-            case 'CategoryNamespace':
-                return call_user_func_array('get' . $property);
-            case 'Return':
-                return $this->return;
-            case 'Parameters':
-                return $this->parameters;
-            default:
-                throw new KTapiUnknownPropertyException($this, $property);
-        }
-    }
-
-    public abstract
-    function getNamespace();
-
-    public abstract
-    function getDisplayName();
-
     public abstract
     function getCategoryNamespace();
-    /**
-     * Adds a parameter to the action/trigger
-     *
-     * @param Parameter $parameter
-     * @return Parameter
-     */
-    protected
-    function addParameter($parameter)
-    {
-        if (!$parameter instanceof Parameter)
-        {
-            throw new KTapiException(_kt('Parameter object expected.'));
-        }
-        $this->parameters[] = $parameter;
-        return $parameter;
-    }
-
 
     protected abstract
     function executeAction($context, $params);
 
     public
+    function getNamespace()
+    {
+        throw new KTapiException(_kt('Namespace not specified.'));
+    }
+
+    public
+    function getDisplayName()
+    {
+        throw new KTapiException(_kt('Display name not specified.'));
+    }
+
+    public
     function isActive()
     {
         return true;
+    }
+
+    public
+    function getParameters()
+    {
+        return array();
+    }
+
+    public
+    function getReturn()
+    {
+        return array();
     }
 
     public
@@ -105,31 +71,16 @@ abstract class Action
         }
     }
 
-    protected
-    function setReturn($return)
-    {
-
-    }
-
     public
     function register($plugin, $path)
     {
-        $this->base = Plugin_Module::registerObject($plugin, 'Action', $this, $path);
+        $this->base = Plugin_Module::registerParams($plugin, 'Action', $path,
+            array(
+                'namespace'=>$this->getNamespace(),
+                'classname'=>get_class($this),
+                'display_name'=>$this->getDisplayName(),
+                'module_config'=>'',
+                'dependencies'=>''));
     }
-
-    function getOrder()
-    {
-        return 0;
-    }
-    function canDisable()
-    {
-        return false;
-    }
-    function getDependencies()
-    {
-        return array();
-    }
-
-
 }
 ?>

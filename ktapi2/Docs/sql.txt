@@ -1,0 +1,55 @@
+CREATE TABLE `plugins` (
+ `id` int(10) unsigned NOT NULL auto_increment,
+ `display_name` varchar(255) NOT NULL,
+ `path` mediumtext NOT NULL,
+ `status` tinyint(4) NOT NULL default '0',
+ `version` int(11) NOT NULL default '1',
+ `can_disable` tinyint(3) unsigned NOT NULL default '1',
+ `can_delete` tinyint(3) unsigned NOT NULL default '1',
+ `namespace` varchar(255) NOT NULL,
+ `dependencies` mediumtext NOT NULL COMMENT 'include namespace, include paths',
+ PRIMARY KEY(`id`),
+ UNIQUE KEY `namespace` (`namespace`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+ CREATE TABLE `plugin_relations` (
+`plugin_id` int(10) unsigned NOT NULL,
+`related_plugin_id` int(10) unsigned NOT NULL,
+PRIMARY KEY(`plugin_id`,`related_plugin_id`),
+KEY `related_plugin_id` (`related_plugin_id`),
+CONSTRAINT `plugin_relations_ibfk_1` FOREIGN KEY (`plugin_id`) REFERENCES `plugins` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT `plugin_relations_ibfk_2` FOREIGN KEY (`related_plugin_id`) REFERENCES `plugins` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE `plugin_modules` (
+`id` int(10) unsigned NOT NULL auto_increment,
+`plugin_id` int(10) unsigned NOT NULL,
+`module_type` tinyint(4) NOT NULL,
+`display_name` varchar(255) NOT NULL,
+`status` tinyint(4) NOT NULL default '0',
+`classname` varchar(255) NOT NULL,
+`path` mediumtext NOT NULL,
+`module_config` mediumtext,
+`ordering` int(11) NOT NULL default '0',
+`can_disable` tinyint(3) unsigned NOT NULL default '0',
+`namespace` varchar(255) NOT NULL,
+`dependencies` mediumtext NOT NULL COMMENT 'module dependencies - modules and includes',
+PRIMARY KEY(`id`),
+UNIQUE KEY `idx_plugin_module_namespace` (`namespace`),
+KEY `plugin_id` (`plugin_id`),
+CONSTRAINT `plugin_modules_ibfk_1` FOREIGN KEY (`plugin_id`) REFERENCES `plugins` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC ;
+
+
+CREATE TABLE `plugin_module_relations` (
+ `plugin_module_id` int(10) unsigned NOT NULL,
+ `related_module_id` int(10) unsigned NOT NULL,
+ PRIMARY KEY(`plugin_module_id`,`related_module_id`),
+ KEY `related_module_id` (`related_module_id`),
+ CONSTRAINT `plugin_module_relations_ibfk_1` FOREIGN KEY (`plugin_module_id`) REFERENCES `plugin_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ CONSTRAINT `plugin_module_relations_ibfk_2` FOREIGN KEY (`related_module_id`) REFERENCES `plugin_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+
+
+

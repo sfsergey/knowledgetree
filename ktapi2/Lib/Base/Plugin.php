@@ -23,7 +23,7 @@ class Base_Plugin extends Doctrine_Record
     public function setUp()
     {
         parent::setUp();
-        $this->hasMany('Plugin_Module', array('local' => 'id', 'foreign' => 'plugin_id'));
+        $this->hasMany('Base_PluginModule as PluginModules', array('local' => 'id', 'foreign' => 'plugin_id'));
     }
 
 }

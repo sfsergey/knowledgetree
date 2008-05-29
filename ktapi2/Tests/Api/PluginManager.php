@@ -18,11 +18,8 @@ class PluginManagerTestCase extends KTAPI_TestCase
 
         PluginManager::readAllPluginLocations();
 
-        //PluginManager::uninstallPlugin('plugin.test');
+        PluginManager::get();
     }
-
-
-
 }
 
 ?>
