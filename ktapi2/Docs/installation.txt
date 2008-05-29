@@ -1,0 +1,41 @@
+INSTALL
+=======
+
+
+Database Configuration
+----------------------
+
+Refer to the doctrine documentation (http://phpdoctrine.org) on how to get the database
+DSN defined for your database.
+
+Need to create dbconfig.inc.php in config-path:
+
+<?php
+
+define('DSN', 'mysql://root@localhost/ktdms_kt36');
+
+?>
+
+Logging
+-------
+
+
+You can create ktlog.ini to contain logging configuration:
+
+
+log4php.rootLogger = DEBUG, default
+;log4php.logger.sql=INFO
+;log4php.logger.page=INFO
+;log4php.logger.page.def=INHERITED
+
+
+Unit Tests
+----------
+
+You can run the unit tests via command line:
+
+php -C ktapi2/Tests/run-tests.php
+
+or via browser:
+
+http://mydomain/ktapi2/Tests/run-tests.php
