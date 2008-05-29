@@ -14,6 +14,7 @@ class UnitTests extends TestSuite
     {
         $this->TestSuite('KnowledgeTree KTAPI Unit tests');
         $this->addFile('Api/PluginManager.php');
+        $this->addFile('Api/PluginUpgrade.php');
 //        $this->addFile('api/Authentication/Builtin.php');
 //        $this->addFile('api/Authentication/ActiveDirectory.php');
 //        $this->addFile('api/Authentication/Ldap.php');

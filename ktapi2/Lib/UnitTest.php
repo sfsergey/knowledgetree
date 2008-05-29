@@ -15,7 +15,7 @@ class UnitTest extends PluginModule
         {
             throw new KTapiException(_kt('Unit test does not exist: %s', $path));
         }
-        $namespace = strtolower($plugin->getNamespace() . '.unittest.' . $className);
+        $namespace = strtolower('unittest.' . $className);
 
         $this->base = Plugin_Module::registerParams($plugin, 'UnitTest', $path,
             array(

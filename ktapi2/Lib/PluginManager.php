@@ -11,6 +11,9 @@ class PluginManager
     {
         $this->plugins = array();
         $this->modules = array();
+
+        PluginManager::clearPluginLocations();
+
         $this->load();
     }
 
@@ -67,6 +70,12 @@ class PluginManager
         }
 
         self::$pluginLocations[] = $location;
+    }
+
+    public static
+    function clearPluginLocations()
+    {
+        self::$pluginLocations = array();
     }
 
     public static
@@ -137,9 +146,29 @@ class PluginManager
         {
             throw new KTapiException(_kt('Class does not exist: %s', $pluginClass));
         }
-        $class = new $pluginClass;
+        $class = new $pluginClass();
+
+        $namespace = $class->getNamespace();
+
+        $newVersion = $class->getVersion();
+
+        $query = Doctrine_Query::create();
+        $rows = $query->delete()
+                ->from('Base_PluginModule bpm')
+                ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
+
+        $class->loadBase();
+        $currentVersion = $class->getCurrentVersion();
 
         $class->register();
+
+
+        if ($newVersion > $currentVersion)
+        {
+            $class->upgrade($currentVersion, $newVersion);
+        }
+
     }
 
 
@@ -158,32 +187,103 @@ class PluginManager
         }
     }
 
+    private static
+    function setModuleStatus($namespace, $status)
+    {
+        $query = Doctrine_Query::create();
+        $rows = $query->update('Base_PluginModule bpm')
+                ->set('bpm.status', ':status', array(':status'=>$status))
+                ->where('bpm.namespace = :namespace')
+                ->execute(array(':namespace'=>$namespace));
+
+        if ($rows === 0)
+        {
+            throw new KTapiException(_kt('No effect by when changing status to %s on module with namespace: %s', $status, $namespace));
+        }
+    }
+
+    private static
+    function setPluginStatus($namespace, $status, $force = false)
+    {
+        $query = Doctrine_Query::create();
+        $rows = $query->update('Base_Plugin bp')
+                ->set('bp.status', ':status', array(':status'=>$status))
+                ->where('bp.namespace = :namespace')
+                ->execute(array(':namespace'=>$namespace));
+
+        if ($rows === 0)
+        {
+            throw new KTapiException(_kt('No effect when changing status to %s on plugin with namespace: %s', $status, $namespace));
+        }
+    }
+
+    public static
+    function disablePlugin($namespace, $force = false)
+    {
+        self::setPluginStatus($namespace, 'Disabled', $force);
+    }
+
+    public static
+    function enablePlugin($namespace, $force = false)
+    {
+        self::setPluginStatus($namespace, 'Enabled', $force);
+    }
+
     public static
     function enableModule($namespace)
     {
-
+        self::setModuleStatus($namespace,'Enabled');
     }
+
     public static
     function disableModule($namespace)
     {
-
+        self::setModuleStatus($namespace,'Disabled');
     }
 
     public static
     function isModuleEnabled($namespace)
     {
-
+        $query = Doctrine_Query::create();
+        $rows = $query->select('status')
+                ->from('Base_PluginModule bpm')
+                ->where('bpm.namespace = :namespace')
+                ->limit(1)
+                ->execute(array(':namespace'=>$namespace));
+        if ($rows->count() == 0)
+        {
+            return false;
+        }
+        return ($rows[0]->status == 'Enabled');
     }
 
     public static
     function isPluginRegistered($namespace)
     {
+        $query = Doctrine_Query::create();
+        $rows = $query->select('status')
+                ->from('Base_Plugin bp')
+                ->where('bp.namespace = :namespace')
+                ->limit(1)
+                ->execute(array(':namespace'=>$namespace));
+
+        return $rows->count() == 1;
     }
 
     public static
     function isPluginEnabled($namespace)
     {
-
+        $query = Doctrine_Query::create();
+        $rows = $query->select('status')
+                ->from('Base_Plugin bp')
+                ->where('bp.namespace = :namespace')
+                ->limit(1)
+                ->execute(array(':namespace'=>$namespace));
+        if ($rows->count() == 0)
+        {
+            return false;
+        }
+        return ($rows[0]->status == 'Enabled');
     }
 
     public static

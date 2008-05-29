@@ -36,6 +36,11 @@ class Plugin_Module extends Base_PluginModule
         $valid_keys = array('classname','display_name','module_config','ordering','can_disable','dependencies', 'namespace');
         $serialize_keys = array('module_config', 'dependencies');
 
+        if (isset($params['namespace']))
+        {
+            $params['namespace'] .= '.' . $plugin->getNamespace();
+        }
+
         foreach($params as $key=>$value)
         {
             if (!in_array($key, $valid_keys))

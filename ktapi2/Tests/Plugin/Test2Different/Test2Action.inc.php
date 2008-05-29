@@ -1,17 +1,17 @@
 <?php
 
-class TestAction extends Action
+class Test2DiffAction extends Action
 {
     public
     function getNamespace()
     {
-        return 'action.test';
+        return 'action.test2diff';
     }
 
     public
     function getDisplayName()
     {
-        return _kt('Test Action');
+        return _kt('Test 2 Diff Action');
     }
 
     public

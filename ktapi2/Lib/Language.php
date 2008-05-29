@@ -9,7 +9,7 @@ class Language extends PluginModule
         {
             throw new KTapiException(_kt('PO file does not exist: %s', $POfilename));
         }
-        $namespace = strtolower($plugin->getNamespace() . '.language.' . $locale);
+        $namespace = strtolower('language.' . $locale);
 
         $this->base = Plugin_Module::registerParams($plugin, 'Language', $POfilename,
             array(

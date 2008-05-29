@@ -74,7 +74,9 @@ abstract class Action extends PluginModule
     public
     function register($plugin, $path)
     {
-        $this->base = Plugin_Module::registerParams($plugin, 'Action', $path,
+        $moduleType = ($this instanceof Trigger)?'Trigger':'Action';
+
+        $this->base = Plugin_Module::registerParams($plugin, $moduleType, $path,
             array(
                 'namespace'=>$this->getNamespace(),
                 'classname'=>get_class($this),

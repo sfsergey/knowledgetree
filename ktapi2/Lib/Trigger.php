@@ -4,10 +4,6 @@ abstract class Trigger extends Action
     const BEFORE            = 1; // can easily do bitwise - to resolve when trigger must run
     const AFTER             = 2;
 
-    private $parameters;
-
-    private $module;
-
     public $whenToRun; // readonly property
 
     /**
@@ -35,24 +31,6 @@ abstract class Trigger extends Action
         $this->parameters = array();
         $this->return = array();
         $this->whenToRun = Trigger::AFTER;
-    }
-
-    protected
-    function __get($property)
-    {
-        switch ($property)
-        {
-            case 'Namespace':
-            case 'Name':
-            case 'CategoryNamespace':
-                return call_user_func_array('get' . $property);
-            case 'Return':
-                return $this->return;
-            case 'Parameters':
-                return $this->parameters;
-            default:
-                throw new KTapiUnknownPropertyException($this, $property);
-        }
     }
 
     public
@@ -160,16 +138,6 @@ abstract class Trigger extends Action
         $this->areParametersValid($context, $action_params, true);
 
         return true;
-    }
-
-    /**
-     * Registers the trigger as a plugin module.
-     *
-     */
-    public
-    function register($plugin, $path)
-    {
-        $this->base = Plugin_Module::registerObject($plugin, 'Trigger', $this, $path);
     }
 
     protected abstract

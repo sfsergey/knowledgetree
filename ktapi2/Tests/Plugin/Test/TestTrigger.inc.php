@@ -3,12 +3,6 @@
 class TestTrigger extends Trigger
 {
     public
-    function __construct($module = null)
-    {
-        parent::__construct($module);
-    }
-
-    public
     function getNamespace()
     {
         return 'trigger.test';
@@ -26,11 +20,15 @@ class TestTrigger extends Trigger
         return array('action.document.checkin','action.document.add');
     }
 
-    protected
     function getParameters()
     {
-        //$this->addStringParameter('extra')->setAllowNull(true);
-        return '';
+        $params = StructureParameter::create()
+                    ->add(StringParameter::create('Approver')
+                            ->setAllowNull(true)
+                            ->setDefaultValue('Megan'));
+
+
+        return $params->getContents();
     }
 
 

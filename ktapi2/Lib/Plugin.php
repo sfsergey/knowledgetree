@@ -30,16 +30,73 @@ abstract class Plugin
     public
     function getVersion()
     {
-        return 1;
+        return 0;
     }
 
     public
     function getCurrentVersion()
     {
+        if (is_null($this->basePlugin))
+        {
+            return 0;
+        }
+
         return $this->basePlugin->version;
     }
 
     public
+    function loadBase()
+    {
+        if (is_null($this->basePlugin))
+        {
+            $namespace = $this->getNamespace();
+            $basePlugin = Doctrine::getTable('Base_Plugin')->findOneByNamespace($namespace);
+            $this->basePlugin = empty($basePlugin)?null:$basePlugin;
+        }
+        return $this->basePlugin;
+    }
+
+    public
+    function upgrade($currentVersion, $newVersion)
+    {
+        $logger = LoggerManager::getLogger('upgrade');
+
+        $migrationPath = _path($this->getBasePath() . 'migration');
+
+        $displayName = $this->getDisplayName();
+        $namespace = $this->getNamespace();
+
+        $migration = new KTAPI_Migration($migrationPath);
+        $logger->info(_str('Starting migration on plugin %s (%s) from %d to %d', $displayName, $namespace, $currentVersion, $newVersion));
+
+        $migration->setContext($namespace);
+
+        $raiseEx = null;
+
+        try
+        {
+            $migration->migrate($newVersion);
+        }
+        catch(Doctrine_Migration_Exception $ex)
+        {
+            if (strpos($ex->getMessage(), 'Already at version') === false)
+            {
+                $raiseEx = $ex;
+            }
+        }
+        catch(Exception $ex)
+        {
+            $raiseEx = $ex;
+            PluginManager::disablePlugin($this->getNamespace(), true); // true = force disable
+        }
+        $logger->info(_str('End migration on plugin %s (%s)', $displayName, $namespace));
+
+        if (isset($raiseEx))
+        {
+            throw $raiseEx;
+        }
+
+    }
 
     public
     function canDisable()
@@ -68,22 +125,30 @@ abstract class Plugin
     public
     function getBasePath()
     {
-        return dirname($this->basePlugin->path) . DIRECTORY_SEPARATOR;
+        return _ktpath(dirname($this->basePlugin->path));
     }
 
     function register($path)
     {
         $db = KTapi::getDb();
 
-        $record = $db->create('Base_Plugin');
+        $namespace = $this->getNamespace();
+        if (PluginManager::isPluginRegistered($namespace))
+        {
+            $record = $this->basePlugin;
+        }
+        else
+        {
+             $record = $db->create('Base_Plugin');
+        }
 
         $record->display_name = $this->getDisplayName();
-        $record->path = $path;
+        $record->path = _relativepath($path);
         $record->status = 'Enabled';
         $record->version = $this->getVersion();
         $record->can_disable = $this->canDisable();
         $record->can_delete = $this->canDelete();
-        $record->namespace = $this->getNamespace();
+        $record->namespace = $namespace;
         $record->dependencies = _serialize(
             array(
                 'dependencies'=>$this->getDependencies(),
@@ -108,6 +173,7 @@ abstract class Plugin
     protected
     function registerTable($tableName, $baseClass, $path)
     {
+        $path = _require($path, $this->getBasePath());
         $table = new TableModule();
         $table->register($this, $path, $tableName, $baseClass);
     }
@@ -145,15 +211,7 @@ abstract class Plugin
     protected
     function registerTrigger($class, $path)
     {
-        if (!empty($path) && dirname($path) == '.')
-        {
-            $path = dirname($this->basePlugin->path) . DIRECTORY_SEPARATOR . $path;
-        }
-
-        if (!file_exists($path))
-        {
-            throw new KTapiException(_kt('File expected: %s', $path));
-        }
+        $path = _require($path, $this->getBasePath());
 
         require_once($path);
         if (!class_exists($class))

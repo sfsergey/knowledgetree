@@ -5,7 +5,7 @@ class TableModule extends PluginModule
     public
     function register($plugin, $path, $tableName, $baseClass)
     {
-        $namespace = strtolower($plugin->getNamespace() . '.table.' . $tableName);
+        $namespace = strtolower('table.' . $tableName);
 
         $this->base = Plugin_Module::registerParams($plugin, 'Table', $path,
             array(
@@ -13,7 +13,20 @@ class TableModule extends PluginModule
                 'classname'=>$baseClass,
                 'display_name'=>$tableName,
                 'module_config'=>null,
-                'dependencies'=>''));
+                'dependencies'=>'')
+        );
+
+
+        require_once($path);
+
+        if (!class_exists($baseClass))
+        {
+            throw new KTapiException(_kt('Class %s expected in $path but was not found.',$baseClass));
+        }
+
+        $tableClass = new $baseClass();
+        $table = $tableClass->getTable();
+        $table->export();
     }
 }
 ?>

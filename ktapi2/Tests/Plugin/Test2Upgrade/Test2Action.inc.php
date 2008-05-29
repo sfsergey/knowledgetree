@@ -1,6 +1,6 @@
 <?php
 
-class TestAction extends Action
+class Test2Action extends Action
 {
     public
     function getNamespace()

@@ -5,7 +5,7 @@ class FieldModule extends PluginModule
     public
     function register($plugin, $tableName, $fieldName, $className, $property)
     {
-        $namespace = strtolower($plugin->getNamespace() . '.field.' . $tableName . '.' . $fieldName);
+        $namespace = strtolower('field.' . $tableName . '.' . $fieldName);
 
         $this->base = Plugin_Module::registerParams($plugin, 'Field', '',
             array(
