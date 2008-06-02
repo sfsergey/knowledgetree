@@ -1,6 +1,6 @@
 <?php
 
-class TestUpgrade extends KTAPI_Migration
+class Test2Plugin_001_Upgrade extends KTAPI_Migration
 {
     public
     function up()

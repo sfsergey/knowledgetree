@@ -5,8 +5,11 @@ class PluginUpgradeTestCase extends KTAPI_TestCase
     function setUp()
     {
         try {
-            PluginManager::uninstallPlugin('plugin.test');
-            PluginManager::uninstallPlugin('plugin.testdiff');
+            $migration = new KTAPI_Migration();
+            $migration->dropTable('tag');
+            $migration->dropTable('migration_version');
+            PluginManager::uninstallPlugin('plugin.test', array('force_overwrite'=>true));
+            PluginManager::uninstallPlugin('plugin.testdiff', array('force_overwrite'=>true));
         }
         catch (Exception $ex){
             // do nothing, we don't care
@@ -29,6 +32,11 @@ class PluginUpgradeTestCase extends KTAPI_TestCase
         PluginManager::addPluginLocation('ktapi2/Tests/Plugin/Test2Different');
 
         PluginManager::readAllPluginLocations();
+
+        PluginManager::uninstallPlugin('plugin.testdiff');
+
+        $this->assertTrue(PluginManager::isPluginRegistered('plugin.testdiff'));
+
     }
 
 

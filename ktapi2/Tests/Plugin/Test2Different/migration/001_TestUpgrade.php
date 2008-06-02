@@ -1,9 +1,8 @@
 <?php
 
-if (!class_exists('Test2DiffUpgrade'))
-{
 
-class Test2DiffUpgrade extends KTAPI_Migration
+
+class Test2DifferentPlugin_001_Upgrade extends KTAPI_Migration
 {
     public
     function up()
@@ -18,6 +17,6 @@ class Test2DiffUpgrade extends KTAPI_Migration
     }
 }
 
-}
+
 
 ?>

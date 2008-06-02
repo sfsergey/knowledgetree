@@ -85,9 +85,50 @@ class PluginManager
         {
             self::readPluginLocation($location);
         }
+
+        self::validateRelations();
     }
 
-    public static
+    private static
+    function validateRelations()
+    {
+        $query = Doctrine_Query::create();
+        $rows = $query->select('pmr.plugin_module_namespace AS namespace')
+                ->distinct()
+                ->from('Base_PluginModuleRelation pmr')
+                ->leftJoin('pmr.PluginModule pm')
+                ->where('pm.namespace IS NULL')
+                ->execute();
+        if ($rows->count() > 0)
+        {
+           $namespaces = array();
+           foreach($rows as $row)
+           {
+                $namespaces[] = $row->namespace;
+           }
+           self::disableModule($namespaces);
+        }
+
+        $query = Doctrine_Query::create();
+        $rows = $query->select('pr.plugin_namespace AS namespace')
+                ->distinct()
+                ->from('Base_PluginRelation pr')
+                ->leftJoin('pr.Plugin p')
+                ->where('p.namespace IS NULL')
+                ->execute();
+        if ($rows->count() > 0)
+        {
+           $namespaces = array();
+           foreach($rows as $row)
+           {
+                $namespaces[] = $row->namespace;
+           }
+           self::disablePlugin($namespaces);
+        }
+
+    }
+
+    private static
     function readPluginLocation($location)
     {
         $logger = LoggerManager::getLogger('plugin.manager');
@@ -112,7 +153,7 @@ class PluginManager
         {
             try
             {
-                self::installPlugin($plugin);
+                self::installPlugin($plugin, false);
             }
             catch(Doctrine_Exception $ex)
             {
@@ -133,7 +174,7 @@ class PluginManager
     }
 
     public static
-    function installPlugin($path)
+    function installPlugin($path, $validateRelations = true)
     {
         if (!file_exists($path))
         {
@@ -148,9 +189,25 @@ class PluginManager
         }
         $class = new $pluginClass();
 
+        if (!$class instanceof Plugin)
+        {
+            // TODO: possible consider compatability with KTPlugin
+            throw new KTapiException(_kt('Plugin is not compatible. The class passed is %s', get_class($class)));
+        }
+
         $namespace = $class->getNamespace();
 
-        $newVersion = $class->getVersion();
+        $query = Doctrine_Query::create();
+        $rows = $query->delete()
+                ->from('Base_PluginModuleRelation pmr')
+                ->where('pmr.plugin_module_namespace IN (
+                    SELECT bpm.namespace
+                    FROM Base_PluginModule bpm
+                    INNER JOIN Base_Plugin p ON p.id = bpm.plugin_id
+                    WHERE p.namespace = :namespace
+                    )')
+                ->execute(array(':namespace'=>$namespace));
+
 
         $query = Doctrine_Query::create();
         $rows = $query->delete()
@@ -158,87 +215,94 @@ class PluginManager
                 ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
                 ->execute(array(':namespace'=>$namespace));
 
-        $class->loadBase();
-        $currentVersion = $class->getCurrentVersion();
+        $query = Doctrine_Query::create();
+        $rows = $query->delete()
+                ->from('Base_PluginRelation pr')
+                ->where('pr.plugin_namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
 
         $class->register();
 
-
-        if ($newVersion > $currentVersion)
+        if ($validateRelations)
         {
-            $class->upgrade($currentVersion, $newVersion);
+            self::validateRelations();
         }
 
+        return $class;
     }
 
-
     public static
-    function uninstallPlugin($namespace)
+    function uninstallPlugin($namespace, $options = array())
     {
+        $condition = ' AND bp.can_delete = :can_delete';
+        $conditionParams = array(':namespace'=>$namespace, ':can_delete'=> 1);
+
+        $overwrite = (isset($options['force_overwrite']) && $options['force_overwrite']);
+
+        if ($overwrite)
+        {
+            $condition = '';
+            $conditionParams = array();
+        }
+
         $query = Doctrine_Query::create();
         $rows = $query->delete('Base_Plugin')
                 ->from('Base_Plugin bp')
-                ->where('bp.namespace = :namespace')
-                ->execute(array(':namespace'=>$namespace));
+                ->where('bp.namespace = :namespace' . $condition)
+                ->execute($conditionParams);
 
-        if ($rows === 0)
+        if ($overwrite && ($rows === 0))
         {
             throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
         }
     }
 
     private static
-    function setModuleStatus($namespace, $status)
+    function setModuleStatus($namespace, $status, $options=array())
     {
+        if (is_string($namespace))
+        {
+            $namespace = array($namespace);
+        }
+        if (!is_array($namespace))
+        {
+            throw new Exception('Array of namespaces expected');
+        }
+
+
+        $condition = ' AND bpm.can_disable = :can_disable';
+        $conditionParams = array(':can_disable'=> 1);
+
+        $overwrite = ($status == 'Disabled' && isset($options['force_overwrite']) && $options['force_overwrite']);
+
+        if ($overwrite)
+        {
+            $condition = '';
+            $conditionParams = array();
+        }
+        $namespace = "'" . implode("','", $namespace) . "'";
         $query = Doctrine_Query::create();
         $rows = $query->update('Base_PluginModule bpm')
                 ->set('bpm.status', ':status', array(':status'=>$status))
-                ->where('bpm.namespace = :namespace')
-                ->execute(array(':namespace'=>$namespace));
+                ->where("bpm.namespace in ($namespace)" . $condition)
+                ->execute($conditionParams);
 
-        if ($rows === 0)
+        if ($overwrite && $rows === 0)
         {
             throw new KTapiException(_kt('No effect by when changing status to %s on module with namespace: %s', $status, $namespace));
         }
     }
 
-    private static
-    function setPluginStatus($namespace, $status, $force = false)
+    public static
+    function enableModule($namespace, $options=array())
     {
-        $query = Doctrine_Query::create();
-        $rows = $query->update('Base_Plugin bp')
-                ->set('bp.status', ':status', array(':status'=>$status))
-                ->where('bp.namespace = :namespace')
-                ->execute(array(':namespace'=>$namespace));
-
-        if ($rows === 0)
-        {
-            throw new KTapiException(_kt('No effect when changing status to %s on plugin with namespace: %s', $status, $namespace));
-        }
+        self::setModuleStatus($namespace,'Enabled',$options);
     }
 
     public static
-    function disablePlugin($namespace, $force = false)
+    function disableModule($namespace, $options=array())
     {
-        self::setPluginStatus($namespace, 'Disabled', $force);
-    }
-
-    public static
-    function enablePlugin($namespace, $force = false)
-    {
-        self::setPluginStatus($namespace, 'Enabled', $force);
-    }
-
-    public static
-    function enableModule($namespace)
-    {
-        self::setModuleStatus($namespace,'Enabled');
-    }
-
-    public static
-    function disableModule($namespace)
-    {
-        self::setModuleStatus($namespace,'Disabled');
+        self::setModuleStatus($namespace,'Disabled',$options);
     }
 
     public static
@@ -255,6 +319,54 @@ class PluginManager
             return false;
         }
         return ($rows[0]->status == 'Enabled');
+    }
+
+    private static
+    function setPluginStatus($namespace, $status, $options = array())
+    {
+        if (is_string($namespace))
+        {
+            $namespace = array($namespace);
+        }
+        if (!is_array($namespace))
+        {
+            throw new Exception('Array of namespaces expected');
+        }
+
+        $condition = ' AND bp.can_disable = :can_disable';
+        $conditionParams = array(':namespace'=>$namespace, ':can_disable'=> 1);
+
+        $overwrite = ($status == 'Disabled' && isset($options['force_overwrite']) && $options['force_overwrite']);
+
+        if ($overwrite)
+        {
+            $condition = '';
+            $conditionParams = array();
+        }
+
+        $namespace = "'" . implode("','", $namespace) . "'";
+        $query = Doctrine_Query::create();
+        $rows = $query->update('Base_Plugin bp')
+                ->set('bp.status', ':status', array(':status'=>$status))
+                ->where("bp.namespace in ($namespace)" . $condition)
+                ->execute($conditionParams);
+
+        if ($overwrite && $rows === 0)
+        {
+            throw new KTapiException(_kt('No effect when changing status to %s on plugin with namespace: %s', $status, $namespace));
+        }
+    }
+
+    public static
+    function disablePlugin($namespace, $options = array())
+    {
+        self::setPluginStatus($namespace, 'Disabled', $options);
+    }
+
+    public static
+    function enablePlugin($namespace, $options = array())
+    {
+        self::setPluginStatus($namespace, 'Enabled', $options);
     }
 
     public static

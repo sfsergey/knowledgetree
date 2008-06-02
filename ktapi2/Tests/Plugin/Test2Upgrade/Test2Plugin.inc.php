@@ -15,7 +15,7 @@ class Test2Plugin extends Plugin
     }
 
     public
-    function getVersion()
+    function getDbVersion()
     {
         return 1;
     }

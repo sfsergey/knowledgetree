@@ -56,6 +56,19 @@ class Plugin_Module extends Base_PluginModule
 
         $record->save();
 
+        if (isset($params['dependencies']) && !empty($params['dependencies']))
+        {
+            foreach($params['dependencies'] as $dependency)
+            {
+                $table = new Base_PluginModuleRelation();
+                $table->plugin_module_namespace = $namespace;
+
+                $table->related_module_namespace = $dependency;
+
+                $table->save();
+            }
+        }
+
         return $record;
     }
 

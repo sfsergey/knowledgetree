@@ -21,16 +21,35 @@ abstract class Plugin
         return $this->basePlugin->id;
     }
 
+    /**
+     * Enter description here...
+     *
+     * @return string
+     */
+    public
+    function getVersion()
+    {
+        return '0.1';
+    }
+
+    /**
+     * This is the database version for the plugin. It starts from zero and must be incremented
+     * sequentially. Each db version must have a corresponding file in the plugin migrations directory.
+     * The naming convention for the db migration files are XXX_name.php. A class
+     * must be defined with a name (PluginName)Plugin_(XXX)_Upgrade
+     *
+     * @return int
+     */
+    public
+    function getDbVersion()
+    {
+        return 0;
+    }
+
     public
     function getIncludes()
     {
         return array();
-    }
-
-    public
-    function getVersion()
-    {
-        return 0;
     }
 
     public
@@ -57,8 +76,14 @@ abstract class Plugin
     }
 
     public
-    function upgrade($currentVersion, $newVersion)
+    function upgrade()
     {
+        $newVersion = $this->getDbVersion();
+        if ($newVersion == 0)
+        {
+            return;
+        }
+
         $logger = LoggerManager::getLogger('upgrade');
 
         $migrationPath = _path($this->getBasePath() . 'migration');
@@ -72,6 +97,7 @@ abstract class Plugin
         $migration->setContext($namespace);
 
         $raiseEx = null;
+
 
         try
         {
@@ -87,7 +113,7 @@ abstract class Plugin
         catch(Exception $ex)
         {
             $raiseEx = $ex;
-            PluginManager::disablePlugin($this->getNamespace(), true); // true = force disable
+            PluginManager::disablePlugin($namespace, true); // true = force disable
         }
         $logger->info(_str('End migration on plugin %s (%s)', $displayName, $namespace));
 
@@ -128,6 +154,12 @@ abstract class Plugin
         return _ktpath(dirname($this->basePlugin->path));
     }
 
+    public
+    function getModules()
+    {
+        return $this->modules;
+    }
+
     function register($path)
     {
         $db = KTapi::getDb();
@@ -135,12 +167,18 @@ abstract class Plugin
         $namespace = $this->getNamespace();
         if (PluginManager::isPluginRegistered($namespace))
         {
-            $record = $this->basePlugin;
+            $record = $this->loadBase();
         }
         else
         {
              $record = $db->create('Base_Plugin');
         }
+
+        $dependencies = $this->getDependencies();
+
+        // TODO: in future, we could validate dependencies.
+        // complications come in when reading plugins in random order.
+        // better to do dependency checking at a higher level which has more scope.
 
         $record->display_name = $this->getDisplayName();
         $record->path = _relativepath($path);
@@ -151,12 +189,27 @@ abstract class Plugin
         $record->namespace = $namespace;
         $record->dependencies = _serialize(
             array(
-                'dependencies'=>$this->getDependencies(),
+                'dependencies'=>$dependencies,
                 'includes'=>$this->getIncludes()));
 
         $record->save();
 
+        if (!empty($dependencies))
+        {
+            foreach($dependencies as $dependency)
+            {
+                $table = new Base_PluginRelation();
+                $table->plugin_namespace = $namespace;
+
+                $table->related_plugin_namespace = $dependency;
+
+                $table->save();
+            }
+        }
+
         $this->basePlugin = $record;
+
+        $this->upgrade();
 
         return $record;
     }

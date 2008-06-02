@@ -15,10 +15,30 @@ class Test2DifferentPlugin extends Plugin
     }
 
     public
-    function getVersion()
+    function getDbVersion()
     {
         return 2;
     }
+
+    public
+    function getDependencies()
+    {
+        return array('plugin.test');
+    }
+
+
+    public
+    function canDelete()
+    {
+        return false;
+    }
+
+    public
+    function getVersion()
+    {
+        return '1.0a';
+    }
+
 
     public
     function register()
