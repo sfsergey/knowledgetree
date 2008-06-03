@@ -1,0 +1,35 @@
+Plugin Management
+-----------------
+
+1) To get list of plugins and plugin modules use:
+
+PluginManager::getPluginModules($namespace, $status)
+PluginManager::getPlugins($namespace, $status)
+PluginManager::getNewPlugins()
+
+2) Re-read plugin locations
+
+PluginManager::readAllPluginLocations()
+
+TODO: must ensure that re-reading preserves saved status on existing plugins/modules
+
+
+3) enable/disable plugin and modules
+
+PluginManager::enablePlugin($namespace)
+PluginManager::disablePlugin($namespace)
+
+PluginManager::enableModule($namespace)
+PluginManager::disableModule($namespace)
+
+4) Uninstall plugin
+
+PluginManager::uninstall($namespace)
+
+5) Install specific plugin
+
+PluginManager::installPlugin($path)
+
+6)
+
+

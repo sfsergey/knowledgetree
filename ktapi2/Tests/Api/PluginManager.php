@@ -14,6 +14,7 @@ class PluginManagerTestCase extends KTAPI_TestCase
         }
         catch (Exception $ex){
             // do nothing, we don't care
+            print $ex->getMessage() . "\n";
         }
     }
 
@@ -32,6 +33,37 @@ class PluginManagerTestCase extends KTAPI_TestCase
 
         $this->assertTrue(PluginManager::isPluginRegistered('plugin.test'));
         $this->assertTrue(PluginManager::isPluginEnabled('plugin.test'));
+
+
+    }
+
+    function testGetPluginModules()
+    {
+        PluginManager::addPluginLocation('ktapi2/Tests/Plugin');
+
+        PluginManager::readAllPluginLocations();
+
+        $modules = PluginManager::getPluginModules();
+        $this->assertTrue(count($modules) > 0);
+        var_dump($modules);
+    }
+
+    function testGetNewPlugins()
+    {
+        $plugins = PluginManager::getNewPlugins();
+        $this->assertTrue(count($plugins) > 0);
+        var_dump($plugins);
+    }
+
+    function testGetPlugins()
+    {
+        PluginManager::addPluginLocation('ktapi2/Tests/Plugin');
+
+        PluginManager::readAllPluginLocations();
+
+        $plugins = PluginManager::getPlugins();
+        $this->assertTrue(count($plugins) > 0);
+        var_dump($plugins);
     }
 
 

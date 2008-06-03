@@ -1,0 +1,5 @@
+
+
+PluginLocations:
+
+configuration includes paths to default plugin locations.

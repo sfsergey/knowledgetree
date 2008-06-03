@@ -1,60 +1,42 @@
 <?php
-class PluginManager
+
+// TODO: search criteria module, scheduled task module
+
+/**
+ * The plugin manager defines the foundation functions used to manage plugins.
+ *
+ * The application may access plugins stored in different plugin locations. The plugin location does not require
+ * plugins to be at the root level only, but may be nested deaper within the plugin location.
+ *
+ * The requirement for a plugin is that a plugin must be named as follows: ClassNamePlugin.inc.php, where the plugin
+ * file includes a class named ClassName.
+ *
+ */
+final class PluginManager
 {
-    private static $pluginLocations = array(); // 'plugins'
-
-    private $plugins;
-    private $modules;
-
-    private
-    function __construct()
-    {
-        $this->plugins = array();
-        $this->modules = array();
-
-        PluginManager::clearPluginLocations();
-
-        $this->load();
-    }
+    /**
+     * Locations where plugins may be stored
+     *
+     * @var array
+     */
+    private static $pluginLocations = array();
 
     /**
-     * Enter description here...
+     * Initialises the plugin manager.
      *
      * @return PluginManager
      */
-    public static
-    function get()
+    private
+    function __construct()
     {
-        static $singleton;
-        if(is_null($singleton)){
-            $singleton = new PluginManager();
-        }
-        return $singleton;
-    }
-
-    public
-    function load($activeOnly = true)
-    {
-        $db = KTapi::getDb();
-
-        $dql = 'FROM Base_Plugin bp WHERE bp.status = :status AND bp.PluginModules.status = :status';
-
-        $plugins = $db->query($dql, array('status'=>'Enabled'));
-
-        foreach($plugins as $plugin)
-        {
-            print "{$plugin->namespace}\n";
-            foreach($plugin->PluginModules as $module)
-            {
-                print "\t{$module->namespace}\n";
-            }
-        }
+        throw new KTapiException('Cannot instantiate a static utility class!');
     }
 
     /**
      * Register a plugin location with the plugin manager. When calling readAllPluginLocations, all locations added will be scanned.
      *
      * @param string $location
+     * @return void
      */
     public static
     function addPluginLocation($location)
@@ -72,33 +54,69 @@ class PluginManager
         self::$pluginLocations[] = $location;
     }
 
+    /**
+     * Clears current plugin locations and sets the default.
+     *
+     * @return void
+     */
     public static
     function clearPluginLocations()
     {
         self::$pluginLocations = array();
     }
 
+    /**
+     * Scans the plugin locations and registers plugins listed in the different locations.
+     *
+     * @return void
+     */
     public static
     function readAllPluginLocations()
     {
-        foreach(self::$pluginLocations as $location)
+        $logger = LoggerManager::getLogger('plugin.manager');
+        $plugins = self::probeAllPluginLocations();
+        foreach($plugins as $plugin)
         {
-            self::readPluginLocation($location);
+            try
+            {
+                self::installPlugin($plugin, false);
+            }
+            catch(Doctrine_Exception $ex)
+            {
+                $logger->error(_str('Exception: %s', $ex->getMessage()));
+                throw $ex;
+            }
+            catch(Exception $ex)
+            {
+                 $logger->warn(_str('Exception: %s', $ex->getMessage()));
+            }
         }
 
         self::validateRelations();
     }
 
+    /**
+     * Validates relations between plugins and plugin modules.
+     * If dependencies on a plugin or plugin module is not available, then the plugin or plugin module is disabled.
+     *
+     * @return int Returns the number of disabled modules/plugins
+     */
     private static
     function validateRelations()
     {
+        $disabled = 0;
+        $logger = LoggerManager::getLogger('plugin.manager');
+
+        // TODO: optimise to be an update statement!
+
+        // find plugin modules where related module is not available or is not enabled
         $query = Doctrine_Query::create();
         $rows = $query->select('pmr.plugin_module_namespace AS namespace')
                 ->distinct()
                 ->from('Base_PluginModuleRelation pmr')
                 ->leftJoin('pmr.PluginModule pm')
-                ->where('pm.namespace IS NULL')
-                ->execute();
+                ->where('pm.namespace IS NULL OR pm.status != :status')
+                ->execute(array(':status' => 'Enabled'));
         if ($rows->count() > 0)
         {
            $namespaces = array();
@@ -106,7 +124,8 @@ class PluginManager
            {
                 $namespaces[] = $row->namespace;
            }
-           self::disableModule($namespaces);
+           self::disableModule($namespaces, array('noValidate'=>true, 'logMessage'=>'Disabling plugin modules because of dependencies being unavailable for namespaces: '));
+           $disabled += $rows->count();
         }
 
         $query = Doctrine_Query::create();
@@ -114,8 +133,8 @@ class PluginManager
                 ->distinct()
                 ->from('Base_PluginRelation pr')
                 ->leftJoin('pr.Plugin p')
-                ->where('p.namespace IS NULL')
-                ->execute();
+                ->where('p.namespace IS NULL OR p.status != :status')
+                ->execute(array(':status' => 'Enabled'));
         if ($rows->count() > 0)
         {
            $namespaces = array();
@@ -123,15 +142,46 @@ class PluginManager
            {
                 $namespaces[] = $row->namespace;
            }
-           self::disablePlugin($namespaces);
+           self::disablePlugin($namespaces, array('noValidate'=>true, 'logMessage'=>'Disabling plugins because of dependencies being unavailable for namespaces: '));
+           $disabled += $rows->count();
         }
 
+//        if ($disabled != 0)
+//        {
+//            self::validateRelations();
+//       }
+
+        return $disabled;
     }
 
+    /**
+     * Probes plugin locations looking for plugins.
+     *
+     * @return array
+     */
+    public static
+    function probeAllPluginLocations()
+    {
+        $plugins = array();
+        foreach(self::$pluginLocations as $location)
+        {
+            $plugins = array_merge($plugins, self::probePluginLocation($location));
+        }
+
+        return $plugins;
+    }
+
+    /**
+     * Probes a specific plugin location for plugins.
+     *
+     * @param string $location
+     * @return array
+     */
     private static
-    function readPluginLocation($location)
+    function probePluginLocation($location)
     {
         $logger = LoggerManager::getLogger('plugin.manager');
+
         if (strpos($location, KT_ROOT_DIR) === false)
         {
             $location = KT_ROOT_DIR . $location . DIRECTORY_SEPARATOR;
@@ -142,40 +192,67 @@ class PluginManager
             $location .= DIRECTORY_SEPARATOR;
         }
 
+        if ($logger->isDebugEnabled())
+        {
+            $logger->debug(_str('Probing location %s', $location));
+        }
+
         if (!is_dir($location))
         {
             $logger->error(_str('Plugin location does not exist: %s', $location));
             throw new KTapiException(_kt('Plugin location does not exist: %s', $location));
         }
 
-        $plugins = glob($location . '*Plugin.inc.php');
-        foreach($plugins as $plugin)
+        $probe = glob($location . '*Plugin.inc.php');
+        $plugins = array();
+        foreach($probe as $pluginPath)
         {
-            try
+            require_once($pluginPath);
+
+            $className = substr(basename($pluginPath), 0, -8); // .inc.php
+
+            if (!class_exists($className))
             {
-                self::installPlugin($plugin, false);
+                $logger->warn(_str('Plugin class %s does not exist in %s', $className, $pluginPath));
+                continue;
             }
-            catch(Doctrine_Exception $ex)
+
+            $plugin = new $className();
+
+            if (!$plugin instanceof Plugin)
             {
-                $logger->error(_str('readPluginLocation: exception: %s', $ex->getMessage()));
-                throw $ex;
+                $logger->warn(_str('Class %s is expected to be derived from Plugin in %s', $className, $pluginPath));
+                continue;
             }
-            catch(Exception $ex)
-            {
-                 $logger->warn(_str('readPluginLocation: exception: %s', $ex->getMessage()));
-            }
+
+            $plugins[] = $pluginPath;
         }
 
         $subdirs = glob($location . '*', GLOB_ONLYDIR);
         foreach($subdirs as $dir)
         {
-            self::readPluginLocation($dir);
+            $plugins = array_merge($plugins, self::probePluginLocation($dir));
         }
+
+        return $plugins;
     }
 
+    /**
+     * Install a plugin calling the plugin->register() method.
+     *
+     * @param string $path Path to the plugin php file.
+     * @param boolean $validateRelations Optional. Defaults to true.
+     * @return Plugin
+     */
     public static
     function installPlugin($path, $validateRelations = true)
     {
+        $logger = LoggerManager::getLogger('plugin.manager');
+        if ($logger->isDebugEnabled())
+        {
+            $logger->debug(_str('Installing plugin: %s', $path));
+        }
+
         if (!file_exists($path))
         {
             throw new KTapiException(_kt('Plugin path does not exist: %s', $path));
@@ -197,17 +274,23 @@ class PluginManager
 
         $namespace = $class->getNamespace();
 
+        // remove items from plugin module relation table that are tied to the new plugin
+
         $query = Doctrine_Query::create();
         $rows = $query->delete()
                 ->from('Base_PluginModuleRelation pmr')
-                ->where('pmr.plugin_module_namespace IN (
-                    SELECT bpm.namespace
-                    FROM Base_PluginModule bpm
-                    INNER JOIN Base_Plugin p ON p.id = bpm.plugin_id
-                    WHERE p.namespace = :namespace
-                    )')
+                ->where('pmr.plugin_module_namespace IN (SELECT bpm.namespace FROM Base_PluginModule bpm INNER JOIN bpm.Plugin p WHERE p.namespace = :namespace)')
                 ->execute(array(':namespace'=>$namespace));
 
+        // get existing state of modules
+
+        $query = Doctrine_Query::create();
+        $modulesState = $query->select('bpm.namespace, bpm.status, bpm.ordering')
+                ->from('Base_PluginModule bpm')
+                ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
+
+        // remove existing plugin modules linked to new plugin
 
         $query = Doctrine_Query::create();
         $rows = $query->delete()
@@ -215,13 +298,32 @@ class PluginManager
                 ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
                 ->execute(array(':namespace'=>$namespace));
 
-        $query = Doctrine_Query::create();
+        // remove existing plugin relations linked to new plugin
+
         $rows = $query->delete()
                 ->from('Base_PluginRelation pr')
-                ->where('pr.plugin_namespace = :namespace)')
+                ->where('pr.plugin_namespace = :namespace')
                 ->execute(array(':namespace'=>$namespace));
 
         $class->register();
+
+        // restore the state of existing modules
+
+        // TODO: ideally, this state can be part of the register().
+        // this implementation implies that an insert may happen, followed by an update.
+        // ideally the insert can just take the old state.
+        // however, the code is clean like this, and realistically, this function does not have
+        // to be totally optimal as it is used very seldom.
+
+        foreach($modulesState as $state)
+        {
+            $query = Doctrine_Query::create();
+            $rows = $query->update('Base_PluginModule bpm')
+                ->set('bpm.status', ':status', array(':status'=>$state->status))
+                ->set('bpm.ordering', ':ordering', array(':ordering'=>$state->ordering))
+                ->where('bpm.namespace = :namespace')
+                ->execute(array(':namespace'=>$namespace));
+        }
 
         if ($validateRelations)
         {
@@ -231,6 +333,14 @@ class PluginManager
         return $class;
     }
 
+    /**
+     * Uninstalls the plugin by removing database entries.
+     *
+     * The option 'force_overwrite' must be true to uninstall a plugin where the can_delete setting blocks the uninstall.
+     *
+     * @param string $namespace
+     * @param array $options
+     */
     public static
     function uninstallPlugin($namespace, $options = array())
     {
@@ -242,7 +352,7 @@ class PluginManager
         if ($overwrite)
         {
             $condition = '';
-            $conditionParams = array();
+            unset($conditionParams[':can_delete']);
         }
 
         $query = Doctrine_Query::create();
@@ -251,12 +361,25 @@ class PluginManager
                 ->where('bp.namespace = :namespace' . $condition)
                 ->execute($conditionParams);
 
+        // TODO: must delete relations
+        // TODO: validateRelations...
+
         if ($overwrite && ($rows === 0))
         {
             throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
         }
     }
 
+    /**
+     * Sets the module status.
+     *
+     * When disabling, 'force_overwrite' option may be set in case the 'can_disable' setting blocks the action.
+     *
+     * @param string $namespace
+     * @param string $status
+     * @param array $options
+     * @return int Number of plugins/modules disabled by validation
+     */
     private static
     function setModuleStatus($namespace, $status, $options=array())
     {
@@ -269,7 +392,6 @@ class PluginManager
             throw new Exception('Array of namespaces expected');
         }
 
-
         $condition = ' AND bpm.can_disable = :can_disable';
         $conditionParams = array(':can_disable'=> 1);
 
@@ -281,6 +403,17 @@ class PluginManager
             $conditionParams = array();
         }
         $namespace = "'" . implode("','", $namespace) . "'";
+
+        // FIXME: log must be general
+        $logMessage = 'Disabling plugin modules with namespaces: ';
+        if (isset($options['logMessage']))
+        {
+            $logMessage = $options['logMessage'];
+        }
+
+        $logger = LoggerManager::getLogger('plugin.manager');
+        $logger->info($logMessage . $namespace);
+
         $query = Doctrine_Query::create();
         $rows = $query->update('Base_PluginModule bpm')
                 ->set('bpm.status', ':status', array(':status'=>$status))
@@ -291,36 +424,94 @@ class PluginManager
         {
             throw new KTapiException(_kt('No effect by when changing status to %s on module with namespace: %s', $status, $namespace));
         }
+
+        if (isset($options['noValidate']) && $options['noValidate'])
+            return 0;
+        else
+            return self::validateRelations();
     }
 
+    /**
+     * Enables a plugin module.
+     *
+     * @param string $namespace
+     * @param string $status
+     * @param array $options Optional. Reserved
+     * @return int Number of plugins/modules disabled by validation
+     */
     public static
     function enableModule($namespace, $options=array())
     {
-        self::setModuleStatus($namespace,'Enabled',$options);
+        return self::setModuleStatus($namespace,'Enabled',$options);
     }
 
+    /**
+     * Disables a plugin module.
+     *
+     * 'force_overwrite' option may be set in case the 'can_disable' setting blocks the action.
+     *
+     * @param string $namespace
+     * @param string $status
+     * @param array $options
+     * @return int Number of plugins/modules disabled by validation
+     */
     public static
     function disableModule($namespace, $options=array())
     {
-        self::setModuleStatus($namespace,'Disabled',$options);
+        return self::setModuleStatus($namespace,'Disabled',$options);
     }
 
+    /**
+     * Indicates if the module is enabled.
+     * Returns false if the module is not installed or not enabled.
+     *
+     * @param string $namespace
+     * @return boolean
+     */
     public static
     function isModuleEnabled($namespace)
     {
         $query = Doctrine_Query::create();
-        $rows = $query->select('status')
+        $rows = $query->select('bpm.status')
                 ->from('Base_PluginModule bpm')
-                ->where('bpm.namespace = :namespace')
+                ->innerJoin('bpm.Plugin bp')
+                ->where('bpm.namespace = :namespace AND bpm.status = :status AND bp.status = :status')
                 ->limit(1)
-                ->execute(array(':namespace'=>$namespace));
-        if ($rows->count() == 0)
-        {
-            return false;
-        }
-        return ($rows[0]->status == 'Enabled');
+                ->execute(array(':namespace'=>$namespace, ':status'=>'Enabled'));
+        return ($rows->count() > 0);
     }
 
+    /**
+     * Set the module order.
+     *
+     * @param string $namespace
+     * @param int $order
+     */
+    public static
+    function setModuleOrder($namespace, $order)
+    {
+        $query = Doctrine_Query::create();
+        $rows = $query->update('Base_PluginModule bpm')
+                ->set('bpm.ordering', ':ordering', array(':ordering'=>$order))
+                ->where('bpm.namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
+
+        if ($rows === 0)
+        {
+            throw new KTapiException(_kt('No effect when changing ordering to %d on module with namespace: %s', $order, $namespace));
+        }
+    }
+
+    /**
+     * Sets the plugin status.
+     *
+     * When disabling, 'force_overwrite' option may be set in case the 'can_disable' setting blocks the action.
+     *
+     * @param string $namespace
+     * @param string $status
+     * @param array $options
+     * @return int Number of plugins/modules disabled by validation
+     */
     private static
     function setPluginStatus($namespace, $status, $options = array())
     {
@@ -334,7 +525,7 @@ class PluginManager
         }
 
         $condition = ' AND bp.can_disable = :can_disable';
-        $conditionParams = array(':namespace'=>$namespace, ':can_disable'=> 1);
+        $conditionParams = array(':can_disable'=> 1);
 
         $overwrite = ($status == 'Disabled' && isset($options['force_overwrite']) && $options['force_overwrite']);
 
@@ -345,6 +536,16 @@ class PluginManager
         }
 
         $namespace = "'" . implode("','", $namespace) . "'";
+
+        // FIXME: log must be general
+        $logMessage = 'Disabling plugins with namespaces: ';
+        if (isset($options['logMessage']))
+        {
+            $logMessage = $options['logMessage'];
+        }
+        $logger = LoggerManager::getLogger('plugin.manager');
+        $logger->info($logMessage  . $namespace);
+
         $query = Doctrine_Query::create();
         $rows = $query->update('Base_Plugin bp')
                 ->set('bp.status', ':status', array(':status'=>$status))
@@ -355,20 +556,49 @@ class PluginManager
         {
             throw new KTapiException(_kt('No effect when changing status to %s on plugin with namespace: %s', $status, $namespace));
         }
+
+        if (isset($options['noValidate']) && $options['noValidate'])
+            return 0;
+        else
+            return self::validateRelations();
     }
 
+    /**
+     * Disables a plugin.
+     *
+     * 'force_overwrite' option may be set in case the 'can_disable' setting blocks the action.
+     *
+     * @param string $namespace
+     * @param string $status
+     * @param array $options
+     * @return int Number of plugins/modules disabled by validation
+     */
     public static
     function disablePlugin($namespace, $options = array())
     {
-        self::setPluginStatus($namespace, 'Disabled', $options);
+        return self::setPluginStatus($namespace, 'Disabled', $options);
     }
 
+    /**
+     * Enables a plugin.
+     *
+     * @param string $namespace
+     * @param string $status
+     * @param array $options Optional. Reserved
+     * @return int Number of plugins/modules disabled by validation
+     */
     public static
     function enablePlugin($namespace, $options = array())
     {
-        self::setPluginStatus($namespace, 'Enabled', $options);
+        return self::setPluginStatus($namespace, 'Enabled', $options);
     }
 
+    /**
+     * Indicates if the plugin is installed.
+     *
+     * @param string $namespace
+     * @return boolean
+     */
     public static
     function isPluginRegistered($namespace)
     {
@@ -382,9 +612,18 @@ class PluginManager
         return $rows->count() == 1;
     }
 
+    /**
+     * Indicates if the plugin is enabled.
+     * Returns false if the module is not installed or not enabled.
+     *
+     * @param string $namespace
+     * @return boolean
+     */
     public static
     function isPluginEnabled($namespace)
     {
+         // FIXME: do the same as isModuleEnabled
+
         $query = Doctrine_Query::create();
         $rows = $query->select('status')
                 ->from('Base_Plugin bp')
@@ -398,11 +637,122 @@ class PluginManager
         return ($rows[0]->status == 'Enabled');
     }
 
+    /**
+     * Sets the plugin order.
+     *
+     * @param string $namespace
+     * @param int $order
+     */
     public static
-    function isPluginCompatible($namespace)
+    function setPluginOrder($namespace, $order)
     {
+        $query = Doctrine_Query::create();
+        $rows = $query->update('Base_Plugin bp')
+                ->set('bp.ordering', ':ordering', array(':ordering'=>$order))
+                ->where('bp.namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
 
+        if ($rows === 0)
+        {
+            throw new KTapiException(_kt('No effect when changing ordering to %d on plugin with namespace: %s', $order, $namespace));
+        }
     }
+
+    /**
+     * Get a filtered list of plugin modules based on namespaces.
+     *
+     * If not null, the status is tested against the plugin module and plugin.
+     *
+     * @param string $filter
+     * @param string $status Optional. Defaults to null.
+     * @return array of (namespace, display_name, status, module_type, plugin_name, plugin_status)
+     */
+    public static
+    function getPluginModules($namespaceFilter = '', $status = null)
+    {
+        $query = Doctrine_Query::create();
+        $query->select('pm.namespace, pm.display_name, pm.status, pm.module_type, p.display_name as plugin_name, p.status as plugin_status')
+          ->from('Plugin_Module pm')
+          ->innerJoin('pm.Plugin p')
+          ->where('pm.namespace LIKE :name')
+          ->orderBy('pm.display_name');
+
+        if (isset($status))
+        {
+            $query->addWhere(' AND pm.status = :status', array(':status'=>$status));
+            $query->addWhere(' AND p.status = :status', array(':status'=>$status));
+        }
+
+        return _flattenArray($query->fetchArray(array(':name' => $namespaceFilter.'%')));
+    }
+
+    /**
+     * Get a filtered list of plugins based on namespaces.
+     *
+     * @param string $filter
+     * @param string $status
+     * @return array of (namespace, display_name, status)
+     */
+    public static
+    function getPlugins($filter = '', $status = null)
+    {
+        $query = Doctrine_Query::create();
+        $query->select('p.namespace, p.display_name, p.status')
+          ->from('Base_Plugin p')
+          ->where('p.namespace LIKE :name')
+          ->orderBy('p.display_name');
+
+        if (isset($status))
+        {
+            $query->addWhere(' AND p.status = :status', array(':status' => $status));
+        }
+
+        return $query->fetchArray(array(':name' => $namespaceFilter.'%'));
+    }
+
+    /**
+     * Lists new plugins that are in the plugin locations but have not been installed.
+     *
+     * @return array of (namespace, display_name, path)
+     */
+    public static
+    function getNewPlugins()
+    {
+        $plugins = self::probeAllPluginLocations();
+
+        $query = Doctrine_Query::create();
+        $rows = $query->select('p.path')
+          ->from('Base_Plugin p')
+          ->execute();
+        $existingPaths = array();
+        foreach($rows as $row)
+        {
+            $existingPaths[] = $row->path;
+        }
+
+        foreach($plugins as $i=>$pluginPath)
+        {
+            $plugins[$i] = _relativepath($pluginPath);
+        }
+
+        $newPaths = array_diff($plugins, $existingPaths);
+
+        $plugins = array();
+
+        foreach($newPaths as $path)
+        {
+            // NOTE: probeAllPluginLocations() returns a list of 'validated' and included plugins
+            $className = substr(basename($path), 0, -8); // .inc.php
+
+            $plugin = new $className();
+
+            $plugins[] = array( 'namespace' => $plugin->getNamespace(), 'display_name' => $plugin->getDisplayName(), 'path' => $path);
+        }
+
+        return $plugins;
+    }
+
+
 
     /**
      * Get an action by its namespace
@@ -437,23 +787,5 @@ class PluginManager
     {
     }
 
-    /**
-     * Get a filtered list of namespaces
-     *
-     * @param string $filter
-     * @return array
-     */
-    public static
-    function getNamespaces($filter = '')
-    {
-        $query = Doctrine_Query::create();
-        $query->select('pm.namespace')
-          ->from('Plugin_Module pm')
-          ->innerJoin('pm.Plugin p')
-          ->where('pm.namespace LIKE :name');
-
-        $namespaces = $query->execute(array(':name' => $filter.'%'), Doctrine::FETCH_ARRAY);
-        return Util_Doctrine::getColumnFromArray('namespace', $namespaces);
-    }
 }
 ?>

@@ -1,0 +1,14 @@
+TODO:
+
+1) PluginManager::readAllPluginLocations()
+
+  must preserve state of modules when re-registering existing3w106
+
+2) add
+
+PluginManager::setModuleOrder($namespace, $order) // done
+PluginManager::setPluginOrder($namespace, $order) // we don't have this
+
+
+
+

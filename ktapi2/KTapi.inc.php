@@ -39,6 +39,31 @@ function _str($format)
     return call_user_func_array('sprintf', $params);
 }
 
+function _flatten($array)
+{
+    $new = $array;
+    foreach($array as $key=>$value)
+    {
+        if (is_array($value))
+        {
+            $new = array_merge($new, $value);
+            unset($new[$key]);
+        }
+    }
+    return $new;
+}
+
+function _flattenArray($array)
+{
+    foreach($array as $i=>$a)
+    {
+        $array[$i] = _flatten($a);
+    }
+    return $array;
+}
+
+
+
 /**
  * Ensures the path ends with the appropriate slash depending on operating system and
  * that all slashes are the same.

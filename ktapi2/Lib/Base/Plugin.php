@@ -16,6 +16,7 @@ class Base_Plugin extends Doctrine_Record
         $this->hasColumn('version', 'integer', 4, array('unsigned' => 0, 'primary' => false, 'default' => '1', 'notnull' => true, 'autoincrement' => false));
         $this->hasColumn('can_disable', 'integer', 1, array('unsigned' => 1, 'primary' => false, 'default' => '1', 'notnull' => true, 'autoincrement' => false));
         $this->hasColumn('can_delete', 'integer', 1, array('unsigned' => 1, 'primary' => false, 'default' => '1', 'notnull' => true, 'autoincrement' => false));
+        $this->hasColumn('ordering', 'integer', 4, array('unsigned' => 0, 'primary' => false, 'default' => '0', 'notnull' => true, 'autoincrement' => false));
         $this->hasColumn('namespace', 'string', 255, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
         $this->hasColumn('dependencies', 'string', null, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
     }
