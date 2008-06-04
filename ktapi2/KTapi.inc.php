@@ -62,6 +62,23 @@ function _flattenArray($array)
     return $array;
 }
 
+function _extractArray($rows, $property)
+{
+    if (!$rows instanceof Doctrine_Collection)
+    {
+        throw new Exception('Doctrine_Collection expected!');
+    }
+    if ($rows->count() == 0)
+    {
+        return array();
+    }
+    $array = array();
+    foreach($rows as $row)
+    {
+        $array[] = $row->$property;
+    }
+    return $array;
+}
 
 
 /**

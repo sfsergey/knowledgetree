@@ -27,7 +27,7 @@ class UnitTests extends TestSuite
 //        $this->addFile('api/ItemActions/DeleteItem.php');
 //        $this->addFile('api/ItemActions/MoveItem.php');
 //        $this->addFile('api/ItemActions/RenameItem.php');
-//        $this->addFile('api/Document.php');
+//        $this->addFile('Api/Document.php');
 //        $this->addFile('api/Folder.php');
     }
 
@@ -47,7 +47,6 @@ if (array_key_exists('argv',$_SERVER))
 else
 {
     $reporter = new HtmlReporter();
-
 }
 
 $test->run($reporter);

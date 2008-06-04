@@ -1,6 +1,8 @@
 <?php
 
-// TODO: search criteria module, scheduled task module
+// TODO: search criteria module, scheduled task module - must add registerSearchCriteria and registerScheduledTask into Plugin and update Base_PluginModule.
+// TODO: when enabling a module with dependencies, we should provide a forceOverwrite option to allow dependencies to be enabled too.
+// TODO: double check the validateRelations() function is working correctly
 
 /**
  * The plugin manager defines the foundation functions used to manage plugins.
@@ -14,6 +16,10 @@
  */
 final class PluginManager
 {
+    const DISABLED_STATUS = 'Disabled';
+    const ENABLED_STATUS = 'Enabled';
+    const UNAVAILABLE_STATUS = 'Unavailable';
+
     /**
      * Locations where plugins may be stored
      *
@@ -107,49 +113,52 @@ final class PluginManager
         $disabled = 0;
         $logger = LoggerManager::getLogger('plugin.manager');
 
-        // TODO: optimise to be an update statement!
-
         // find plugin modules where related module is not available or is not enabled
         $query = Doctrine_Query::create();
-        $rows = $query->select('pmr.plugin_module_namespace AS namespace')
-                ->distinct()
+        $rows = $query->select('pmr.plugin_module_namespace as namespace')
                 ->from('Base_PluginModuleRelation pmr')
                 ->leftJoin('pmr.PluginModule pm')
                 ->where('pm.namespace IS NULL OR pm.status != :status')
-                ->execute(array(':status' => 'Enabled'));
-        if ($rows->count() > 0)
+                ->execute(array(':status' => PluginManager::ENABLED_STATUS ));
+
+        $namespaces = _extractArray($rows, 'namespace');
+
+        if (!empty($namespaces))
         {
-           $namespaces = array();
-           foreach($rows as $row)
-           {
-                $namespaces[] = $row->namespace;
-           }
-           self::disableModule($namespaces, array('noValidate'=>true, 'logMessage'=>'Disabling plugin modules because of dependencies being unavailable for namespaces: '));
-           $disabled += $rows->count();
+            // DOCTRINE BUG: is seems that the where clause is ignored when the whereIn array is empty
+
+            $query = Doctrine_Query::create();
+            $rows = $query->update('Base_PluginModule bpm')
+                ->set('bpm.status', ':status', array(':status'=>PluginManager::DISABLED_STATUS ))
+                ->whereIn('bpm.namespace',$namespaces)
+                ->execute();
+            $disabled += $rows->count();
         }
 
+        // find plugins where related plugin is not available or is not enabled
         $query = Doctrine_Query::create();
-        $rows = $query->select('pr.plugin_namespace AS namespace')
-                ->distinct()
+        $rows = $query->select('pr.plugin_namespace as namespace')
                 ->from('Base_PluginRelation pr')
-                ->leftJoin('pr.Plugin p')
+                ->leftJoin('pr.Plugin p ')
                 ->where('p.namespace IS NULL OR p.status != :status')
-                ->execute(array(':status' => 'Enabled'));
-        if ($rows->count() > 0)
+                ->execute(array(':status' => PluginManager::ENABLED_STATUS ));
+
+        $namespaces = _extractArray($rows, 'namespace');
+
+        if (!empty($namespaces))
         {
-           $namespaces = array();
-           foreach($rows as $row)
-           {
-                $namespaces[] = $row->namespace;
-           }
-           self::disablePlugin($namespaces, array('noValidate'=>true, 'logMessage'=>'Disabling plugins because of dependencies being unavailable for namespaces: '));
-           $disabled += $rows->count();
+            $query = Doctrine_Query::create();
+            $rows = $query->update('Base_Plugin bp')
+                ->set('bp.status', ':status', array(':status'=>PluginManager::DISABLED_STATUS ))
+                ->whereIn('bpm.namespace',$namespaces)
+                ->execute();
+            $disabled += $rows->count();
         }
 
-//        if ($disabled != 0)
-//        {
-//            self::validateRelations();
-//       }
+        if ($disabled != 0)
+        {
+            self::validateRelations();
+        }
 
         return $disabled;
     }
@@ -237,6 +246,33 @@ final class PluginManager
         return $plugins;
     }
 
+    private static
+    function removePluginRelations($namespace)
+    {
+        // remove items from plugin module relation table that are tied to the new plugin
+
+        $query = Doctrine_Query::create();
+        $rows = $query->delete()
+                ->from('Base_PluginModuleRelation pmr')
+                ->where('pmr.plugin_module_namespace IN (SELECT bpm.namespace FROM Base_PluginModule bpm INNER JOIN bpm.Plugin p WHERE p.namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
+
+        // remove existing plugin modules linked to new plugin
+
+        $query = Doctrine_Query::create();
+        $rows = $query->delete()
+                ->from('Base_PluginModule bpm')
+                ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
+                ->execute(array(':namespace'=>$namespace));
+
+        // remove existing plugin relations linked to new plugin
+
+        $rows = $query->delete()
+                ->from('Base_PluginRelation pr')
+                ->where('pr.plugin_namespace = :namespace')
+                ->execute(array(':namespace'=>$namespace));
+    }
+
     /**
      * Install a plugin calling the plugin->register() method.
      *
@@ -274,14 +310,6 @@ final class PluginManager
 
         $namespace = $class->getNamespace();
 
-        // remove items from plugin module relation table that are tied to the new plugin
-
-        $query = Doctrine_Query::create();
-        $rows = $query->delete()
-                ->from('Base_PluginModuleRelation pmr')
-                ->where('pmr.plugin_module_namespace IN (SELECT bpm.namespace FROM Base_PluginModule bpm INNER JOIN bpm.Plugin p WHERE p.namespace = :namespace)')
-                ->execute(array(':namespace'=>$namespace));
-
         // get existing state of modules
 
         $query = Doctrine_Query::create();
@@ -290,20 +318,7 @@ final class PluginManager
                 ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
                 ->execute(array(':namespace'=>$namespace));
 
-        // remove existing plugin modules linked to new plugin
-
-        $query = Doctrine_Query::create();
-        $rows = $query->delete()
-                ->from('Base_PluginModule bpm')
-                ->where('bpm.plugin_id = (SELECT bp.id FROM Base_Plugin bp WHERE bp.namespace = :namespace)')
-                ->execute(array(':namespace'=>$namespace));
-
-        // remove existing plugin relations linked to new plugin
-
-        $rows = $query->delete()
-                ->from('Base_PluginRelation pr')
-                ->where('pr.plugin_namespace = :namespace')
-                ->execute(array(':namespace'=>$namespace));
+        self::removePluginRelations($namespace);
 
         $class->register();
 
@@ -361,13 +376,12 @@ final class PluginManager
                 ->where('bp.namespace = :namespace' . $condition)
                 ->execute($conditionParams);
 
-        // TODO: must delete relations
-        // TODO: validateRelations...
-
         if ($overwrite && ($rows === 0))
         {
             throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
         }
+        self::removePluginRelations($namespace);
+        self::validateRelations();
     }
 
     /**
@@ -391,11 +405,15 @@ final class PluginManager
         {
             throw new Exception('Array of namespaces expected');
         }
+        if (!in_array($status, array(PluginManager::ENABLED_STATUS, PluginManager::DISABLED_STATUS)))
+        {
+            throw  new Exception('Status must be Enabled or Disabled.');
+        }
 
         $condition = ' AND bpm.can_disable = :can_disable';
         $conditionParams = array(':can_disable'=> 1);
 
-        $overwrite = ($status == 'Disabled' && isset($options['force_overwrite']) && $options['force_overwrite']);
+        $overwrite = ($status == PluginManager::DISABLED_STATUS && isset($options['force_overwrite']) && $options['force_overwrite']);
 
         if ($overwrite)
         {
@@ -404,8 +422,7 @@ final class PluginManager
         }
         $namespace = "'" . implode("','", $namespace) . "'";
 
-        // FIXME: log must be general
-        $logMessage = 'Disabling plugin modules with namespaces: ';
+        $logMessage = (($status == PluginManager::DISABLED_STATUS)? 'Disabling' : 'Enabling') . ' plugins with namespaces: ';
         if (isset($options['logMessage']))
         {
             $logMessage = $options['logMessage'];
@@ -442,7 +459,7 @@ final class PluginManager
     public static
     function enableModule($namespace, $options=array())
     {
-        return self::setModuleStatus($namespace,'Enabled',$options);
+        return self::setModuleStatus($namespace,PluginManager::ENABLED_STATUS,$options);
     }
 
     /**
@@ -458,7 +475,7 @@ final class PluginManager
     public static
     function disableModule($namespace, $options=array())
     {
-        return self::setModuleStatus($namespace,'Disabled',$options);
+        return self::setModuleStatus($namespace,PluginManager::DISABLED_STATUS,$options);
     }
 
     /**
@@ -477,7 +494,7 @@ final class PluginManager
                 ->innerJoin('bpm.Plugin bp')
                 ->where('bpm.namespace = :namespace AND bpm.status = :status AND bp.status = :status')
                 ->limit(1)
-                ->execute(array(':namespace'=>$namespace, ':status'=>'Enabled'));
+                ->execute(array(':namespace'=>$namespace, ':status'=>PluginManager::ENABLED_STATUS ));
         return ($rows->count() > 0);
     }
 
@@ -523,11 +540,15 @@ final class PluginManager
         {
             throw new Exception('Array of namespaces expected');
         }
+        if (!in_array($status, array(PluginManager::ENABLED_STATUS, PluginManager::DISABLED_STATUS)))
+        {
+            throw  new Exception('Status must be Enabled or Disabled.');
+        }
 
         $condition = ' AND bp.can_disable = :can_disable';
         $conditionParams = array(':can_disable'=> 1);
 
-        $overwrite = ($status == 'Disabled' && isset($options['force_overwrite']) && $options['force_overwrite']);
+        $overwrite = ($status == PluginManager::DISABLED_STATUS && isset($options['force_overwrite']) && $options['force_overwrite']);
 
         if ($overwrite)
         {
@@ -537,8 +558,7 @@ final class PluginManager
 
         $namespace = "'" . implode("','", $namespace) . "'";
 
-        // FIXME: log must be general
-        $logMessage = 'Disabling plugins with namespaces: ';
+        $logMessage = (($status == PluginManager::DISABLED_STATUS)? 'Disabling' : 'Enabling') . ' plugins with namespaces: ';
         if (isset($options['logMessage']))
         {
             $logMessage = $options['logMessage'];
@@ -576,7 +596,7 @@ final class PluginManager
     public static
     function disablePlugin($namespace, $options = array())
     {
-        return self::setPluginStatus($namespace, 'Disabled', $options);
+        return self::setPluginStatus($namespace, PluginManager::DISABLED_STATUS, $options);
     }
 
     /**
@@ -590,7 +610,7 @@ final class PluginManager
     public static
     function enablePlugin($namespace, $options = array())
     {
-        return self::setPluginStatus($namespace, 'Enabled', $options);
+        return self::setPluginStatus($namespace, PluginManager::ENABLED_STATUS , $options);
     }
 
     /**
@@ -622,19 +642,13 @@ final class PluginManager
     public static
     function isPluginEnabled($namespace)
     {
-         // FIXME: do the same as isModuleEnabled
-
         $query = Doctrine_Query::create();
         $rows = $query->select('status')
                 ->from('Base_Plugin bp')
-                ->where('bp.namespace = :namespace')
+                ->where('bp.namespace = :namespace AND bp.status = :status')
                 ->limit(1)
-                ->execute(array(':namespace'=>$namespace));
-        if ($rows->count() == 0)
-        {
-            return false;
-        }
-        return ($rows[0]->status == 'Enabled');
+                ->execute(array(':namespace'=>$namespace, ':status'=>PluginManager::ENABLED_STATUS ));
+        return ($rows->count() > 0);
     }
 
     /**
