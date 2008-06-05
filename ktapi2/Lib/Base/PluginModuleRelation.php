@@ -12,8 +12,8 @@ class Base_PluginModuleRelation extends Doctrine_Record
     public function setUp()
     {
         parent::setUp();
-        $this->hasOne('Base_PluginModule as PluginModule', array('local' => 'plugin_module_namespace', 'foreign' => 'namespace'));
-        $this->hasOne('Base_PluginModule as RelatedPluginModule', array('local' => 'related_module_namespace', 'foreign' => 'namespace'));
+        $this->hasOne('Base_PluginModule as PluginModule', array('local' => 'plugin_module_namespace', 'foreign' => 'namespace', 'onDelete'=>'CASCADE', 'onUpdate'=>'CASCADE'));
+        $this->hasOne('Base_PluginModule as RelatedPluginModule', array('local' => 'related_module_namespace', 'foreign' => 'namespace', 'onDelete'=>'CASCADE', 'onUpdate'=>'CASCADE'));
     }
 
 }

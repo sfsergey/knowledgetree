@@ -16,6 +16,11 @@ class Base_Plugin extends Doctrine_Record
         $this->hasColumn('ordering', 'integer', 4, array('unsigned' => 0, 'primary' => false, 'default' => '0', 'notnull' => true, 'autoincrement' => false));
         $this->hasColumn('namespace', 'string', 255, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
         $this->hasColumn('dependencies', 'string', null, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
+
+
+        $this->index('namespace', array('fields'=>array('namespace'=>array()),  'type'=>'unique' ));
+
+
     }
 
     public function setUp()

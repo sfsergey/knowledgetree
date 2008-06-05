@@ -3,6 +3,11 @@
 
 abstract class Repository_FolderItem
 {
+    const ACTIVE_STATUS     = 1;
+    const PUBLISHED_STATUS  = 2;
+    const DELETED_STATUS    = 3;
+    const ARCHIVED_STATUS   = 4;
+
     /**
      *
      *
@@ -13,7 +18,6 @@ abstract class Repository_FolderItem
     public
     function __construct($base)
     {
-
         $this->base = $base;
     }
 
@@ -141,19 +145,19 @@ abstract class Repository_FolderItem
     public
     function isActive()
     {
-        return $this->getStatus() == 1;
+        return $this->getStatus() == self::ACTIVE_STATUS ;
     }
 
     public
     function IsDeleted()
     {
-        return $this->getStatus() == 3;
+        return $this->getStatus() == self::DELETED_STATUS ;
     }
 
     public
     function IsArchived()
     {
-        return $this->getStatus() == 4;
+        return $this->getStatus() == self::ARCHIVED_STATUS ;
     }
 
     public
@@ -194,6 +198,16 @@ abstract class Repository_FolderItem
 
     public abstract
     function diffMetadata($versionBase, $versionWith);
+
+    protected
+    function addPermissionConditions($query)
+    {
+        if (!$query instanceof Doctrine_Query)
+        {
+            throw new KTapiException('Doctrine_Query expected.');
+        }
+    }
+
 
 }
 

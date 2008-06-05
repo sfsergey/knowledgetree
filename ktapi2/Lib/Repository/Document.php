@@ -2,51 +2,22 @@
 
 class Repository_Document extends Repository_FolderItem
 {
+    public
     function __construct($base)
     {
         parent::__construct($base);
     }
 
     public
-    function getParentId()
-    {
-        return $this->base->folder_id;
-    }
-
-    public
-    function getCreatedDate()
-    {
-        return $this->base->created;
-    }
-
-    public
-    function getModifiedById()
-    {
-        return $this->base->modified_user_id;
-    }
-
-    public
-    function getModifiedByName()
-    {
-        return User::getUserName($this->getModifiedById());
-    }
-
-    public
-    function getStatus()
-    {
-        return $this->base->status_id;
-    }
-
-    public
     function getName()
     {
-        throw new Exception('TODO');
+        return $this->base->MetadataVersion->name;
     }
 
     public
     function getDescription()
     {
-        throw new Exception('TODO');
+        $this->base->MetadataVersion->description;
     }
 
     function getMetadata()
@@ -69,60 +40,297 @@ class Repository_Document extends Repository_FolderItem
         throw new Exception('TODO');
     }
 
-    /*
+    public
+    function getParentId()
+    {
+        return $this->base->folder_id;
+    }
 
-CheckedOutById
-CheckedOutName
-CheckedOutDate
+    public
+    function getCreatedDate()
+    {
+        return $this->base->created;
+    }
 
-ContentVersionId
-ContentVersion
+public
+    function rename($name, $options = array())
+    {
 
-Version
+    }
 
-Filename
-Filesize
+    public
+    function copyTo($folder, $options = array())
+    {
 
-MimeTypeId
-MimeTypeName
+    }
 
-StoragePath
-Hash
-IsImmutable
+    public
+    function moveTo($folder, $options = array())
+    {
 
-OemNo
-CustomDocumentNo
+    }
 
-DocumentTypeId
-DocumentType
+    public
+    function delete($options = array())
+    {
 
-MetadataVersionCreatedDate
-MetadataVersionCreatedById
+    }
 
-WorkflowId
-Workflow
+    public
+    function diffMetadata($versionBase, $versionWith)
+    {
 
-WorkflowStateId
-WorkflowState
+    }
 
-IsPublished
-IsMetadataActive
-IsMetadataDeleted
 
-    */
 
+
+    public
+    function getModifiedById()
+    {
+        return $this->base->modified_user_id;
+    }
+
+    public
+    function getModifiedByName()
+    {
+        return User::getUserName($this->getModifiedById());
+    }
+
+    public
+    function getStatus()
+    {
+        return $this->base->status_id;
+    }
+
+
+
+    public
+    function getCheckedOutById()
+    {
+        return $this->base->checked_out_user_id;
+    }
+
+
+    public
+    function getCheckedOutName()
+    {
+        //return User::getUserName($this->getCheckedOutById());
+    }
+
+    public
+    function getCheckedOutDate()
+    {
+        return $this->base->checkedout;
+    }
+
+    public
+    function isCheckedOut()
+    {
+        return !is_null($this->getCheckedOutById());
+    }
+
+    public
+    function getContentVersionId()
+    {
+        return $this->base->MetadataVersion->content_version_id;
+    }
+
+    public
+    function getContentVersionObj()
+    {
+        return $this->base->MetadataVersion->ContentVersion;
+    }
+
+    public
+    function getVersion()
+    {
+        $content = $this->getContentVersionObj();
+        return $content->major_version . '.' . $content->minor_version;
+    }
+
+    public
+    function getFilename()
+    {
+        return $this->getContentVersionObj()->filename;
+    }
+
+    public
+    function getFilesize()
+    {
+        return $this->getContentVersionObj()->size;
+    }
+
+    public
+    function getMimeTypeId()
+    {
+        return $this->getContentVersionObj()->mime_id;
+    }
+
+    public
+    function getMimeTypeName()
+    {
+        return MimeType::getMimeTypeName($this->getMimeTypeId());
+    }
+
+    public
+    function getStoragePath()
+    {
+        return $this->getContentVersionObj()->storage_path;
+    }
+
+    public
+    function getStorageHash()
+    {
+        return $this->getContentVersionObj()->md5hash;
+    }
+
+    public
+    function isImmutable()
+    {
+        return $this->base->immutable;
+    }
+
+    public
+    function getOemNo()
+    {
+        return $this->base->oem_no;
+    }
+
+    public
+    function getCustomDocumentNo()
+    {
+        return $this->base->MetadataVersion->custom_doc_no;
+    }
+
+    public
+    function getDocumentTypeId()
+    {
+        return $this->base->MetadataVersion->document_type_id;
+    }
+
+    public
+    function getDocumentTypeName()
+    {
+        return DocumentType::getDocumentTypeName($this->getDocumentTypeId());
+    }
+
+    public
+    function getMetadataVersionCreatedDate()
+    {
+        return $this->base->MetadataVersion->version_created;
+    }
+
+    public
+    function getMetadataVersionCreatedById()
+    {
+        return $this->base->MetadataVersion->version_creator_id;
+    }
+
+    public
+    function getWorkflowId()
+    {
+        return $this->base->MetadataVersion->workflow_id;
+    }
+
+    public
+    function getWorkflow()
+    {
+        return Workflow::getWorkflowName($this->getWorkflowId());
+    }
+
+    public
+    function getWorkflowStateId()
+    {
+        return $this->base->MetadataVersion->workflow_state_id;
+    }
+
+    public
+    function getWorkflowState()
+    {
+        return WorkflowState::getWorkflowStateName($this->getWorkflowStateId());
+    }
+
+    public
+    function isPublished()
+    {
+        return $this->base->MetadataVersion->status_id == self::PUBLISHED_STATUS ;
+    }
+
+    public
+    function isMetadataActive()
+    {
+        return $this->base->MetadataVersion->status_id == self::ACTIVE_STATUS ;
+    }
+
+    public
+    function isMetadataDeleted()
+    {
+        return $this->base->MetadataVersion->status_id == self::DELETED_STATUS ;
+    }
 
 
     /**
      * Return a document or array of documents based on document id.
      *
      * @param mixed $id Document id, or array of ids
+     * @param boolean $published Optional.
      * @return mixed Returns Document, or array of Document
      */
     public static
-    function get($id)
+    function get($id, $published = false)
     {
+        if (is_numeric($id))
+        {
+            $id = array($id);
+        }
+        if (!is_array($id))
+        {
+            throw new KTapiException('Array expected.');
+        }
 
+        if (empty($id))
+        {
+            throw new KTapiException('Non empty array expected.');
+        }
+
+        $query = Doctrine_Query::create();
+        $query = $query->select('d.*,mv.*, cv.*')
+                ->from('Base_Document d')
+                ->innerJoin('d.MetadataVersion mv')
+                ->innerJoin('mv.ContentVersion cv')
+                ->whereIn('d.id', $id);
+
+        self::addPermissionConditions($query);
+
+        if ($published)
+        {
+            $query->addWhere('mv.status_id = :published', array(':published'=> self::PUBLISHED_STATUS ));
+        }
+
+        $rows = $query->execute();
+
+        $count = $rows->count();
+
+        if ($count == 0)
+        {
+            throw new KTapiException(_str('No documents(s) found matching id(s): %s.', implode(',', $id)));
+        }
+
+        $documents = array();
+        foreach($rows as $document)
+        {
+            $documents[] = new Document($document);
+        }
+
+        if ($count == 1)
+        {
+            return $documents[0];
+        }
+        else
+        {
+            return $documents;
+        }
     }
 
     /**
@@ -132,13 +340,31 @@ IsMetadataDeleted
      * @param int $metadataVersion
      */
     public static
-    function getVersion($id, $metadataVersion)
+    function getByMetadataVersion($id, $metadataVersion)
     {
+        if (!is_numeric($id))
+        {
+            throw new KTapiException('Integer expected.');
+        }
 
+        $query = Doctrine_Query::create();
+        $query = $query->select('d.*,mv.*, cv.*')
+                ->from('Base_Document d')
+                ->innerJoin('d.MetadataVersion mv')
+                ->innerJoin('mv.ContentVersion cv')
+                ->where('d.id = :id AND mv.metadata_version = :metadata_version');
+
+        self::addPermissionConditions($query);
+
+        $rows = $query->execute(array(':id'=>$id, ':metadata_version' => $metadataVersion));
+
+        if ($rows->count() == 0)
+        {
+            throw new KTapiException('No documents found matching id and metadata version');
+        }
+
+        return new Document($rows[0]);
     }
-
-
-
 }
 
 ?>

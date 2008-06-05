@@ -13,8 +13,8 @@ class UnitTests extends TestSuite
     function UnitTests()
     {
         $this->TestSuite('KnowledgeTree KTAPI Unit tests');
-        $this->addFile('Api/PluginManager.php');
-        $this->addFile('Api/PluginUpgrade.php');
+//        $this->addFile('Api/PluginManager.php');
+//        $this->addFile('Api/PluginUpgrade.php');
 //        $this->addFile('api/Authentication/Builtin.php');
 //        $this->addFile('api/Authentication/ActiveDirectory.php');
 //        $this->addFile('api/Authentication/Ldap.php');
@@ -27,7 +27,7 @@ class UnitTests extends TestSuite
 //        $this->addFile('api/ItemActions/DeleteItem.php');
 //        $this->addFile('api/ItemActions/MoveItem.php');
 //        $this->addFile('api/ItemActions/RenameItem.php');
-//        $this->addFile('Api/Document.php');
+        $this->addFile('Api/Document.php');
 //        $this->addFile('api/Folder.php');
     }
 

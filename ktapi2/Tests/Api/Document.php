@@ -25,18 +25,26 @@ class DocumentTestCase extends KTAPI_TestCase
     {
         $rootFolder = Repository_Folder::get(1);
 
-        print "$rootFolder->Id\n";
+/*        print "$rootFolder->Id\n";
         print "$rootFolder->Name\n";
         print "$rootFolder->Description\n";
         print "$rootFolder->ParentId\n";
         print "$rootFolder->CreatedById\n";
         print "$rootFolder->FullPath\n";
         print "$rootFolder->OwnerId\n";
+*/
+        //var_dump($rootFolder->getListing(array('contentTypes'=>Repository_Folder::FOLDER_LISTING)));
+       $listing = $rootFolder->getListing();
 
-        var_dump($rootFolder->getListing(array('contentTypes'=>Repository_Folder::FOLDER_LISTING)));
+       foreach($listing as $item)
+       {
+           print "{$item->getId()} {$item->getName()}\n";
+       }
 
         $this->assertTrue(true);
     }
+
+
 }
 
 ?>

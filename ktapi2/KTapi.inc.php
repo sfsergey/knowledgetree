@@ -533,7 +533,7 @@ final class KTapi
             $class_file = $directory . $dir . str_replace('_', DIRECTORY_SEPARATOR, $filename) . '.php';
 
             if (file_exists($class_file)) {
-                require $class_file;
+                require_once($class_file);
                 return true;
             }
         }

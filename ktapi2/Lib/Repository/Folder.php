@@ -9,6 +9,7 @@ class Repository_Folder extends Repository_FolderItem
      */
     private $listing;
 
+    public
     function __construct($base)
     {
         parent::__construct($base);
@@ -31,6 +32,18 @@ class Repository_Folder extends Repository_FolderItem
     function getDescription()
     {
         return $this->base->description;
+    }
+
+    public
+    function getDepth()
+    {
+        return $this->base->depth;
+    }
+
+    public
+    function isRootFolder()
+    {
+        return $this->getId() == 1;
     }
 
     const FOLDER_LISTING = 1;
@@ -81,71 +94,70 @@ class Repository_Folder extends Repository_FolderItem
 
         $this->listing = array();
 
+        $currentDepth = $this->getDepth();
+        if ($this->isRootFolder())
+        {
+            $fullpath = '%';
+        }
+        else
+        {
+            $fullpath = $this->getFullPath() . '/%';
+        }
+
+
         $folderDocuments = array();
         if (($contentTypes & Repository_Folder::DOCUMENT_LISTING) == Repository_Folder::DOCUMENT_LISTING)
         {
             $query = Doctrine_Query::create();
             $documents = $query->select('d.*,mv.*, cv.*')
                 ->from('Base_Document d')
+                ->innerJoin('d.Folder f')
                 ->innerJoin('d.MetadataVersion mv')
                 ->innerJoin('mv.ContentVersion cv')
-                ->where('d.full_path like :full_path')
-                ->execute(array(':full_path' => $this->getFullPath() . '/%'));
+                ->where('d.full_path like :full_path AND f.depth >= :minDepth AND f.depth <= :maxDepth')
+                ->execute(array(':full_path' => $fullpath, ':minDepth'=> $currentDepth, ':maxDepth'=>$depth + $currentDepth));
 
             if ($documents->count() > 0)
             {
-                $currentPathDepth = count(explode('/', $this->getFullPath()));
-
-                foreach($documents as $key=>$document)
+                foreach($documents as $document)
                 {
-                    $pathDepth = count(explode('/', $document->full_path));
-                    if ($depth > 0 && $pathDepth >= $currentPathDepth + $depth)
-                    {
-                        $documents->remove($key);
-                    }
-                    else
-                    {
-                        $document = new Repository_Document($document);
-                        $folderDocuments[$document->folder_id][] = $document;
-                    }
+                    $document = new Repository_Document($document);
+                    $documentParentId = $document->getParentId();
+                    $folderDocuments[$documentParentId][] = $document;
                 }
             }
             unset($documents);
         }
 
-        $folderFolders = array();
+        $currentId = $this->getId();
+
         $folderObjs = array();
+        $folderObjs[$currentId] = $this;
+
+        $folderFolders = array();
         if (($contentTypes & Repository_Folder::FOLDER_LISTING) == Repository_Folder::FOLDER_LISTING)
         {
             $query = Doctrine_Query::create();
             $folders = $query->select('f.*')
                 ->from('Base_Folder f')
-                ->where('f.full_path like :full_path')
-                ->execute(array(':full_path' => $this->getFullPath() . '/%'));
+                ->where('f.full_path like :full_path AND f.depth > :minDepth AND f.depth <= :maxDepth')
+                ->execute(array(':full_path' => $fullpath, ':minDepth'=> $currentDepth, ':maxDepth'=>$depth + $currentDepth));
 
             if ($folders->count() > 0)
             {
-                $currentPathDepth = count(explode('/', $this->getFullPath()));
-
-                foreach($folders as $key=>$folder)
+                foreach($folders as $folder)
                 {
-                    $pathDepth = count(explode('/', $folder->full_path));
-                    if ($depth > 0 && $pathDepth >= $currentPathDepth + $depth)
+                    $folder = new Repository_Folder($folder);
+                    $folderId = $folder->getId();
+                    if (isset($folderDocuments[$folderId]))
                     {
-                        $folders->remove($key);
+                        $documents = $folderDocuments[$folderId];
+                        $folder->addListItems($documents);
                     }
-                    else
-                    {
-                        $folder = new Repository_Folder($folder);
-                        if (isset($folderDocuments[$folder->getId()]))
-                        {
-                            $documents = $folderDocuments[$folder->getId()];
-                            $folder->addListItems($documents);
-                        }
 
-                        $folderObjs[$folder->id] = $folder;
-                        $folderFolders[$folder->parent_id][] = $folder;
-                    }
+                    $folderObjs[$folderId] = $folder;
+                    $folderParentId = $folder->getParentId();
+                    $folderFolders[$folderParentId][] = $folder;
                 }
             }
             unset($folders);
@@ -153,16 +165,21 @@ class Repository_Folder extends Repository_FolderItem
 
         // creating tree
 
-        $this->addListItems($folderDocuments[$this->getId()]);
 
-        $this->createFolderTree($this->getId(), $folderObjs, $folderFolders);
+        $this->addListItems($folderDocuments[$currentId]);
+
+        $this->createFolderTree($currentId, $folderObjs, $folderFolders);
 
         return $this->listing;
     }
 
-    private
+    public
     function addListItems($item)
     {
+        if (empty($item))
+        {
+            return;
+        }
         if (is_array($item))
         {
             $this->listing = array_merge($this->listing, $item);
@@ -174,32 +191,57 @@ class Repository_Folder extends Repository_FolderItem
     }
 
 
-    private
+    public
     function createFolderTree($currentId, $folderObjs, $folderFolders)
     {
         $folder = $folderObjs[$currentId];
 
-        if (!empty($folderFolders[$currentId]))
+        $subfolders = $folderFolders[$currentId];
+        if (!empty($subfolders))
         {
-            foreach ($folderFolders[$currentId] as $subfolder)
+            foreach ($subfolders as $subfolder)
             {
                 $subfolderId = $subfolder->getId();
-                $folder->addListItems($this->createFolderTree($subfolderId, $folderObjs, $folderFolders));
+                $folder->addListItems($subfolder->createFolderTree($subfolderId, $folderObjs, $folderFolders));
             }
         }
 
         return $folder;
     }
 
-/*
-Properties
-IsPublic
-MustRestrictDocumentTypes
+    /**
+     * TODO: check me out....
+     * Not sure what this is for. Possible old? Delete????
+     *
+     * @return boolean
+     */
+    public
+    function isPublic()
+    {
+        return $this->base->is_public;
+    }
 
+    /**
+     * Indicates if document types are restricted in the current folder.
+     *
+     * @return boolean
+     */
+    public
+    function mustRestrictDocumentTypes()
+    {
+        return $this->base->restrict_document_types;
+    }
 
-*/
-
-
+    /**
+     * Return list of document types that are allowed in the folder
+     *
+     * @return array
+     */
+    public
+    function getRestrictedDocumentTypes()
+    {
+        throw new Exception('todo');
+    }
 
     /**
      * Return a folder or array of folders based on folder id.
@@ -210,11 +252,7 @@ MustRestrictDocumentTypes
     public static
     function get($id)
     {
-        if ($id instanceof Repository_Folder)
-        {
-            $id = array($id->getId());
-        }
-        elseif (is_numeric($id))
+        if (is_numeric($id))
         {
             $id = array($id);
         }
@@ -230,14 +268,20 @@ MustRestrictDocumentTypes
                 ->whereIn('f.id', $id)
                 ->execute();
 
+        $count = $rows->count();
+
+        if ($count == 0)
+        {
+            throw new KTapiException(_str('No folder(s) found matching id(s): %s.', implode(',', $id)));
+        }
+
         $folders = array();
         foreach($rows as $folder)
         {
-            $folder = new Repository_Folder($folder);
-            $folders[] = $folder;
+            $folders[] = new Repository_Folder($folder);
         }
 
-        if (count($folders) == 1)
+        if ($count == 1)
         {
             return $folders[0];
         }
