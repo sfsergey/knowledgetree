@@ -159,7 +159,7 @@ class ModelManager
             throw new Exception('Cannot find import directory for models');
         }
 
-        $db = DoctrineUtil::getDB();
+        $db = self::getDB();
         Doctrine::createTablesFromModels($dir);
     }
 
@@ -200,7 +200,7 @@ class ModelManager
     }
 }
 
-ModelManager::initManager();
-ModelManager::exportTables();
+//ModelManager::initManager();
+//ModelManager::exportTables();
 
 ?>
