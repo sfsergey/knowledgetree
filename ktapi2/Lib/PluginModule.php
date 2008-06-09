@@ -16,7 +16,7 @@ abstract class PluginModule
         $method = 'get' . $property;
         if (method_exists($this, $method))
         {
-            return call_user_func_array($method);
+            return call_user_func(array($this, $method));
         }
         else
         {

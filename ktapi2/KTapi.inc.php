@@ -562,6 +562,7 @@ final class KTapi
         }
         $db = Doctrine_Manager::connection($dsn);
         $db->setCharset('utf8');
+        $db->setAttribute(Doctrine::ATTR_USE_NATIVE_ENUM, true);
         KTAPI::$db = $db;
         return $db;
     }

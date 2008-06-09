@@ -6,6 +6,20 @@ KTapi::initTestFramework();
 
 class KTAPI_TestCase extends UnitTestCase
 {
+    protected
+    function dropTable($tablename)
+    {
+        $db = KTapi::getDb();
+        try
+        {
+           $db->execute("DROP TABLE " . $tablename);
+        }
+        catch(Exception $ex)
+        {
+
+        }
+    }
+
 }
 
 class UnitTests extends TestSuite
@@ -27,7 +41,8 @@ class UnitTests extends TestSuite
 //        $this->addFile('api/ItemActions/DeleteItem.php');
 //        $this->addFile('api/ItemActions/MoveItem.php');
 //        $this->addFile('api/ItemActions/RenameItem.php');
-        $this->addFile('Api/Document.php');
+//        $this->addFile('Api/Document.php');
+        $this->addFile('Api/UserAndGroups.php');
 //        $this->addFile('api/Folder.php');
     }
 
