@@ -6,8 +6,8 @@ class Base_User extends Doctrine_Record
   public function setTableDefinition()
   {
     $this->setTableName('users');
-    $this->hasColumn('id', 'integer', 4, array('primary' => true,  'notnull' => true, 'autoincrement'=>true ));
-    $this->hasColumn('member_id', 'integer', 4, array(   'notnull' => true ));
+//    $this->hasColumn('id', 'integer', 4, array('primary' => true,  'notnull' => true, 'autoincrement'=>true ));
+    $this->hasColumn('member_id', 'integer', 4, array('primary' => true,   'notnull' => true ));
     $this->hasColumn('username', 'string', 100);
     $this->hasColumn('name', 'string', 100);
     $this->hasColumn('password', 'string', 32);
@@ -29,7 +29,12 @@ class Base_User extends Doctrine_Record
   public function setUp()
   {
       parent::setUp();
-    $this->hasOne('Base_Member as Member', array('local' => 'member_id', 'foreign' => 'id','onDelete' => 'CASCADE'));
+
+    $this->hasMany('Base_Group as Groups', array(
+                                     'local' => 'submember_id',
+                                     'foreign' => 'member_id',
+                                     'refClass' => 'Base_MemberSubMember'
+                                     ));
 
   }
 }

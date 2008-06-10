@@ -20,6 +20,7 @@ class Base_Grouping extends Doctrine_Record
   public function setUp()
   {
     $this->hasOne('Base_Member as Member', array('local' => 'member_id', 'foreign' => 'id','onDelete' => 'CASCADE'));
+    $this->hasOne('Base_Group as Group', array('local' => 'id', 'foreign' => 'member_id' ));
   }
 
     public function preDelete($event)

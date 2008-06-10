@@ -15,13 +15,18 @@ class Base_Group extends Doctrine_Record
 
   public function setUp()
   {
-    $this->hasMany('Base_Group as Children', array('local' => 'member_id',
+    $this->hasMany('Base_Group as Children', array(
+                                     'local' => 'member_id',
                                      'foreign' => 'submember_id',
-                                     'refClass' => 'Base_MemberSubMembers','equal'    => true,));
+                                     'owningSide'=> false,
+                                     'refClass' => 'Base_MemberSubMember',
+                                     ));
 
-    $this->hasMany('Base_Group as Parent', array('local' => 'submember_id',
+    $this->hasMany('Base_Group as Parents', array(
+                                     'local' => 'submember_id',
                                      'foreign' => 'member_id',
-                                     'refClass' => 'Base_MemberSubMembers','equal'    => true,));
+                                     'refClass' => 'Base_MemberSubMember'
+                                     ));
 
   }
 

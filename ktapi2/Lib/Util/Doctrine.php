@@ -248,6 +248,28 @@ class Util_Doctrine
 
         }
     }
+
+    public static
+    function findByPrimary($class, $value, $throwException = true)
+    {
+        $class = Doctrine::getTable($class);
+        $row = $class->find($pk);
+
+        if ($throwException && $row === false)
+        {
+            throw KTapiException('Could not delete row.');
+        }
+
+        return $row;
+    }
+
+    public static
+    function deleteByPrimary($class, $value)
+    {
+        $row = self::findByPrimary($class, $value);
+
+        return $row->delete();
+    }
 }
 
 ?>

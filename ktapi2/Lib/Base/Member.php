@@ -17,6 +17,5 @@ class Base_Member extends Doctrine_Record
 
   public function setUp()
   {
-    $this->hasOne('Base_Grouping as Group', array('local' => 'id', 'foreign' => 'member_id','onDelete' => 'CASCADE'));
   }
 }
