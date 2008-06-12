@@ -10,7 +10,7 @@ $classes = array();
 createTable('members', 'Base_Member');
 createTable('groupings', 'Base_Grouping');
 createTable('users', 'Base_User');
-createTable('member_submembers', 'Base_MemberSubMembers');
+createTable('member_submembers', 'Base_MemberSubMember');
 
 $manager = Doctrine_Manager::getInstance();
 $manager->setAttribute(Doctrine::ATTR_EXPORT, Doctrine::EXPORT_ALL ); // Doctrine::EXPORT_TABLES | Doctrine::EXPORT_CONSTRAINTS
@@ -44,7 +44,7 @@ function createView($name, $letter, $type)
     global $db;
 
     Util_Doctrine::dropView($name);
-    $db->execute("CREATE VIEW $name AS select m.id as member_id, $letter.name, m.status, m.unit_id from groupings $letter inner join members m on $letter.member_id=m.id WHERE $letter.type='$type'");
+    $db->execute("CREATE VIEW $name AS select m.id as member_id, $letter.name, m.status, m.unit_id from groupings $letter inner join members m on $letter.member_id=m.id WHERE $letter.type='$type' AND m.status != 'Deleted'");
 }
 
 ?>

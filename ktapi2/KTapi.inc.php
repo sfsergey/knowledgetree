@@ -158,7 +158,6 @@ final class KTapi
     const PRE_INIT = 'pre-init';
     const POST_INIT = 'post-init';
 
-
     /**
      * Database connection
      *
@@ -582,6 +581,20 @@ final class KTapi
             }
         }
         return KTAPI::$db;
+    }
+
+    public static
+    function validateClass($classname, $object)
+    {
+        if (is_numeric($object))
+        {
+            $object = eval("return $classname::get(\$object);");
+        }
+        if (!eval("return \$object instanceof $classname;"))
+        {
+            throw new KTapiException(_kt('%s expected', $classname));
+        }
+        return $object;
     }
 
 }

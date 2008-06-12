@@ -1,10 +1,10 @@
 <?php
 
-class Repository_Metadata_Fieldset extends BaseGrouping
+class Repository_Metadata_DocumentType extends BaseGrouping
 {
-    const CLASSNAME = 'Repository_Metadata_Fieldset';
-    const BASENAME = 'Base_Fieldset';
-    const TYPE = 'Fieldset';
+    const CLASSNAME = 'Repository_Metadata_DocumentType';
+    const BASENAME = 'Base_DocumentType';
+    const TYPE = 'DocumentType';
 
     public static
     function get($id)
@@ -13,20 +13,13 @@ class Repository_Metadata_Fieldset extends BaseGrouping
     }
 
     public static
-    function getByFieldsetName($name, $unitId = null)
+    function getByDocumentTypeName($name, $unitId = null)
     {
         return parent::getByGroupingName(self::BASENAME, self::CLASSNAME,$name, $unitId);
     }
 
-    /**
-     * Get a list of Roles based on a filter and optional  unit id.
-     *
-     * @param string $filter
-     * @param int $unitId
-     * @return array of Security_Role
-     */
     public static
-    function getFieldsetsByFilter($filter, $unitId = null)
+    function getDocumentTypesByFilter($filter, $unitId = null)
     {
         return parent::getGroupingsByFilter(self::BASENAME, self::CLASSNAME,$filter, $unitId);
     }
@@ -38,33 +31,33 @@ class Repository_Metadata_Fieldset extends BaseGrouping
     }
 
     public
-    function addField($field, $options = array())
+    function addFieldset($fieldset, $options = array())
     {
-        $field = Util_Metadata::validateField($field);
+        $fieldset = Util_Metadata::validateFieldset($fieldset);
 
-        return parent::addSubmember($field, $options);
+        return parent::addSubmember($fieldset, $options);
     }
 
     public
-    function removeField($field, $options = array())
+    function removeFieldset($fieldset, $options = array())
     {
-        $field = Util_Metadata::validateField($field);
+        $fieldset = Util_Metadata::validateFieldset($fieldset);
 
-        $field->delete();
+        parent::removeSubmember($fieldset);
 
         $this->base->clearRelated();
     }
 
     public
-    function getFields()
+    function getFieldsets()
     {
-        return $this->getGroupings('Fields');
+        return $this->getGroupings('Fieldsets');
     }
 
-    public
+    protected
     function getGroupings($relation)
     {
-        if ($relation != 'Fields')
+        if ($relation != 'Fieldsets')
         {
             return array();
         }
@@ -76,6 +69,8 @@ class Repository_Metadata_Fieldset extends BaseGrouping
     {
         // we don't have users, so effective users are not applicable.
     }
+
+
 }
 
 ?>

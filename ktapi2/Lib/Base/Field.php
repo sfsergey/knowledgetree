@@ -1,11 +1,11 @@
 <?php
 
-class Base_DocumentType extends Doctrine_Record
+class Base_Field extends Doctrine_Record
 {
 
   public function setTableDefinition()
   {
-    $this->setTableName('document_types');
+    $this->setTableName('fields');
     $this->hasColumn('member_id', 'integer', 4, array('primary' => true,  'notnull' => true ));
     $this->hasColumn('name', 'string', null);
     $this->hasColumn('status', 'enum', null, array('values' =>  array(  0 => 'Enabled', 1 => 'Deleted' ),'default'=>'Enabled','notnull' => true));
@@ -14,10 +14,10 @@ class Base_DocumentType extends Doctrine_Record
 
   public function setUp()
   {
-    $this->hasMany('Base_Fieldset as Fieldsets', array(
-                                     'local' => 'member_id',
-                                     'foreign' => 'submember_id',
-                                     'refClass' => 'Base_MemberSubMember',
+    $this->hasOne('Base_Fieldset as Fieldset', array(
+                                     'local' => 'submember_id',
+                                     'foreign' => 'member_id',
+                                     'refClass' => 'Base_MemberSubMember'
                                      ));
   }
 }

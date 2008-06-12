@@ -1,6 +1,6 @@
 <?php
 
-class DocumentTestCase extends KTAPI_TestCase
+class UserAndGroupsTestCase extends KTAPI_TestCase
 {
     function setUp()
     {
@@ -84,6 +84,13 @@ class DocumentTestCase extends KTAPI_TestCase
          $this->assertFalse($group1->hasUser($user1));
          $this->assertTrue($group2->hasUser($user1));
 
+         $users = $group1->getEffectiveUsers();
+
+         $users = array_values($users);
+         $this->assertEqual(count($users),1);
+         $this->assertTrue($users[0]->Id, $user1->Id);
+
+
          $group2->removeUser($user1);
 
          $this->assertFalse($group1->hasUser($user1));
@@ -96,6 +103,35 @@ class DocumentTestCase extends KTAPI_TestCase
 
          $this->assertTrue($group1->hasEffectiveUser($user1));
          $this->assertTrue($group2->hasEffectiveUser($user1));
+
+
+         $users = $group2->getUsers();
+
+         $this->assertEqual(count($users),1);
+         $this->assertTrue($users[0]->Id, $user1->Id);
+
+         $users = $group1->getUsers();
+
+         $this->assertEqual(count($users),0);
+
+         $users = $group2->getUsers('User');
+
+         $this->assertEqual(count($users),1);
+         $this->assertTrue($users[0]->Id, $user1->Id);
+
+         $users = $group2->getUsers('boo');
+
+         $this->assertEqual(count($users),0);
+
+         $group2->delete();
+
+         $users = $group2->getUsers();
+
+         $this->assertEqual(count($users),0);
+
+         $users = $group1->getUsers();
+
+         $this->assertEqual(count($users),0);
 
     }
 
