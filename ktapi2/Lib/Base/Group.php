@@ -18,7 +18,6 @@ class Base_Group extends Doctrine_Record
     $this->hasMany('Base_Group as Children', array(
                                      'local' => 'member_id',
                                      'foreign' => 'submember_id',
-                                     'owningSide'=> false,
                                      'refClass' => 'Base_MemberSubMember',
                                      ));
 
@@ -28,6 +27,17 @@ class Base_Group extends Doctrine_Record
                                      'refClass' => 'Base_MemberSubMember'
                                      ));
 
+    $this->hasMany('Base_User as Users', array(
+                                     'local' => 'member_id',
+                                     'foreign' => 'submember_id',
+                                     'refClass' => 'Base_MemberSubMember',
+                                     ));
+
+    $this->hasMany('Base_User as EffectiveUsers', array(
+                                     'local' => 'member_id',
+                                     'foreign' => 'user_member_id',
+                                     'refClass' => 'Base_MemberEffectiveUser',
+                                     ));
   }
 
 }

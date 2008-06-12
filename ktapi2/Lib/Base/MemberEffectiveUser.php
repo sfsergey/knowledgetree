@@ -12,6 +12,5 @@ class Base_MemberEffectiveUser extends Doctrine_Record
 
   public function setUp()
   {
-    parent::setUp();
   }
 }

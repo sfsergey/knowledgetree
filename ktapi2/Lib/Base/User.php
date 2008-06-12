@@ -33,7 +33,13 @@ class Base_User extends Doctrine_Record
     $this->hasMany('Base_Group as Groups', array(
                                      'local' => 'submember_id',
                                      'foreign' => 'member_id',
-                                     'refClass' => 'Base_MemberSubMember'
+                                     'refClass' => 'Base_MemberSubMember',
+                                     ));
+
+    $this->hasMany('Base_Group as EffectiveGroups', array(
+                                     'local' => 'user_member_id',
+                                     'foreign' => 'member_id',
+                                     'refClass' => 'Base_MemberEffectiveUser',
                                      ));
 
   }

@@ -253,7 +253,7 @@ class Util_Doctrine
     function findByPrimary($class, $value, $throwException = true)
     {
         $class = Doctrine::getTable($class);
-        $row = $class->find($pk);
+        $row = $class->find($value);
 
         if ($throwException && $row === false)
         {

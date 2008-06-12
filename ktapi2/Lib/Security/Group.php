@@ -97,12 +97,25 @@ class Security_Group extends KTAPI_Base
             return;
         }
 
-        $mapping = new Base_MemberSubMember();
-        $mapping->member_id = $this->getId();
-        $mapping->submember_id = $group->getId();
-        $mapping->save();
+        $db = KTapi::getDb();
 
-        self::updateEffectiveUsers();
+        try
+        {
+            $db->beginTransaction();
+
+            $mapping = new Base_MemberSubMember();
+            $mapping->member_id = $this->getId();
+            $mapping->submember_id = $group->getId();
+            $mapping->save();
+
+            self::updateEffectiveUsers();
+            $db->commit();
+        }
+        catch (Exception $ex)
+        {
+            $db->rollback();
+            throw $ex;
+        }
     }
 
     /**
@@ -163,15 +176,28 @@ class Security_Group extends KTAPI_Base
     {
         $group = $this->validateGroup($group);
 
-        $query = Doctrine_Query::create();
-        $rows = $query->delete()
-                ->from('Base_MemberSubMember sm')
-                ->where('sm.member_id = :member_id AND sm.submember_id = :submember_id',
-                    array(':member_id'=> $this->getId(), ':submember_id'=>$group->getId()))
-                ->limit(1)
-                ->execute();
+        $db = KTapi::getDb();
 
-        self::updateEffectiveUsers();
+        try
+        {
+            $db->beginTransaction();
+
+            $query = Doctrine_Query::create();
+            $rows = $query->delete()
+            ->from('Base_MemberSubMember sm')
+            ->where('sm.member_id = :member_id AND sm.submember_id = :submember_id',
+            array(':member_id'=> $this->getId(), ':submember_id'=>$group->getId()))
+            ->limit(1)
+            ->execute();
+
+            self::updateEffectiveUsers();
+            $db->commit();
+        }
+        catch (Exception $ex)
+        {
+            $db->rollback();
+            throw $ex;
+        }
     }
 
     /**
@@ -183,9 +209,9 @@ class Security_Group extends KTAPI_Base
     protected
     function getGroups($relation)
     {
-        if (!in_array($relation, array('Parent', 'Children')))
+        if (!in_array($relation, array('Parents', 'Children')))
         {
-            throw new KTapiException('Relation must be set to Parent or Children');
+            throw new KTapiException('Relation must be set to Parents or Children');
         }
         $groupId = $this->getId();
 
@@ -212,12 +238,25 @@ class Security_Group extends KTAPI_Base
         $groupId = $this->getId();
         $userId = $user->getId();
 
-        $mapping = new Base_MemberSubMember();
-        $mapping->member_id = $groupId;
-        $mapping->submember_id = $userId;
-        $mapping->save();
+        $db = KTapi::getDb();
+        try
+        {
 
-        $this->addEffectiveUser($userId);
+            $db->beginTransaction();
+            $mapping = new Base_MemberSubMember();
+            $mapping->member_id = $groupId;
+            $mapping->submember_id = $userId;
+            $mapping->save();
+
+            $this->addEffectiveUser($userId);
+
+            $db->commit();
+        }
+        catch(Exception $ex)
+        {
+            $db->rollback();
+            throw $ex;
+        }
     }
 
     /**
@@ -256,9 +295,20 @@ class Security_Group extends KTAPI_Base
         $userId = $user->getId();
         $pk = array($groupId, $userId);
 
-        $effective = Util_Doctrine::deleteByPrimary('Base_MemberSubMember', $pk);
+        $db = KTapi::getDb();
+        try
+        {
+            $db->beginTransaction();
+            $effective = Util_Doctrine::deleteByPrimary('Base_MemberSubMember', $pk);
 
-        $this->removeEffectiveUser($userId);
+            $this->removeEffectiveUser($userId);
+            $db->commit();
+        }
+        catch(Exception $ex)
+        {
+            $db->rollback();
+            throw $ex;
+        }
     }
 
     /**
@@ -282,19 +332,103 @@ class Security_Group extends KTAPI_Base
     private
     function updateEffectiveUsers()
     {
-        throw new Exception('TODO');
+        $currentUsers = $this->getEffectiveUsers('',array('clear'=>true));
+
+        $users = array();
+        $groups = $this->getSubgroups();
+        foreach($groups as $group)
+        {
+            $groupUsers = $group->getEffectiveUsers('',array('clear'=>true));
+
+            $users = array_merge($users, array_diff_assoc($groupUsers, $users));
+        }
+
+
+        $removedUsers = array_diff_assoc($currentUsers, $users);
+        $addedUsers = array_diff_assoc($users, $currentUsers);
+
+        $db = KTapi::getDb();
+
+        try
+        {
+            if (!empty($addedUsers))
+            {
+                $addedIds = array_keys($addedUsers);
+
+                $db->beginTransaction();
+                foreach($addedIds as $userId)
+                {
+                    $this->addEffectiveUser($userId);
+                }
+                $db->commit();
+            }
+            elseif (!empty($removedUsers))
+            {
+                $removedIds = array_keys($removedUsers);
+
+                $db->beginTransaction();
+                foreach($removedIds as $userId)
+                {
+                    $this->removeEffectiveUser($userId);
+                }
+                $db->commit();
+            }
+        }
+        catch(Exception $ex)
+        {
+            $db->rollback();
+            throw $ex;
+        }
+        $this->base->clearRelated();
     }
 
     public
     function getUsers($filter = '')
     {
-        throw new Exception('TODO');
+        $rows = $this->base->Users;
+
+        $filter = strtolower($filter);
+        $users = array();
+
+        $numRows = $rows->count();
+
+        if  ($numRows > 0)
+        {
+
+            foreach($rows as $row)
+            {
+                if (!empty($filter) && strpos(strtolower($row->name), $filter) === false)
+                {
+                    continue;
+                }
+                $users[] = new Security_User($row);
+            }
+        }
+
+        return $users;
     }
 
     public
-    function getEffectiveUsers($filter = '')
+    function getEffectiveUsers($filter = '', $options=array())
     {
-        throw new Exception('TODO');
+       if (isset($options['clear']) && $options['clear'])
+       {
+           $this->base->clearRelated();
+       }
+       $rows = $this->base->EffectiveUsers;
+
+        $users = array();
+        $numRows = $rows->count();
+
+        if  ($numRows > 0)
+        {
+            foreach($rows as $row)
+            {
+                $users[$row->member_id] = new Security_User($row);
+            }
+        }
+
+        return $users;
     }
 
     public
@@ -321,8 +455,6 @@ class Security_Group extends KTAPI_Base
         return $effective;
     }
 
-
-
     public
     function hasUser($user)
     {
@@ -340,7 +472,6 @@ class Security_Group extends KTAPI_Base
     {
         return $this->getGroups('Parents');
     }
-
 
     /**
      * Create a new group
@@ -386,8 +517,6 @@ class Security_Group extends KTAPI_Base
             $group->save();
 
             $db->commit();
-
-
         }
         catch(Exception $ex)
         {
