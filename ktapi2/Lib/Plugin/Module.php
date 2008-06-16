@@ -26,12 +26,12 @@ class Plugin_Module extends Base_PluginModule
         }
         $db = KTapi::getDb();
 
-        $record = $db->create('Base_PluginModule');
+        $module = $db->create('Base_PluginModule');
 
-        $record->plugin_id = $plugin->getId();
-        $record->module_type = $moduleType;
-        $record->status = 'Enabled';
-        $record->path = _relativepath($path);
+        $module->plugin_id = $plugin->getId();
+        $module->module_type = $moduleType;
+        $module->status = 'Enabled';
+        $module->path = _relativepath($path);
 
         $valid_keys = array('classname','display_name','module_config','ordering','can_disable','dependencies', 'namespace');
         $serialize_keys = array('module_config', 'dependencies');
@@ -51,25 +51,24 @@ class Plugin_Module extends Base_PluginModule
             {
                 $value = _serialize($value);
             }
-            $record->$key = $value;
+            $module->$key = $value;
         }
 
-        $record->save();
-
+        $module->save();
         if (isset($params['dependencies']) && !empty($params['dependencies']))
         {
             foreach($params['dependencies'] as $dependency)
             {
-                $table = new Base_PluginModuleRelation();
-                $table->plugin_module_namespace = $namespace;
+                $relation = new Base_PluginModuleRelation();
+                $relation->plugin_module_namespace = $namespace;
 
-                $table->related_module_namespace = $dependency;
+                $relation->related_module_namespace = $dependency;
 
-                $table->save();
+                $relation->save();
             }
         }
 
-        return $record;
+        return $module;
     }
 
 

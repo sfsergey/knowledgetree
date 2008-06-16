@@ -1,157 +1,62 @@
 <?php
 
-/**
- * The translation helper function.
- *
- * The tr
- *
- * @param string $format
- * @return string
- */
-function _kt($format)
+final class KTconstant
 {
-    return Util_i18n::translate(func_get_args());
-}
+    const GENERAL_STATUS    = 'status';
+    const BASE_DB_ID        = 'base_db_id';
+    const BASE_DB_AUTOINC   = 'base_db_id_inc';
+    const BASE_DB_NOT_NULL  = 'base_db_not_null';
+    const BASE_DB_GENERAL_STATUS  = 'base_db_status';
 
-/**
- * Function to serialise php objects.
- * Currently it wraps serialize(). We can change to another format needs be.
- *
- * @param mixed $mixed
- * @return string
- */
-function _serialize($mixed)
-{
-    return serialize($mixed);
-}
+    private static $constants;
 
-function _str($format)
-{
-    $params = func_get_args();
-    $format = array_shift($params);
-    if (!is_string($format))
+    private static
+    function init()
     {
-        throw new KTapiException(_kt('_str expected first parameter to be a string.'));
+        self::$constants = array();
+        self::add(self::GENERAL_STATUS, array(0=>'Enabled',1=>'Disabled',2=>'Disabled'), 'Enabled');
+        self::add(self::BASE_DB_ID, array('unsigned' => true, 'primary' => true,  'notnull' => true ));
+        self::add(self::BASE_DB_AUTOINC, array('unsigned' => true, 'primary' => true,  'notnull' => true, 'autoincrement'=>true ));
+        self::add(self::BASE_DB_NOT_NULL, array(  'notnull' => true ));
+        self::add(self::BASE_DB_GENERAL_STATUS, array('values'=>array(0=>'Enabled',1=>'Disabled',2=>'Disabled'), 'default'=>'Enabled',  'notnull' => true ));
     }
 
-    array_unshift($params,$format);
-
-    return call_user_func_array('sprintf', $params);
-}
-
-function _flatten($array)
-{
-    $new = $array;
-    foreach($array as $key=>$value)
+    private static
+    function add($const, $values, $default=null)
     {
-        if (is_array($value))
+        self::$constants[$const] = array('values'=>$values, 'default'=>$default);
+    }
+
+    private static
+    function validate($const)
+    {
+        if (is_null(self::$constants))
         {
-            $new = array_merge($new, $value);
-            unset($new[$key]);
+            self::init();
+        }
+        if (!isset(self::$constants[$const]))
+        {
+            throw new KTapiException(_str('Unknown constant group %s', $const));
         }
     }
-    return $new;
-}
 
-function _flattenArray($array)
-{
-    foreach($array as $i=>$a)
+    public static
+    function get($const)
     {
-        $array[$i] = _flatten($a);
-    }
-    return $array;
-}
+        self::validate($const);
 
-function _extractArray($rows, $property)
-{
-    if (!$rows instanceof Doctrine_Collection)
-    {
-        throw new Exception('Doctrine_Collection expected!');
-    }
-    if ($rows->count() == 0)
-    {
-        return array();
-    }
-    $array = array();
-    foreach($rows as $row)
-    {
-        $array[] = $row->$property;
-    }
-    return $array;
-}
-
-
-/**
- * Ensures the path ends with the appropriate slash depending on operating system and
- * that all slashes are the same.
- *
- * @param string $path
- * @param boolean $append [optional] default true
- * @return string
- */
-function _path($path, $append=true)
-{
-    if ($append && substr($path, -1) != DIRECTORY_SEPARATOR)
-    {
-        $path .= DIRECTORY_SEPARATOR;
-    }
-    return str_replace('/', DIRECTORY_SEPARATOR, $path);
-}
-
-/**
- * Prepends KT_ROOT_DIR to the path and ensures that slashes are correct.
- *
- * @param string $path
- * @param boolean $append [optional] default true
- * @return string
- */
-function _ktpath($path, $append=true)
-{
-    return KT_ROOT_DIR . _path($path,$append);
-}
-
-/**
- * Removes KT_ROOT_DIR from the path if it is present.
- *
- * @param string $path
- * @return string
- */
-function _relativepath($path)
-{
-    if (strpos($path, KT_ROOT_DIR) === 0)
-    {
-        $path = substr($path, strlen(KT_ROOT_DIR));
-    }
-    return $path;
-}
-
-/**
- * Prepends KTAPI2_DIR to the path and ensures that slashes are correct.
- *
- * @param string $path
- * @param boolean $append [optional] default true
- * @return string
- */
-function _ktapipath($path, $append=true)
-{
-    return KTAPI2_DIR . _path($path,$append);
-}
-
-
-
-function _require($path, $parent)
-{
-    if (!empty($path) && dirname($path) == '.')
-    {
-        $path = _path($parent) . $path;
+        return self::$constants[$const]['values'];
     }
 
-    if (!file_exists($path))
+    public static
+    function getDefault($const)
     {
-        throw new KTapiException(_kt('File expected: %s', $path));
+        self::validate($const);
+
+        return self::$constants[$const]['default'];
     }
-    return $path;
 }
+
 
 final class KTapi
 {
@@ -322,7 +227,7 @@ final class KTapi
         require_once(KT_LOG4PHP_DIR . 'LoggerPropertyConfigurator.php');
 
         $configurator = new LoggerPropertyConfigurator();
-        $repository =& LoggerManager::getLoggerRepository();
+        $repository = LoggerManager::getLoggerRepository();
         $properties = @parse_ini_file(LOG4PHP_CONFIGURATION);
         $properties['log4php.appender.default'] = 'LoggerAppenderDailyFile';
         $properties['log4php.appender.default.layout'] = 'LoggerPatternLayout';
@@ -462,10 +367,14 @@ final class KTapi
         spl_autoload_register(array('KTapi', 'autoload'));
 
         KTapi::initPaths();
+
+        Util_KT::init();
+
         KTapi::initPEAR();
         KTapi::initLogging();
         KTapi::loadDBConfig();
         KTapi::initDoctrine();
+        KTapi::initSession();
 
         KTapi::postInit();
 
@@ -484,6 +393,13 @@ final class KTapi
         {
             $logger->debug('page start');
         }
+    }
+
+    public static
+    function initSession()
+    {
+        // everything we do needs this, might as well start it automatically.
+        Security_Session::startPHPsession();
     }
 
     /**
@@ -601,19 +517,4 @@ final class KTapi
 
 KTapi::init();
 
-
-//$manager = PluginManager::registerTrigger(new CustomAddDocumentTrigger());
-
-
-
-/* Random test :)
-
-KTapi::init();
-
-$manager = PluginManager::get();
-
-$namespaces = $manager->getAction('Action.AddDocument');
-
-print_r($namespaces);
-*/
 ?>

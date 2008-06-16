@@ -21,7 +21,7 @@ class Repository_Metadata_DocumentType extends BaseGrouping
     public static
     function getDocumentTypesByFilter($filter, $unitId = null)
     {
-        return parent::getGroupingsByFilter(self::BASENAME, self::CLASSNAME,$filter, $unitId);
+        return parent::getMembersByFilter(self::BASENAME, self::CLASSNAME,$filter, $unitId);
     }
 
     public static

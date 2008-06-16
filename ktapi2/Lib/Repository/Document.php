@@ -310,26 +310,18 @@ public
 
         $rows = $query->execute();
 
-        $count = $rows->count();
+        $documents = Util_Doctrine::getObjectArrayFromCollection($rows, 'Repository_Document');
 
-        if ($count == 0)
-        {
-            throw new KTapiException(_str('No documents(s) found matching id(s): %s.', implode(',', $id)));
-        }
+        $count = count($folders);
 
-        $documents = array();
-        foreach($rows as $document)
+        switch ($count)
         {
-            $documents[] = new Document($document);
-        }
-
-        if ($count == 1)
-        {
-            return $documents[0];
-        }
-        else
-        {
-            return $documents;
+            case 0:
+                throw new KTapiException(_str('No documents(s) found matching id(s): %s.', implode(',', $id)));
+            case 1;
+                return $documents[0];
+            default:
+                return $documents;
         }
     }
 

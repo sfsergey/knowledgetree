@@ -10,8 +10,10 @@ class MetadataTestCase extends KTAPI_TestCase
 
     function testMetadata()
     {
-        print "\n\ntestMetadata()\n\n";
+        $this->title();
 
+
+        $this->title('creating Invoice (InvoiceNo, InvoiceDate)');
         $documentType = Repository_Metadata_DocumentType::create('Default Type');
         $fieldset1 = Repository_Metadata_Fieldset::create('Invoice');
         $documentType->addFieldset($fieldset1);
@@ -21,10 +23,13 @@ class MetadataTestCase extends KTAPI_TestCase
         $fieldset1->addField($field2);
 
 
+        $this->title('get fields');
         $fields = $fieldset1->getFields();
         $this->assertEqual(count($fields), 2);
         $this->assertEqual($fields[0]->Id, $field1->Id);
         $this->assertEqual($fields[1]->Id, $field2->Id);
+
+        $this->title('removing field');
 
         $fieldset1->removeField($field1);
 

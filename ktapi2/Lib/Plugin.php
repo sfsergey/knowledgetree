@@ -239,6 +239,13 @@ abstract class Plugin
     }
 
     protected
+    function registerGroupingProperty($namespace, $baseClass, $displayName, $getter, $setter, $propertyName, $type, $default=null)
+    {
+        $property = new GroupingPropertyModule();
+        $property->register($this, $namespace, $baseClass, $displayName, $getter, $setter, $propertyName, $type, $default);
+    }
+
+    protected
     function registerUnitTest($className, $path)
     {
         $path = _require($path, $this->getBasePath());
@@ -258,6 +265,12 @@ abstract class Plugin
         }
 
         $action = new $class;
+        if (!$action instanceof Trigger )
+        {
+            throw new KTapiException(_kt('Class %s wsa expected to be a Action', $class));
+        }
+
+
         $action->register($this, $path);
     }
 
@@ -273,7 +286,58 @@ abstract class Plugin
         }
 
         $trigger = new $class;
+        if (!$trigger instanceof Trigger )
+        {
+            throw new KTapiException(_kt('Class %s wsa expected to be a Trigger'));
+        }
+
+
+
         $trigger->register($this, $path);
     }
+
+    protected
+    function registerAuthenticationProvider($classname, $path)
+    {
+        $path = _require($path, $this->getBasePath());
+
+        require_once($path);
+        if (!class_exists($classname))
+        {
+           throw new KTapiException(_kt('Class %s was expected in: %s', $classname, $path));
+        }
+
+        $provider = new $classname;
+        if (!$provider instanceof Security_Authentication_Provider)
+        {
+            throw new KTapiException(_kt('Class %s wsa expected to be a Security_Authentication_Provider'));
+        }
+
+        $provider->register($this, $path);
+
+        return $provider;
+    }
+
+    protected
+    function registerStorageProvider($classname, $path)
+    {
+        $path = _require($path, $this->getBasePath());
+
+        require_once($path);
+        if (!class_exists($class))
+        {
+           throw new KTapiException(_kt('Class %s was expected in: %s', $class, $path));
+        }
+
+        $provider = new $classname;
+        if (!$provider instanceof Security_Authentication_Provider)
+        {
+            throw new KTapiException(_kt('Class %s wsa expected to be a Security_Authentication_Provider'));
+        }
+
+        $provider->register($this, $path);
+    }
+
+
 }
 ?>

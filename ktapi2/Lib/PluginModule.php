@@ -3,6 +3,7 @@
 abstract class PluginModule
 {
     protected $module;
+    protected $config;
 
     public
     function __construct($module = null)
@@ -53,5 +54,17 @@ abstract class PluginModule
     {
         return array();
     }
+
+    protected
+    function getConfigValue($property)
+    {
+        if (!isset($this->config))
+        {
+            $this->config = unserialize($this->module->module_config);
+        }
+
+        return $this->config[$property];
+    }
+
 }
 ?>

@@ -1,7 +1,9 @@
 <?php
 
-class BaseGrouping extends KTAPI_Base
+class BaseGrouping extends KTAPI_BaseMember
 {
+    protected $propertyValues;
+
     /**
      * Get a reference to a group object(s) using an int, or array of int.
      *
@@ -28,18 +30,60 @@ class BaseGrouping extends KTAPI_Base
         return Util_Doctrine::getEntityByField($baseClass, $instanceClass, array('name' => $groupName));
     }
 
-    /**
-     * Get a list of groups based on a filter and optional  unit id.
-     *
-     * @param string $filter
-     * @param int $unitId
-     * @return array of Security_Group
-     */
-    protected static
-    function getGroupingsByFilter($baseClass, $instanceClass, $filter, $unitId = null)
+
+    protected
+    function getProperties()
     {
-        throw new Exception('TODO');
+        if (is_null($this->propertyValues))
+        {
+            $temp = Util_Doctrine::simpleQuery('Base_GroupingProperty', array('grouping_member_id'=>$this->getId()));
+
+            $properties = array();
+            foreach($temp as $property)
+            {
+                $properties[$property->property_namespace] = unserialize($property->value);
+            }
+            $this->propertyValues = $properties;
+        }
+        return $this->propertyValues;
     }
+
+    protected
+    function getPropertyByName($property_namespace, $default = null)
+    {
+        $properties = $this->getProperties();
+        if (isset($properties[$property_namespace]))
+        {
+            return $properties[$property_namespace];
+        }
+        if (is_null($default))
+        {
+            throw new KTapiUnknownPropertyException($property);
+        }
+
+        $value = new Base_GroupingProperty();
+        $value->grouping_member_id = $this->getId();
+        $value->property_namespace = $property_namespace;
+        $value->value = serialize($default);
+        $value->save();
+
+        $this->propertyValues = null;
+
+        return $default;
+    }
+
+    protected
+    function setPropertyByName(GroupingPropertyModule $groupingProperty, $value)
+    {
+        $groupingProperty->isValueValid($value);
+
+        Util_Doctrine::update('Base_GroupingProperty',
+                        array('value'=>serialize($value)),
+                        array('grouping_member_id'=>$this->getId(), 'property_namespace'=>$groupingProperty->getNamespace()));
+
+        $this->propertyValues = null;
+    }
+
 
     /**
      * Add a subgroup to the current group.
@@ -144,17 +188,11 @@ class BaseGrouping extends KTAPI_Base
         {
             throw new KTapiException('Relation is not understood.');
         }
-        $groupId = $this->getId();
-
         $rows = $this->base->$relation;
 
-        $class = get_class($this);
-        $subgroups = array();
-        foreach($rows as $row)
-        {
-            $subgroups[] = new $class($row);
-        }
-        return $subgroups;
+        $classname = get_class($this);
+
+        return Util_Doctrine::getObjectArrayFromCollection($rows, $classname);
     }
 
     /**
@@ -213,75 +251,6 @@ class BaseGrouping extends KTAPI_Base
         return $group;
     }
 
-    private
-    function setStatus($status)
-    {
-        $this->base->status = $status;
-        $this->base->save();
-    }
-
-    public
-    function delete()
-    {
-        $db = KTapi::getDb();
-
-        try
-        {
-            $db->beginTransaction();
-
-            $this->setStatus('Deleted');
-
-            $query = Doctrine_Query::create();
-            $query->delete()
-                ->from('Base_MemberSubmember m')
-                ->where('m.member_id = :member_id', array(':member_id'=>$this->getId()))
-                ->execute();
-
-            $query = Doctrine_Query::create();
-            $query->delete()
-                ->from('Base_MemberEffectiveUser u')
-                ->where('u.member_id = :member_id', array(':member_id'=>$this->getId()))
-                ->execute();
-
-            $groupings = $this->getGroupings('Parents');
-            foreach($groupings as $groups)
-            {
-                $groups->updateEffectiveUsers();
-            }
-            $db->commit();
-        }
-        catch(Exception $ex)
-        {
-            $db->rollback();
-            throw $ex;
-        }
-        $this->base->clearRelated();
-    }
-
-    protected
-    function enable()
-    {
-        $this->setStatus('Enabled');
-    }
-
-    protected
-    function disable()
-    {
-        $this->setStatus('Disabled');
-    }
-
-    public
-    function isEnabled()
-    {
-        return $this->base->status == 'Enabled';
-    }
-
-    public
-    function isDeleted()
-    {
-        return $this->base->status == 'Deleted';
-    }
-
     /**
      * Returns the id for the group.
      *
@@ -315,15 +284,18 @@ class BaseGrouping extends KTAPI_Base
         $this->base->name = $name;
     }
 
-    /**
-     * Save settings
-     *
-     */
     public
-    function save()
+    function getUnitId()
     {
-        $this->base->save();
+        return $this->base->unit_id;
     }
+
+    protected
+    function setUnitId($unit_id)
+    {
+         $this->base->unit_id = $unit_id;
+    }
+
 
     protected
     function updateEffectiveUsers()
@@ -387,18 +359,8 @@ class BaseGrouping extends KTAPI_Base
         }
         $rows = $this->base->EffectiveUsers;
 
-        $users = array();
-        $numRows = $rows->count();
+        return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_User', 'member_id');
 
-        if  ($numRows > 0)
-        {
-            foreach($rows as $row)
-            {
-                $users[$row->member_id] = new Security_User($row);
-            }
-        }
-
-        return $users;
     }
 
     public
@@ -561,6 +523,87 @@ class BaseGrouping extends KTAPI_Base
 
         return $this->checkMembership($this->getId(), $user->getId());
     }
+
+    protected
+    function __get($property)
+    {
+        try
+        {
+            return parent::__get($property);
+        }
+        catch(KTapiUnknownPropertyException $ex)
+        {
+            $properties = PluginManager::getGroupingProperties(get_class($this));
+
+            if (isset($properties['properties'][$property]))
+            {
+                $ns = $properties['properties'][$property];
+                $gp = $properties['ns'][$ns];
+
+                return $this->getPropertyByName($ns, $gp->getDefault());
+            }
+
+            throw $ex;
+        }
+    }
+
+    protected
+    function __set($property, $value)
+    {
+        try
+        {
+            return parent::__set($property, $value);
+        }
+        catch(KTapiUnknownPropertyException $ex)
+        {
+            $properties = PluginManager::getGroupingProperties(get_class($this));
+
+            if (isset($properties['properties'][$property]))
+            {
+                $ns = $properties['properties'][$property];
+                $gp = $properties['ns'][$ns];
+
+                $setter = $gp->getSetter();
+                if (!empty($setter))
+                {
+                    $this->setPropertyByName($gp, $value);
+                }
+            }
+
+            throw $ex;
+        }
+    }
+
+    protected
+    function __call($method, $params)
+    {
+        $properties = PluginManager::getGroupingProperties(get_class($this));
+
+        if (isset($properties['funcs'][$method]))
+        {
+            $ns = $properties['funcs'][$method];
+            $gp = $properties['namespaces'][$ns];
+            $getter = $gp->getGetter();
+            $setter = $gp->getSetter();
+
+            switch ($method)
+            {
+                case $getter:
+                    $default = $gp->getDefault();
+                    return $this->getPropertyByName($ns, $default);
+                case $setter:
+                    if (count($params) != 1)
+                    {
+                        throw new Exception('Only one parameter expected.');
+                    }
+                    $value = $params[0];
+                    $this->setPropertyByName($gp, $value);
+                    return;
+            }
+        }
+        throw new KTapiUnknownPropertyException($method);
+    }
+
 
 }
 

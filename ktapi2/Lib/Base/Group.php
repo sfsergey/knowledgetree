@@ -15,6 +15,11 @@ class Base_Group extends Doctrine_Record
 
   public function setUp()
   {
+    $this->hasMany('Base_GroupingProperty as Properties', array(
+                                     'local' => 'member_id',
+                                     'foreign' => 'grouping_id'
+                                     ));
+
     $this->hasMany('Base_Group as Children', array(
                                      'local' => 'member_id',
                                      'foreign' => 'submember_id',

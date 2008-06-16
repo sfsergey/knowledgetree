@@ -268,26 +268,18 @@ class Repository_Folder extends Repository_FolderItem
                 ->whereIn('f.id', $id)
                 ->execute();
 
-        $count = $rows->count();
+        $folders = Util_Doctrine::getObjectArrayFromCollection($rows, 'Repository_Folder');
 
-        if ($count == 0)
-        {
-            throw new KTapiException(_str('No folder(s) found matching id(s): %s.', implode(',', $id)));
-        }
+        $count = count($folders);
 
-        $folders = array();
-        foreach($rows as $folder)
+        switch ($count)
         {
-            $folders[] = new Repository_Folder($folder);
-        }
-
-        if ($count == 1)
-        {
-            return $folders[0];
-        }
-        else
-        {
-            return $folders;
+            case 0:
+                throw new KTapiException(_str('No folder(s) found matching id(s): %s.', implode(',', $id)));
+            case 1;
+                return $folders[0];
+            default:
+                return $folders;
         }
     }
 

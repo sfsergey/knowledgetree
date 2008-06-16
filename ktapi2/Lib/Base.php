@@ -42,6 +42,12 @@ class KTAPI_Base
             throw new KTapiUnknownPropertyException($this, $property);
         }
     }
+
+    public
+    function save()
+    {
+        $this->base->save();
+    }
 }
 
 ?>

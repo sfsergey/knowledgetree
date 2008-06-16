@@ -135,26 +135,18 @@ class Util_Doctrine
                 ->limit(count($id))
                 ->execute();
 
-        $count = $rows->count();
+        $records = Util_Doctrine::getObjectArrayFromCollection($rows, $instanceClass);
 
-        if ($count == 0)
-        {
-            throw new KTapiException(_str('No record(s) found matching id(s): %s.', implode(',', $id)));
-        }
+        $count = count($records);
 
-        $records = array();
-        foreach($rows as $row)
+        switch ($count)
         {
-            $records[] = new $instanceClass($row);
-        }
-
-        if ($count == 1)
-        {
-            return $records[0];
-        }
-        else
-        {
-            return $records;
+            case 0:
+                throw new KTapiException(_str('No %s records(s) found matching id(s): %s.', $instanceClass, implode(',', $id)));
+            case 1;
+                return $records[0];
+            default:
+                return $records;
         }
     }
 
@@ -270,6 +262,118 @@ class Util_Doctrine
 
         return $row->delete();
     }
+
+    public static
+    function getObjectArrayFromCollection($rows, $classname = null, $key = null)
+    {
+        $count = $rows->count();
+        if ($count == 0)
+        {
+            return array();
+        }
+
+        $array = array();
+        if (is_null($classname))
+        {
+            if (is_null($key))
+            {
+                foreach($rows as $row)
+                {
+                    $array[] = $row;
+                }
+            }
+            else
+            {
+                foreach($rows as $row)
+                {
+                    $array[$row->$key] = $row;
+                }
+            }
+        }
+        else
+        {
+            if (is_null($key))
+            {
+                foreach($rows as $row)
+                {
+                    $array[] = new $classname($row);
+                }
+            }
+            else
+            {
+                foreach($rows as $row)
+                {
+                    $array[$row->$key] = new $classname($row);
+                }
+            }
+
+        }
+
+        return $array;
+    }
+
+    public static
+    function simpleDelete($classname, $condition)
+    {
+        $query = Doctrine_Query::create()
+            ->delete()
+            ->from($classname . ' c');
+        foreach($condition as $k=>$v)
+        {
+            $query->addWhere("c.$k = :$k", array(":$k"=>$v));
+        }
+
+        $rows = $query->execute();
+    }
+
+    public static
+    function simpleQuery($classname, $condition, $instanceClass = null)
+    {
+        $query = Doctrine_Query::create()
+            ->select('c.*')
+            ->from($classname . ' c');
+        foreach($condition as $k=>$v)
+        {
+            $query->addWhere("c.$k = :$k", array(":$k"=>$v));
+        }
+
+        $rows = $query->execute();
+
+        return self::getObjectArrayFromCollection($rows, $instanceClass);
+    }
+
+    public static
+    function simpleOneQuery($classname, $condition, $instanceClass = null)
+    {
+        $records = self::simpleQuery($classname, $condition, $instanceClass);
+
+        switch (count($records))
+        {
+            case 1;
+                return $records[0];
+            default:
+                throw new KTapiException(_str('No %s records(s) found matching conditions.', $classname));
+        }
+    }
+
+
+    public static
+    function update($classname, $update, $condition)
+    {
+        $query = Doctrine_Query::create()
+            ->update($classname . ' c');
+        foreach($update as $k=>$v)
+        {
+            $query->set("c.$k", ":$k", array(":$k"=>$v));
+        }
+        foreach($condition as $k=>$v)
+        {
+            $query->addWhere("c.$k = :$k", array(":$k"=>$v));
+        }
+
+        $query->execute();
+    }
+
 }
 
 ?>

@@ -2,6 +2,9 @@
 
 class Security_Group extends BaseGrouping
 {
+    const UNIT_ADMIN_NAMESPACE = 'unit.administrator';
+    const SYSTEM_ADMIN_NAMESPACE = 'system.administrator';
+
     public static
     function get($id)
     {
@@ -24,7 +27,7 @@ class Security_Group extends BaseGrouping
     public static
     function getGroupsByFilter($filter, $unitId = null)
     {
-        return parent::getGroupingsByFilter('Base_Group','Security_Group',$filter, $unitId);
+        return parent::getMembersByFilter('Base_Group','Security_Group',$filter, $unitId);
     }
 
     /**
@@ -98,6 +101,33 @@ class Security_Group extends BaseGrouping
     function create($groupName, $options = array())
     {
         return parent::create('Security_Group','Group', $groupName, $options);
+    }
+
+    public
+    function assignToUnit($unit)
+    {
+        $unit = Util_Security::validateUnit($unit);
+
+        $this->setUnitId($unit->getId());
+        $this->save();
+    }
+
+    public
+    function delete()
+    {
+        $name = $this->base->name;
+
+        $this->base->name = $name . '  - ' . _kt('Deleted')  . ' - ' . $this->getId();
+
+        try
+        {
+            parent::delete();
+        }
+        catch(Exception $ex)
+        {
+            $this->base->name = $name;
+            throw $ex;
+        }
     }
 
 }

@@ -378,7 +378,10 @@ final class PluginManager
 
         if ($overwrite && ($rows === 0))
         {
-            throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
+            if (isset($options['silent']) && !$options['silent'])
+            {
+                throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
+            }
         }
         self::removePluginRelations($namespace);
         self::validateRelations();
@@ -447,6 +450,48 @@ final class PluginManager
         else
             return self::validateRelations();
     }
+
+    public static
+    function getModule($namespace)
+    {
+        if (empty($namespace) || !is_string($namespace))
+        {
+            throw new Exception('Namespace not specified.');
+        }
+
+        try
+        {
+            $module = Util_Doctrine::simpleOneQuery('Base_PluginModule', array('namespace'=> $namespace));
+        }
+        catch(Exception $ex)
+        {
+            throw new Exception('Module not found');
+        }
+
+        $path = $module->path;
+
+        if (!empty($path))
+        {
+            require_once(_ktpath($path));
+        }
+
+        $classname = $module->classname;
+
+        if (empty($classname))
+        {
+            // TODO: test this
+            throw new Exception('Class expected!');
+        }
+        if (!class_exists($classname))
+        {
+            throw new Exception('Class could not be resolved.');
+        }
+
+        $obj = new $classname($module);
+
+        return $obj;
+    }
+
 
     /**
      * Enables a plugin module.
@@ -801,5 +846,56 @@ final class PluginManager
     {
     }
 
+    public static
+    function getGroupingProperties($classname)
+    {
+        static $properties = array();
+
+        if (isset($properties[$classname]))
+        {
+            return $properties[$classname];
+        }
+
+        $query = Doctrine_Query::create();
+        $rows = $query->select('m.*')
+                    ->from('Plugin_Module m')
+                    ->where('m.classname = :classname AND m.module_type = :module_type',
+                                array(':classname'=>$classname,':module_type'=>'GroupingProperty'))
+//                    ->useResultCache(true)
+                    ->execute();
+
+        $groupProperties  = Util_Doctrine::getObjectArrayFromCollection($rows, 'GroupingPropertyModule');
+        $ns = array();
+        $funcs = array();
+        $props = array();
+
+        foreach($groupProperties as $p)
+        {
+            $namespace = $p->getNamespace();
+            $property = $p->getProperty();
+            $getter = $p->getGetter();
+            $setter = $p->getSetter();
+            $ns[$namespace] = $p;
+
+            if (!empty($property))
+            {
+                $props[$property] = $namespace;
+            }
+
+            if (!empty($getter))
+            {
+                $funcs[$getter] = $namespace;
+            }
+            if (!empty($setter))
+            {
+                $funcs[$setter] = $namespace;
+            }
+
+        }
+
+        $properties[$classname] = array('namespaces'=>$ns, 'funcs' =>$funcs, 'properties'=>$props);
+
+        return $properties[$classname];
+    }
 }
 ?>

@@ -21,7 +21,7 @@ class Repository_Metadata_Field extends BaseGrouping
     public static
     function getFieldsByFilter($filter, $unitId = null)
     {
-        return parent::getGroupingsByFilter(self::BASENAME, self::CLASSNAME,$filter, $unitId);
+        return parent::getMembersByFilter(self::BASENAME, self::CLASSNAME,$filter, $unitId);
     }
 
     public static

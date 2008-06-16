@@ -4,12 +4,6 @@ class Util_Security
 {
 
     public static
-    function hashPassword($password)
-    {
-        return md5($password);
-    }
-
-    public static
     function randomPassword()
     {
         // TODO
@@ -39,6 +33,10 @@ class Util_Security
     {
         return KTapi::validateClass('Security_User', $user);
     }
-
+    public static
+    function validateUnit($unit)
+    {
+        return KTapi::validateClass('Security_Unit', $unit);
+    }
 
 }

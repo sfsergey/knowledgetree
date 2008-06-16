@@ -28,7 +28,7 @@ class Security_Role extends BaseGrouping
     public static
     function getRolesByFilter($filter, $unitId = null)
     {
-        return parent::getGroupingsByFilter(self::BASENAME , self::CLASSNAME,$filter, $unitId);
+        return parent::getMembersByFilter(self::BASENAME , self::CLASSNAME,$filter, $unitId);
     }
 
     public static

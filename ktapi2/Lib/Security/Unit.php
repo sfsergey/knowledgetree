@@ -28,7 +28,7 @@ class Security_Unit extends BaseGrouping
     public static
     function getUnitsByFilter($filter, $unitId = null)
     {
-        return parent::getGroupingsByFilter(self::BASENAME , self::CLASSNAME,$filter, $unitId);
+        return parent::getMembersByFilter(self::BASENAME , self::CLASSNAME,$filter, $unitId);
     }
 
     public static
