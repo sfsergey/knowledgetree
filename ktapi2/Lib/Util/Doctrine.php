@@ -371,7 +371,7 @@ class Util_Doctrine
             $query->addWhere("c.$k = :$k", array(":$k"=>$v));
         }
 
-        $query->execute();
+        return $query->execute();
     }
 
 }

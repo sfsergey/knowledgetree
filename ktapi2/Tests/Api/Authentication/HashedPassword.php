@@ -128,11 +128,14 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
         try
         {
             $group = Security_Group::getByGroupName('sysadmin group');
+            $group->delete();
         }
         catch(Exception $ex)
         {
-            $group = Security_Group::create('sysadmin group');
         }
+
+        $group = Security_Group::create('sysadmin group');
+
 
         $user1 = Security_User::getByUsername('admin');
 
@@ -147,6 +150,8 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
         {
             // might not be a problem. fix add user to check before adding constraint
         }
+        $user1 = Security_User::getByUsername('admin');
+
         $this->title('$user1->isSystemAdministrator()');
         $this->assertTrue($user1->isSystemAdministrator());
 

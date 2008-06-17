@@ -53,7 +53,7 @@ class KTAPI_BaseMember extends KTAPI_Base
 
             $query = Doctrine_Query::create();
             $query->delete()
-                ->from('Base_MemberSubmember m')
+                ->from('Base_MemberSubMember m')
                 ->where('m.member_id = :member_id', array(':member_id'=>$this->getId()))
                 ->execute();
 

@@ -8,8 +8,9 @@ class Security_Session extends KTAPI_Base
     const ANONYMOUS     = 'kt_anon';
     const SYSTEM_ADMIN  = 'kt_admin';
     const ADMIN_MODE    = 'kt_admin_mode';
-    const UNIT_ADMIN    = 'kt_unitadmin';
-    const ADMIN_UNITS   = 'kt_units';
+    const UNIT_ADMIN    = 'kt_unit_admin';
+    const ADMIN_UNITS   = 'kt_admin_units';
+    const UNITS         = 'kt_units';
 
     public
     function __construct($base)
@@ -231,19 +232,28 @@ class Security_Session extends KTAPI_Base
     {
         self::clearOldSessions();
 
+        if (isset($_SESSION[self::SESSION ]))
+        {
+            $sesion = $_SESSION[self::SESSION ]->getPHPsession();
+
+            if ($session == $sesion)
+            {
+                return $_SESSION[self::SESSION ];
+            }
+        }
+
         try
         {
             $sesion = Util_Doctrine::simpleOneQuery('Base_ActiveSession', array('session'=>$session));
+            $sesion->activity_date = date('Y-m-d H:i:s');
+            $sesion->save();
+
+            session_id($session);
         }
         catch(Exception $ex)
         {
             throw new KTapiException('Session expired!');
         }
-
-        $sesion->activity_date = date('Y-m-d H:i:s');
-        $sesion->save();
-
-        session_id($session);
 
         return $_SESSION[self::SESSION ];
     }
@@ -321,6 +331,18 @@ class Security_Session extends KTAPI_Base
             {
                 unset($_SESSION[self::ANONYMOUS ]);
             }
+
+            if ($user->isSystemAdministrator())
+            {
+                $_SESSION[self::SYSTEM_ADMIN] = true;
+            }
+
+            if ($user->isUnitAdministrator())
+            {
+                $_SESSION[self::ADMIN_UNITS ] = $user->getAdminUnits();
+            }
+
+            $_SESSION[self::UNITS ] = $user->getUnits();
 
             // delete sessions
             $maxSessions = $session->is_webservice?KTAPI_Config::get(KTAPI_Config::MAX_WEBSERVICE_SESSIONS ):KTAPI_Config::get(KTAPI_Config::MAX_SESSIONS);

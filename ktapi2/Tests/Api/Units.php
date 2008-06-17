@@ -28,6 +28,18 @@ class UnitsTestCase extends KTAPI_TestCase
         $this->assertEqual($u1->Name, $unit1->Name);
     }
 
+    function testUserUnits()
+    {
+        // TODO: complete
+
+        // add group1, group2, group3
+        // assign group1 and group3 to unit 1 and unit 2
+        // group2 must be subgroup to group3
+        // add user1 to group1 and group 2
+        // add user2 to group1 and group3
+
+    }
+
 }
 
 ?>

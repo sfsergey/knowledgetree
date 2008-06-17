@@ -113,6 +113,23 @@ class Security_Group extends BaseGrouping
     }
 
     public
+    function getUnit($throw = false)
+    {
+        if (is_null($this->base->unit_id))
+        {
+            if ($throw)
+            {
+                throw new Exception('No unit assigned.');
+            }
+            else
+            {
+                return null;
+            }
+        }
+        return Security_Unit::get($this->base->unit_id);
+    }
+
+    public
     function delete()
     {
         $name = $this->base->name;

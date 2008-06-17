@@ -192,6 +192,7 @@ class UserAndGroupsTestCase extends KTAPI_TestCase
         $group1->Name = 'Group 1 - Update';
         $group1->save();
 
+
         $groupId = $group1->Id;
 
         $group1 = Security_Group::get($groupId);
@@ -206,6 +207,7 @@ class UserAndGroupsTestCase extends KTAPI_TestCase
 
     function testDuplicateUsernames()
     {
+        $this->title();
         $user1 = Security_User::create('test1', 'Test User 1', 'test1@knowledgetree.com');
         $user1->delete();
 
@@ -220,6 +222,7 @@ class UserAndGroupsTestCase extends KTAPI_TestCase
 
     function testDuplicateGroupNames()
     {
+        $this->title();
         $group1 = Security_Group::create('group 1');
         $group1->delete();
 
@@ -229,6 +232,7 @@ class UserAndGroupsTestCase extends KTAPI_TestCase
 
     function testGroupAdmin()
     {
+        $this->title();
         $group1 = Security_Group::create('group 1');
 
         $this->assertFalse($group1->isSystemAdministrator());
@@ -246,7 +250,6 @@ class UserAndGroupsTestCase extends KTAPI_TestCase
         $this->assertTrue($group1->isUnitAdministrator());
 
     }
-
 
 }
 

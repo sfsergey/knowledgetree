@@ -229,6 +229,7 @@ class Security_User extends KTAPI_BaseMember
     public
     function getEffectiveGroups()
     {
+        $this->base->clearRelated();
         $rows = $this->base->EffectiveGroups;
 
         return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');
@@ -393,14 +394,14 @@ class Security_User extends KTAPI_BaseMember
         return false;
     }
 
-    private $unitAdmins;
+    private $adminUnits;
 
     public
-    function isUnitAdmin()
+    function isUnitAdministrator()
     {
-        if (isset($this->unitAdmins))
+        if (isset($this->adminUnits))
         {
-            return count($this->unitAdmins) > 0;
+            return count($this->adminUnits) > 0;
         }
 
         $groups = $this->getEffectiveGroups();
@@ -412,10 +413,39 @@ class Security_User extends KTAPI_BaseMember
                 $unitGroups[] = $group;
             }
         }
-        $this->unitAdmins = $unitGroups;
-        return count($this->unitAdmins) > 0;
+        $this->adminUnits = $unitGroups;
+        return count($this->adminUnits) > 0;
     }
 
+    public
+    function getAdminUnits()
+    {
+        return $this->adminUnits;
+    }
+
+    /**
+     * Get units that a member may be assigned to.
+     * Note in this scenario, we only allow direct group mappings, not effective group mappings.
+     *
+     * @return unknown
+     */
+    public
+    function getUnits()
+    {
+        $units = array();
+        $groups = $this->getGroups();
+        foreach($groups as $group)
+        {
+            $unit = $group->getUnit();
+
+            if (is_null($unit))
+            {
+                continue;
+            }
+            $units[] = $unit;
+        }
+        return $units;
+    }
 }
 
 ?>

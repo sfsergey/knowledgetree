@@ -48,6 +48,16 @@ class BaseGrouping extends KTAPI_BaseMember
         return $this->propertyValues;
     }
 
+    private
+    function insertGroupingProperty($property_namespace, $value)
+    {
+        $prop = new Base_GroupingProperty();
+        $prop->grouping_member_id = $this->getId();
+        $prop->property_namespace = $property_namespace;
+        $prop->value = serialize($value);
+        $prop->save();
+    }
+
     protected
     function getPropertyByName($property_namespace, $default = null)
     {
@@ -61,11 +71,7 @@ class BaseGrouping extends KTAPI_BaseMember
             throw new KTapiUnknownPropertyException($property);
         }
 
-        $value = new Base_GroupingProperty();
-        $value->grouping_member_id = $this->getId();
-        $value->property_namespace = $property_namespace;
-        $value->value = serialize($default);
-        $value->save();
+        $this->insertGroupingProperty($property_namespace, $default);
 
         $this->propertyValues = null;
 
@@ -77,10 +83,17 @@ class BaseGrouping extends KTAPI_BaseMember
     {
         $groupingProperty->isValueValid($value);
 
-        Util_Doctrine::update('Base_GroupingProperty',
-                        array('value'=>serialize($value)),
-                        array('grouping_member_id'=>$this->getId(), 'property_namespace'=>$groupingProperty->getNamespace()));
+        $property_namespace = $groupingProperty->getNamespace();
 
+        $val = $this->getPropertyByName($property_namespace, $value);
+
+        if ($val != $value)
+        {
+            Util_Doctrine::update('Base_GroupingProperty',
+                        array('value'=>serialize($value)),
+                        array('grouping_member_id'=>$this->getId(), 'property_namespace'=>$property_namespace));
+
+        }
         $this->propertyValues = null;
     }
 
