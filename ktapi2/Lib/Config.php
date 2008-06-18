@@ -56,6 +56,8 @@ class KTAPI_Config
 
         if (isset(self::$config[$namespace]))
         {
+            // TODO: refactor into util class so we can reuse in other components
+
             $config = self::$config[$namespace];
             $value = $config->value;
             switch ($config->type)
@@ -95,6 +97,7 @@ class KTAPI_Config
 
         if (isset(self::$config[$namespace]))
         {
+            // TODO: refactor into util class so we can reuse in other components
             $config = self::$config[$namespace];
             switch($config->type)
             {
@@ -127,7 +130,15 @@ class KTAPI_Config
         throw new KTapiConfigurationException(_str('Unknown namespace %s', $namespace));
     }
 
-
+    /**
+     * Create a new configuration item
+     *
+     * @param string $namespace
+     * @param string $displayName
+     * @param mixed $value
+     * @param string $groupNamespace
+     * @param array $options
+     */
     public static
     function create($namespace, $displayName, $value, $groupNamespace, $options = array())
     {

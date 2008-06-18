@@ -2,8 +2,8 @@
 
 class Security_Group extends BaseGrouping
 {
-    const UNIT_ADMIN_NAMESPACE = 'unit.administrator';
-    const SYSTEM_ADMIN_NAMESPACE = 'system.administrator';
+    const UNIT_ADMIN_NAMESPACE      = 'unit.administrator';
+    const SYSTEM_ADMIN_NAMESPACE    = 'system.administrator';
 
     public static
     function get($id)
@@ -108,7 +108,7 @@ class Security_Group extends BaseGrouping
     {
         $unit = Util_Security::validateUnit($unit);
 
-        $this->setUnitId($unit->getId());
+        $this->setUnit($unit->getId());
         $this->save();
     }
 
@@ -147,6 +147,35 @@ class Security_Group extends BaseGrouping
         }
     }
 
+
+    /**
+     * This resolves all the subgroups by navigating the child tree.
+     *
+     * @return array
+     */
+    public
+    function getEffectiveGroups()
+    {
+        $array = array();
+        $groups = $this->getSubgroups();
+        foreach($groups as $group)
+        {
+            $array[$group->getId()] = $group;
+
+            $subgroups = $group->getEffectiveGroups();
+
+            foreach($subgroups as $subgroup)
+            {
+                $subgroupId = $subgroup->getId();
+                if (!array_key_exists($subgroupId, $array))
+                {
+                    $array[$subgroupId] = $subgroup;
+                }
+            }
+        }
+
+        return $array;
+    }
 }
 
 ?>

@@ -2,29 +2,46 @@
 
 class HashedAuthenticationProvider extends Security_Authentication_Provider
 {
+    /**
+     * The namespace of the hashed provider.
+     *
+     * @return string
+     */
     public
-    function register($plugin, $path)
+    function getProviderNamespace()
     {
-        try
-        {
-            $module = PluginManager::getModule(Security_Authentication_Source::HASHED_PASSWORD_NAMESPACE);
-            return $module;
-        }
-        catch(Exception $ex)
-        {
-            // TODO: improve exception handling
-            // getModule() throws an exception when not found.
-        }
-
-        parent::register($plugin, $path);
+        return 'hashed.password';
     }
 
+    /**
+     * This display name for the hased provider.
+     *
+     * @return string
+     */
+    public
+    function getDisplayName()
+    {
+        return 'Hashed Password Provider';
+    }
+
+    /**
+     * The authentication source does not require any configuration.
+     *
+     * An empty array is returned.
+     *
+     * @return array
+     */
     public
     function getSourceConfigParams()
     {
         return array();
     }
 
+    /**
+     * Returns an array of parameters the user must provide in order to authenticate.
+     *
+     * @return array
+     */
     public
     function getInputParams()
     {
@@ -34,12 +51,25 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
         return $input->getContents();
     }
 
+    /**
+     * This does a simple MD5 hash of the password.
+     *
+     * @param string $password
+     * @return string
+     */
     private static
     function hash($password)
     {
         return md5($password);
     }
 
+    /**
+     * Authenticates the user password by comparing the hash of the input 'password' with the stored hashed password.
+     *
+     * @param Security_User $user
+     * @param array $options
+     * @return boolean
+     */
     public
     function authenticate($user, $options = array())
     {
@@ -60,8 +90,17 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
 
     }
 
+    /**
+     * Update the auth configuration for the user.
+     *
+     * It hashes the 'password' value.
+     *
+     * @param Security_User $user
+     * @param array $options
+     * @return void
+     */
     public
-    function changePassword($user, $options = array())
+    function changeAuthConfig($user, $options = array())
     {
         $user = Util_Security::validateUser($user);
         if (!is_array($options))
@@ -81,32 +120,44 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
         $user->setAuthConfig($config);
     }
 
+    /**
+     * Indicates if the auth configuration can be changed for the user.
+     *
+     * @param Security_User $user
+     * @return boolean
+     */
     public
-    function canChangePassword($user)
+    function canChangeAuthConfig($user)
     {
         return true;
     }
 
+    /**
+     * When creating the user, this function extracts the relevant parameters from the input options array.
+     *
+     * It returns an array containing the hashed password used for authentication.
+     *
+     * @param array $options
+     * @return array
+     */
     public
-    function getProviderNamespace()
+    function getUserAuthConfig(&$options)
     {
-        return 'hashed.password';
-    }
-
-    public
-    function getDisplayName()
-    {
-        return 'Hashed Password Provider';
-    }
-
-    public
-    function getUserAuthConfig($options)
-    {
-        $config = array();
         if (isset($options['password']))
         {
-            $config['password'] = self::hash($options['password']);
+            $password = $options['password'];
         }
+        else
+        {
+            $password = Util_Security::randomPassword();
+
+            $options['password'] = $password;
+            $options['notifyUser'] = true;
+        }
+
+        $config = array();
+        $config['password'] = self::hash($password);
+
         return $config;
     }
 }

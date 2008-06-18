@@ -15,7 +15,7 @@ class Base_Group extends Doctrine_Record
 
   public function setUp()
   {
-    $this->hasMany('Base_GroupingProperty as Properties', array(
+    $this->hasMany('Base_GroupingPropertyValue as Properties', array(
                                      'local' => 'member_id',
                                      'foreign' => 'grouping_id'
                                      ));

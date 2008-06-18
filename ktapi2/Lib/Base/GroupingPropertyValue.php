@@ -1,11 +1,11 @@
 <?php
 
-class Base_GroupingProperty extends Doctrine_Record
+class Base_GroupingPropertyValue extends Doctrine_Record
 {
 
   public function setTableDefinition()
   {
-    $this->setTableName('grouping_properties');
+    $this->setTableName('grouping_property_values');
     $this->hasColumn('id', 'integer', 4, array('unsigned'=>true, 'primary'=>true,   'notnull' => true ));
     $this->hasColumn('grouping_member_id', 'integer', 4, array(   'notnull' => true ));
     $this->hasColumn('property_namespace', 'string', null, array(  'notnull' => true ));

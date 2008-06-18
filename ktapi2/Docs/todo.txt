@@ -1,14 +1,81 @@
-TODO:
 
-1) PluginManager::readAllPluginLocations()
-
-  must preserve state of modules when re-registering existing3w106
-
-2) add
-
-PluginManager::setModuleOrder($namespace, $order) // done
-PluginManager::setPluginOrder($namespace, $order) // we don't have this
+I'm just listing functions - not differentiating between static, methods etc.
 
 
+MimeType::add($mimeTypeName, $mimeGroupId, $extractorNamespace, $icon, $mimeName)
+MimeType::update($mimeType, $mimeType, $mimeGroupId, $extractorNamespace, $icon, $mimeName)
+MimeType::delete($mimeType)
+MimeType::getList(filter)
 
+MimeGroup::add($groupName)
+MimeGroup::update($mimeGroup, $groupName)
+MimeGroup::delete($mimeGroup)
+MimeGroup::getList($filter)
+MimeGroup::addExtension($mimeExtension)
+
+MimeExtension::add($mimeType, $extension, $name)
+MimeExtension::delete($extension)
+MimeExtension::update($extension, $name)
+MimeExtension::getAllBy($mimeType)
+
+
+
+
+Workflow::add($name, $options)
+Workflow::delete($workflow)
+Workflow::update($workflow, $name, $options)
+Workflow::setStartState($workflow, $state)
+Workflow::disable()
+Workflow::enable()
+Workflow::delete()
+
+Workflow::startWorkflowForNode($node, $onDate)
+
+Workflow::addState($name) : WorkflowState
+Workflow::getStates()
+
+Workflow::addTransition($startState, $endState, $name, $options)
+Workflow::getTransitions()
+
+Workflow::startWorkflowForDocumentType($documentType)
+
+
+WorkflowState::delete()
+WorkflowState::update($name)
+WorkflowState::disable()
+WorkflowState::enable()
+WorkflowState::delete()
+WorkflowState::getTransitions()
+WorkflowState::blockAction($actionNamespace)
+WorkflowState::allowAction($actionNamespace)
+WorkflowState::addPermission($permission)
+WorkflowState::removePermission($permission)
+WorkflowState::getPermissions($permission)
+
+WorkflowState::addAction($action, $config, $options)
+
+
+WorkflowState::startTransitionForNode($transition, $forNode, $onDate)
+
+// rough ideas...
+
+StorageEngine::getLocationParameters()
+StorageEngine::addFile($source, $filename) : Content
+StorageEngine::deleteFile($source, $content)
+StorageEngine::validate($source, $content)
+StorageEngine::validateAll($source)
+StorageEngine::mount($source, $options)
+StorageEngine::unmount($source, $options)
+StorageEngine::isReadOnly($source)
+StorageEngine::isMounted($source)
+
+StorageLocation::add($storageEngine, $options) : Location
+StorageLocation::mount($options)
+StorageLocation::unmount($options)
+StorageLocation::isReadOnly()
+StorageLocation::isMounted()
+StorageLocation::addFile($filename) : content
+StorageLocation::deleteFile(content)
+StorageLocation::validate($content)
+StorageLocation::validateAll()
 

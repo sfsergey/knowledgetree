@@ -37,7 +37,7 @@ CREATE TABLE `active_sessions` (
 
 LOCK TABLES `active_sessions` WRITE;
 /*!40000 ALTER TABLE `active_sessions` DISABLE KEYS */;
-INSERT INTO `active_sessions` VALUES (10,'f358a9929cf217405345ebb512ba9300',4231,'2008-06-17 21:36:30',2130706433,0,'2008-06-17 23:36:27'),(11,'83190d53b7ed9908fe34eb3072bd8491',4231,'2008-06-17 21:38:11',2130706433,0,'2008-06-17 23:38:11'),(13,'beaca27351bdc7cd6bed593bbd8642c6',4231,'2008-06-17 21:41:44',2130706433,0,'2008-06-17 23:41:44'),(22,'8c9dafedc76fb28461498649a1289459',49,'2008-06-17 21:52:24',2130706433,0,'2008-06-17 23:52:24'),(24,'ef12c7efe81b353ee363e1b66a4ecb79',51,'2008-06-17 21:52:51',2130706433,0,'2008-06-17 23:52:51'),(26,'55f354210e0895d4cd2055da71b69131',53,'2008-06-17 21:54:08',2130706433,0,'2008-06-17 23:54:08'),(28,'a5abf8a792bd6d4bd2cf74b8280a9c0d',55,'2008-06-17 21:55:12',2130706433,0,'2008-06-17 23:55:12'),(30,'431844a66345c7e4800efc50b2dcf8a4',57,'2008-06-17 21:56:37',2130706433,0,'2008-06-17 23:56:37'),(32,'3abc75a0cc67324a0345c606b1fd81dc',59,'2008-06-17 21:57:01',2130706433,0,'2008-06-17 23:57:01'),(34,'50fdabbf79a0c44334d4404d8f6eee20',61,'2008-06-17 22:07:44',2130706433,0,'2008-06-18 00:07:44'),(36,'979952ef127bd57ae16a73f2fc4271e4',63,'2008-06-17 22:08:15',2130706433,0,'2008-06-18 00:08:15'),(38,'61b0b7541944daf9a1fc61c4214d3a70',65,'2008-06-17 22:10:15',2130706433,0,'2008-06-18 00:10:15'),(40,'3754f2936059177d8538be87263f7078',67,'2008-06-17 22:10:54',2130706433,0,'2008-06-18 00:10:54'),(41,'3754f2936059177d8538be87263f7078',67,'2008-06-17 22:11:53',2130706433,0,'2008-06-18 00:11:53'),(43,'3ff1579e946b3a629f525384ce57b9c4',69,'2008-06-17 22:12:05',2130706433,0,'2008-06-18 00:12:05'),(45,'b10074c2e9411d13f74f94043497bcab',71,'2008-06-17 22:13:27',2130706433,0,'2008-06-18 00:13:27'),(47,'bcac18d80088de59addfa486886ed6a0',73,'2008-06-17 22:13:52',2130706433,0,'2008-06-18 00:13:52'),(49,'7d9c4833c33c701bcbbe63e0e4b06e07',75,'2008-06-17 22:14:37',2130706433,0,'2008-06-18 00:14:37'),(51,'48102a917a42ba87e5bc02604c942468',77,'2008-06-17 22:15:01',2130706433,0,'2008-06-18 00:15:01'),(53,'6854f6b3af57b8d9e08629039f4a1a5e',79,'2008-06-17 22:15:18',2130706433,0,'2008-06-18 00:15:18'),(55,'1a3f184e740fbc1fbfff4020e9f3dea7',81,'2008-06-17 22:19:54',2130706433,0,'2008-06-18 00:19:54'),(57,'aa43a7c029c4e14ae265d284d9ac3927',83,'2008-06-17 22:21:13',2130706433,0,'2008-06-18 00:21:13'),(59,'151762ca545a926e85ff629f754ebff5',85,'2008-06-17 22:21:46',2130706433,0,'2008-06-18 00:21:46'),(60,'151762ca545a926e85ff629f754ebff5',85,'2008-06-17 22:22:14',2130706433,0,'2008-06-18 00:22:14'),(62,'bb511cfc84e83987ddb145c1794b5bd5',102,'2008-06-17 22:22:30',2130706433,0,'2008-06-18 00:22:30'),(64,'7c8433917169c8bd1110865dc5c6317f',104,'2008-06-17 22:22:42',2130706433,0,'2008-06-18 00:22:42'),(65,'7c8433917169c8bd1110865dc5c6317f',104,'2008-06-17 22:22:48',2130706433,0,'2008-06-18 00:22:48'),(67,'ba13d27b053e55d44f9c28de059bf61d',130,'2008-06-17 22:22:57',2130706433,0,'2008-06-18 00:22:57'),(68,'ba13d27b053e55d44f9c28de059bf61d',130,'2008-06-17 22:23:16',2130706433,0,'2008-06-18 00:23:16'),(70,'b1f4ef862eb12fbffd7aaa724699e930',132,'2008-06-17 22:23:26',2130706433,0,'2008-06-18 00:23:26'),(71,'b1f4ef862eb12fbffd7aaa724699e930',132,'2008-06-17 22:23:29',2130706433,0,'2008-06-18 00:23:29'),(73,'5c141cf2d0d5619420e3dfd88bec584c',134,'2008-06-17 22:24:14',2130706433,0,'2008-06-18 00:24:14'),(74,'5c141cf2d0d5619420e3dfd88bec584c',134,'2008-06-17 22:24:25',2130706433,0,'2008-06-18 00:24:22'),(76,'05ef0a774c34977b292b9605a0e8a37c',136,'2008-06-17 22:26:27',2130706433,0,'2008-06-18 00:26:27'),(77,'05ef0a774c34977b292b9605a0e8a37c',136,'2008-06-17 22:26:29',2130706433,0,'2008-06-18 00:26:29'),(79,'f23d367346ed2f3b8328359fc979ae2c',138,'2008-06-17 22:26:46',2130706433,0,'2008-06-18 00:26:46'),(80,'f23d367346ed2f3b8328359fc979ae2c',138,'2008-06-17 22:26:46',2130706433,0,'2008-06-18 00:26:46'),(82,'000c2c7455dc59a3c7a1075b96134b3d',164,'2008-06-17 22:27:47',2130706433,0,'2008-06-18 00:27:47'),(83,'000c2c7455dc59a3c7a1075b96134b3d',164,'2008-06-17 22:27:47',2130706433,0,'2008-06-18 00:27:47'),(85,'faf21ad0a6b3764bd926e11ff26c6b36',166,'2008-06-17 22:27:57',2130706433,0,'2008-06-18 00:27:57'),(86,'faf21ad0a6b3764bd926e11ff26c6b36',166,'2008-06-17 22:27:57',2130706433,0,'2008-06-18 00:27:57'),(88,'c71b02f96a38484ea9330cc87a36b33f',192,'2008-06-17 22:29:06',2130706433,0,'2008-06-18 00:29:06'),(89,'c71b02f96a38484ea9330cc87a36b33f',192,'2008-06-17 22:29:06',2130706433,0,'2008-06-18 00:29:06'),(91,'e4bd4fb158ba7a220cdbaf941a44477d',204,'2008-06-17 22:29:33',2130706433,0,'2008-06-18 00:29:33'),(92,'e4bd4fb158ba7a220cdbaf941a44477d',204,'2008-06-17 22:29:34',2130706433,0,'2008-06-18 00:29:34'),(94,'c41b029bf1b8e2801ec165435032277b',215,'2008-06-17 22:29:47',2130706433,0,'2008-06-18 00:29:47'),(95,'c41b029bf1b8e2801ec165435032277b',215,'2008-06-17 22:29:48',2130706433,0,'2008-06-18 00:29:48'),(97,'3ac31c26ece1430f00d16008c8dddac1',227,'2008-06-17 22:30:11',2130706433,0,'2008-06-18 00:30:11'),(98,'3ac31c26ece1430f00d16008c8dddac1',227,'2008-06-17 22:30:11',2130706433,0,'2008-06-18 00:30:11'),(100,'57870a0f59867064a56557c38c13cf5a',239,'2008-06-17 22:30:45',2130706433,0,'2008-06-18 00:30:45'),(101,'57870a0f59867064a56557c38c13cf5a',239,'2008-06-17 22:30:46',2130706433,0,'2008-06-18 00:30:46'),(103,'cbf3c8f6c51e4a707f9c02d9050eab4f',251,'2008-06-17 22:31:18',2130706433,0,'2008-06-18 00:31:18'),(104,'cbf3c8f6c51e4a707f9c02d9050eab4f',251,'2008-06-17 22:31:19',2130706433,0,'2008-06-18 00:31:19'),(106,'72cb9f6b7bb7d72ed19d0714db75b4e4',277,'2008-06-17 22:33:13',2130706433,0,'2008-06-18 00:33:13'),(107,'72cb9f6b7bb7d72ed19d0714db75b4e4',277,'2008-06-17 22:33:13',2130706433,0,'2008-06-18 00:33:13'),(109,'b0f1a514dc90239d73fb64957e8508e6',303,'2008-06-17 22:34:39',2130706433,0,'2008-06-18 00:34:39'),(110,'b0f1a514dc90239d73fb64957e8508e6',303,'2008-06-17 22:34:40',2130706433,0,'2008-06-18 00:34:40'),(112,'431f356f306a69d8086a7ddce7194468',329,'2008-06-17 22:35:02',2130706433,0,'2008-06-18 00:35:02'),(113,'431f356f306a69d8086a7ddce7194468',329,'2008-06-17 22:35:02',2130706433,0,'2008-06-18 00:35:02'),(115,'ff21bdafb5e982b0c051305f51119d74',347,'2008-06-17 22:35:18',2130706433,0,'2008-06-18 00:35:18'),(116,'ff21bdafb5e982b0c051305f51119d74',347,'2008-06-17 22:35:18',2130706433,0,'2008-06-18 00:35:18'),(118,'7b69f8c97e67cd74b04ac5f043922d47',365,'2008-06-17 22:35:28',2130706433,0,'2008-06-18 00:35:28'),(119,'7b69f8c97e67cd74b04ac5f043922d47',365,'2008-06-17 22:35:28',2130706433,0,'2008-06-18 00:35:28'),(121,'eaf2093ab0c31344e813680f3748b985',383,'2008-06-17 22:35:46',2130706433,0,'2008-06-18 00:35:46'),(122,'eaf2093ab0c31344e813680f3748b985',383,'2008-06-17 22:35:46',2130706433,0,'2008-06-18 00:35:46'),(124,'2e9fb5ec00e4e2f3ac1a809fe348707a',401,'2008-06-17 22:36:30',2130706433,0,'2008-06-18 00:36:30'),(125,'2e9fb5ec00e4e2f3ac1a809fe348707a',401,'2008-06-17 22:36:30',2130706433,0,'2008-06-18 00:36:30'),(127,'f7ecf811bcaf17a50161350f83760bd9',419,'2008-06-17 22:38:31',2130706433,0,'2008-06-18 00:38:31'),(128,'f7ecf811bcaf17a50161350f83760bd9',419,'2008-06-17 22:38:31',2130706433,0,'2008-06-18 00:38:31'),(130,'e25e09402ac3e100931eed8d1ec9eec6',437,'2008-06-17 22:38:52',2130706433,0,'2008-06-18 00:38:52'),(131,'e25e09402ac3e100931eed8d1ec9eec6',437,'2008-06-17 22:38:53',2130706433,0,'2008-06-18 00:38:53'),(133,'b4d4808a0614a237230912868e936937',463,'2008-06-17 22:43:01',2130706433,0,'2008-06-18 00:43:01'),(134,'b4d4808a0614a237230912868e936937',463,'2008-06-17 22:43:01',2130706433,0,'2008-06-18 00:43:01'),(136,'b6482435753e7dca4133865e1eddfb74',489,'2008-06-17 22:53:14',2130706433,0,'2008-06-18 00:53:14'),(137,'b6482435753e7dca4133865e1eddfb74',489,'2008-06-17 22:53:14',2130706433,0,'2008-06-18 00:53:14'),(139,'43b79435123ef8063d00d7fd4a7175b9',515,'2008-06-17 22:53:21',2130706433,0,'2008-06-18 00:53:21'),(140,'43b79435123ef8063d00d7fd4a7175b9',515,'2008-06-17 22:53:21',2130706433,0,'2008-06-18 00:53:21'),(142,'8ee59cdbf1d8e57fe732e2c5c723f451',541,'2008-06-17 22:53:26',2130706433,0,'2008-06-18 00:53:26'),(143,'8ee59cdbf1d8e57fe732e2c5c723f451',541,'2008-06-17 22:53:26',2130706433,0,'2008-06-18 00:53:26'),(145,'33237df10c1e869696837ac1ded3a3b2',567,'2008-06-17 22:53:33',2130706433,0,'2008-06-18 00:53:33'),(146,'33237df10c1e869696837ac1ded3a3b2',567,'2008-06-17 22:53:34',2130706433,0,'2008-06-18 00:53:34'),(148,'a31f93f6d3476b38b50863081ef46fe2',593,'2008-06-17 22:53:39',2130706433,0,'2008-06-18 00:53:39'),(149,'a31f93f6d3476b38b50863081ef46fe2',593,'2008-06-17 22:53:39',2130706433,0,'2008-06-18 00:53:39'),(151,'7da72d241bde32cb21a347c1edfa8a2f',619,'2008-06-17 22:53:44',2130706433,0,'2008-06-18 00:53:44'),(152,'7da72d241bde32cb21a347c1edfa8a2f',619,'2008-06-17 22:53:44',2130706433,0,'2008-06-18 00:53:44'),(154,'b2a17ae9ffabb8e4c162dab8edede8af',645,'2008-06-18 07:20:52',2130706433,0,'2008-06-18 09:20:52'),(155,'b2a17ae9ffabb8e4c162dab8edede8af',645,'2008-06-18 07:20:53',2130706433,0,'2008-06-18 09:20:53'),(157,'a0bf05d20ceca6962392dffefa1e48ee',671,'2008-06-18 07:21:00',2130706433,0,'2008-06-18 09:21:00'),(158,'a0bf05d20ceca6962392dffefa1e48ee',671,'2008-06-18 07:21:00',2130706433,0,'2008-06-18 09:21:00'),(160,'59efe682f6e8a9288abc3acb828886ef',697,'2008-06-18 07:21:06',2130706433,0,'2008-06-18 09:21:06'),(161,'59efe682f6e8a9288abc3acb828886ef',697,'2008-06-18 07:21:06',2130706433,0,'2008-06-18 09:21:06'),(163,'523ab5466eeaf50cfa2b0681fceca7c2',723,'2008-06-18 07:51:34',2130706433,0,'2008-06-18 09:51:34'),(165,'74ac00c8f8eac75e1f83296b18320548',725,'2008-06-18 07:52:21',2130706433,0,'2008-06-18 09:52:21'),(166,'74ac00c8f8eac75e1f83296b18320548',725,'2008-06-18 07:52:21',2130706433,0,'2008-06-18 09:52:21'),(168,'2394487bbe4ad5cc253415899122b60d',751,'2008-06-18 07:54:03',2130706433,0,'2008-06-18 09:54:03'),(169,'2394487bbe4ad5cc253415899122b60d',751,'2008-06-18 07:54:03',2130706433,0,'2008-06-18 09:54:03'),(171,'ccdf0f4082330ec8d054f07d227b6719',777,'2008-06-18 07:54:16',2130706433,0,'2008-06-18 09:54:16'),(172,'ccdf0f4082330ec8d054f07d227b6719',777,'2008-06-18 07:54:17',2130706433,0,'2008-06-18 09:54:17'),(174,'6c4c3151c2574749a96d1c9d59fb4483',803,'2008-06-18 07:54:32',2130706433,0,'2008-06-18 09:54:32'),(175,'6c4c3151c2574749a96d1c9d59fb4483',803,'2008-06-18 07:54:32',2130706433,0,'2008-06-18 09:54:32'),(177,'c6207898bf6ee0b9b7310209f397c374',829,'2008-06-18 09:48:09',2130706433,0,'2008-06-18 11:48:09'),(178,'c6207898bf6ee0b9b7310209f397c374',829,'2008-06-18 09:48:12',2130706433,0,'2008-06-18 11:48:12'),(180,'1b8fb3d033b18c8b0d287b471cac15f8',855,'2008-06-18 09:48:57',2130706433,0,'2008-06-18 11:48:57'),(181,'1b8fb3d033b18c8b0d287b471cac15f8',855,'2008-06-18 09:48:57',2130706433,0,'2008-06-18 11:48:57'),(183,'3eed12b296790a028fbe6a1c3d666fb8',881,'2008-06-18 09:49:42',2130706433,0,'2008-06-18 11:49:42'),(184,'3eed12b296790a028fbe6a1c3d666fb8',881,'2008-06-18 09:49:43',2130706433,0,'2008-06-18 11:49:43'),(186,'e670657664f0346de6e94e573c4a295f',907,'2008-06-18 09:50:25',2130706433,0,'2008-06-18 11:50:25'),(187,'e670657664f0346de6e94e573c4a295f',907,'2008-06-18 09:50:26',2130706433,0,'2008-06-18 11:50:26'),(189,'04312a1748e2fb764f5e3f16ab2e1dc9',933,'2008-06-18 10:01:24',2130706433,0,'2008-06-18 12:01:24'),(190,'04312a1748e2fb764f5e3f16ab2e1dc9',933,'2008-06-18 10:01:24',2130706433,0,'2008-06-18 12:01:24'),(192,'7b035d76348afa5aaab117b535140c68',959,'2008-06-18 10:03:32',2130706433,0,'2008-06-18 12:03:32'),(193,'7b035d76348afa5aaab117b535140c68',959,'2008-06-18 10:03:33',2130706433,0,'2008-06-18 12:03:33');
+INSERT INTO `active_sessions` VALUES (47,'',1441,'2008-06-18 22:24:49',2130706433,0,'2008-06-19 00:24:49'),(48,'',1441,'2008-06-18 22:24:49',2130706433,0,'2008-06-19 00:24:49');
 /*!40000 ALTER TABLE `active_sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -218,7 +218,7 @@ CREATE TABLE `config` (
 
 LOCK TABLES `config` WRITE;
 /*!40000 ALTER TABLE `config` DISABLE KEYS */;
-INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','allow, disable, alert',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','false','false',1,'bool','',0,''),(92,'timezone.default','Default Timezone','0','0',1,'int',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(192,'my.test','Test','Value',NULL,1,'string',NULL,18,'');
+INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','allow, disable, alert',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','false','false',1,'bool','',0,''),(92,'timezone.default','Default Timezone','0','0',1,'int',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(204,'my.test','Test','Value',NULL,1,'string',NULL,30,'');
 /*!40000 ALTER TABLE `config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -232,6 +232,7 @@ CREATE TABLE `config_groups` (
   `display_name` varchar(100) NOT NULL,
   `description` varchar(100) NOT NULL,
   `group_namespace` varchar(100) NOT NULL,
+  `parent_group_id` int(11) default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -241,7 +242,7 @@ CREATE TABLE `config_groups` (
 
 LOCK TABLES `config_groups` WRITE;
 /*!40000 ALTER TABLE `config_groups` DISABLE KEYS */;
-INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t'),(18,'stuff','stuff','group.test');
+INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(30,'stuff','stuff','group.test',NULL);
 /*!40000 ALTER TABLE `config_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -270,6 +271,26 @@ INSERT INTO `data` VALUES (1,188,'Africa',NULL,NULL),(2,188,'Europe',NULL,NULL),
 UNLOCK TABLES;
 
 --
+-- Table structure for table `document_content_blob`
+--
+
+DROP TABLE IF EXISTS `document_content_blob`;
+CREATE TABLE `document_content_blob` (
+  `document_content_version_id` int(10) unsigned NOT NULL,
+  `content` blob NOT NULL,
+  PRIMARY KEY  (`document_content_version_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `document_content_blob`
+--
+
+LOCK TABLES `document_content_blob` WRITE;
+/*!40000 ALTER TABLE `document_content_blob` DISABLE KEYS */;
+/*!40000 ALTER TABLE `document_content_blob` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `document_content_version`
 --
 
@@ -277,9 +298,7 @@ DROP TABLE IF EXISTS `document_content_version`;
 CREATE TABLE `document_content_version` (
   `id` int(11) NOT NULL default '0',
   `document_id` int(11) NOT NULL default '0',
-  `filename` text NOT NULL,
   `size` bigint(20) NOT NULL default '0',
-  `mime_type_id` int(11) default '9',
   `storage_config` mediumtext NOT NULL,
   `storage_location_id` int(11) NOT NULL,
   `md5hash` char(32) default NULL,
@@ -294,28 +313,8 @@ CREATE TABLE `document_content_version` (
 
 LOCK TABLES `document_content_version` WRITE;
 /*!40000 ALTER TABLE `document_content_version` DISABLE KEYS */;
-INSERT INTO `document_content_version` VALUES (1,1,'boo',0,9,'',0,NULL);
+INSERT INTO `document_content_version` VALUES (1,1,0,'',0,NULL);
 /*!40000 ALTER TABLE `document_content_version` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `document_metadata_content_versions`
---
-
-DROP TABLE IF EXISTS `document_metadata_content_versions`;
-CREATE TABLE `document_metadata_content_versions` (
-  `metadata_version_id` int(10) unsigned NOT NULL,
-  `content_version_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`metadata_version_id`,`content_version_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `document_metadata_content_versions`
---
-
-LOCK TABLES `document_metadata_content_versions` WRITE;
-/*!40000 ALTER TABLE `document_metadata_content_versions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `document_metadata_content_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -330,6 +329,10 @@ CREATE TABLE `document_metadata_version` (
   `custom_doc_no` varchar(255) NOT NULL,
   `version` float NOT NULL default '0.1',
   `workflow_state_start_date` datetime default NULL,
+  `real_metadata_version_id` int(11) default NULL,
+  `node_content_version_id` int(11) default NULL,
+  `filename` mediumtext NOT NULL,
+  `mime_type_id` int(11) default NULL,
   PRIMARY KEY  (`node_metadata_version_id`),
   KEY `document_type_id` (`document_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -340,7 +343,7 @@ CREATE TABLE `document_metadata_version` (
 
 LOCK TABLES `document_metadata_version` WRITE;
 /*!40000 ALTER TABLE `document_metadata_version` DISABLE KEYS */;
-INSERT INTO `document_metadata_version` VALUES (1,1,NULL,'',0.1,NULL);
+INSERT INTO `document_metadata_version` VALUES (1,1,NULL,'',0.1,NULL,NULL,NULL,'',NULL);
 /*!40000 ALTER TABLE `document_metadata_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -488,11 +491,11 @@ INSERT INTO `folders` VALUES (1,'Root Folder','Root Folder',NULL,1,0,NULL,NULL,1
 UNLOCK TABLES;
 
 --
--- Table structure for table `grouping_properties`
+-- Table structure for table `grouping_property_values`
 --
 
-DROP TABLE IF EXISTS `grouping_properties`;
-CREATE TABLE `grouping_properties` (
+DROP TABLE IF EXISTS `grouping_property_values`;
+CREATE TABLE `grouping_property_values` (
   `grouping_member_id` int(11) NOT NULL,
   `property_namespace` varchar(100) NOT NULL,
   `value` mediumtext NOT NULL,
@@ -503,13 +506,13 @@ CREATE TABLE `grouping_properties` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
--- Dumping data for table `grouping_properties`
+-- Dumping data for table `grouping_property_values`
 --
 
-LOCK TABLES `grouping_properties` WRITE;
-/*!40000 ALTER TABLE `grouping_properties` DISABLE KEYS */;
-INSERT INTO `grouping_properties` VALUES (983,'grouping.property.taggable.plugin.core','b:0;',54),(984,'grouping.property.taggable.plugin.core','b:1;',55);
-/*!40000 ALTER TABLE `grouping_properties` ENABLE KEYS */;
+LOCK TABLES `grouping_property_values` WRITE;
+/*!40000 ALTER TABLE `grouping_property_values` DISABLE KEYS */;
+INSERT INTO `grouping_property_values` VALUES (1465,'grouping.property.taggable.plugin.core','b:0;',159),(1466,'grouping.property.taggable.plugin.core','b:1;',160);
+/*!40000 ALTER TABLE `grouping_property_values` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -523,6 +526,7 @@ CREATE TABLE `groupings` (
   `name` text NOT NULL,
   `type` enum('Group','Role','Unit','Fieldset','Field','DocumentType','Data','DataTree') NOT NULL,
   `properties` mediumtext NOT NULL,
+  `is_system` tinyint(4) default '0',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `member_id_idx` (`member_id`),
   CONSTRAINT `groupings_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE
@@ -534,7 +538,7 @@ CREATE TABLE `groupings` (
 
 LOCK TABLES `groupings` WRITE;
 /*!40000 ALTER TABLE `groupings` DISABLE KEYS */;
-INSERT INTO `groupings` VALUES (645,981,'Default Type','DocumentType',''),(646,982,'Invoice','Fieldset',''),(647,983,'Invoice No','Field',''),(648,984,'Invoice Date','Field','');
+INSERT INTO `groupings` VALUES (951,1463,'Default Type','DocumentType','',0),(952,1464,'Invoice','Fieldset','',0),(953,1465,'Invoice No','Field','',0),(954,1466,'Invoice Date','Field','',0);
 /*!40000 ALTER TABLE `groupings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -605,7 +609,7 @@ CREATE TABLE `member_submembers` (
 
 LOCK TABLES `member_submembers` WRITE;
 /*!40000 ALTER TABLE `member_submembers` DISABLE KEYS */;
-INSERT INTO `member_submembers` VALUES (981,982),(982,983),(982,984);
+INSERT INTO `member_submembers` VALUES (1463,1464),(1464,1465),(1464,1466);
 /*!40000 ALTER TABLE `member_submembers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -629,7 +633,7 @@ CREATE TABLE `members` (
 
 LOCK TABLES `members` WRITE;
 /*!40000 ALTER TABLE `members` DISABLE KEYS */;
-INSERT INTO `members` VALUES (981,'DocumentType','Enabled',NULL,NULL),(982,'Fieldset','Enabled',NULL,NULL),(983,'Field','Enabled',NULL,NULL),(984,'Field','Enabled',NULL,NULL);
+INSERT INTO `members` VALUES (1463,'DocumentType','Enabled',NULL,NULL),(1464,'Fieldset','Enabled',NULL,NULL),(1465,'Field','Deleted',NULL,NULL),(1466,'Field','Enabled',NULL,NULL);
 /*!40000 ALTER TABLE `members` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -951,7 +955,7 @@ CREATE TABLE `nodes` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `parent_node_id` int(10) unsigned default NULL,
   `full_path` mediumtext NOT NULL,
-  `node_type` enum('Document','Folder','Shortcut') NOT NULL,
+  `node_type` enum('Document','Folder','Shortcut','Blog','Wiki','Forum','Chat') NOT NULL,
   `permission_node_id` int(11) NOT NULL,
   `unit_id` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
@@ -1057,7 +1061,7 @@ CREATE TABLE `plugin_modules` (
 
 LOCK TABLES `plugin_modules` WRITE;
 /*!40000 ALTER TABLE `plugin_modules` DISABLE KEYS */;
-INSERT INTO `plugin_modules` VALUES (847,130,'Action','_tr(Test Action)',0,'Test2Action','ktapi2/Tests/Plugin/Test2Upgrade/Test2Action.inc.php','s:0:\"\";',0,0,'action.test.plugin.test','s:0:\"\";'),(848,131,'Action','_tr(Test 2 Diff Action)',0,'Test2DiffAction','ktapi2/Tests/Plugin/Test2Different/Test2Action.inc.php','s:0:\"\";',0,0,'action.test2diff.plugin.testdiff','s:0:\"\";'),(849,124,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.system.administrator.plugin.core','s:0:\"\";'),(850,124,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.unit.administrator.plugin.core','s:0:\"\";'),(851,124,'GroupingProperty','',0,'Repository_Metadata_Field','','a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.taggable.plugin.core','s:0:\"\";'),(852,124,'AuthenticationProvider','Hashed Password Provider',0,'HashedAuthenticationProvider','ktapi2/Plugins/Core/Authentication/HashedAuthentication.php','s:0:\"\";',0,0,'authentication.provider.hashed.password.plugin.core','s:0:\"\";');
+INSERT INTO `plugin_modules` VALUES (1337,170,'Action','_tr(Test Action)',0,'Test2Action','ktapi2/Tests/Plugin/Test2Upgrade/Test2Action.inc.php','s:0:\"\";',0,0,'action.test.plugin.test','s:0:\"\";'),(1338,171,'Action','_tr(Test 2 Diff Action)',0,'Test2DiffAction','ktapi2/Tests/Plugin/Test2Different/Test2Action.inc.php','s:0:\"\";',0,0,'action.test2diff.plugin.testdiff','s:0:\"\";'),(1647,197,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.system.administrator.plugin.core','s:0:\"\";'),(1648,197,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.unit.administrator.plugin.core','s:0:\"\";'),(1649,197,'GroupingProperty','',0,'Repository_Metadata_Field','','a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.taggable.plugin.core','s:0:\"\";'),(1650,197,'AuthenticationProvider','Hashed Password Provider',0,'HashedAuthenticationProvider','ktapi2/Plugins/Core/Authentication/HashedAuthentication.php','s:0:\"\";',0,0,'authentication.provider.hashed.password.plugin.core','s:0:\"\";');
 /*!40000 ALTER TABLE `plugin_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1109,7 +1113,7 @@ CREATE TABLE `plugins` (
 
 LOCK TABLES `plugins` WRITE;
 /*!40000 ALTER TABLE `plugins` DISABLE KEYS */;
-INSERT INTO `plugins` VALUES (124,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(130,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test2Upgrade/Test2Plugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(131,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}');
+INSERT INTO `plugins` VALUES (170,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test2Upgrade/Test2Plugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(171,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}'),(197,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}');
 /*!40000 ALTER TABLE `plugins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1620,6 +1624,7 @@ CREATE TABLE `workflows` (
   `display_name` varchar(100) NOT NULL,
   `start_state_id` int(11) default NULL,
   `status` enum('Enabled','Disabled','Deleted') NOT NULL default 'Enabled',
+  `unit_id` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
@@ -1629,7 +1634,7 @@ CREATE TABLE `workflows` (
 
 LOCK TABLES `workflows` WRITE;
 /*!40000 ALTER TABLE `workflows` DISABLE KEYS */;
-INSERT INTO `workflows` VALUES (1,'Review',2,'Enabled');
+INSERT INTO `workflows` VALUES (1,'Review',2,'Enabled',0);
 /*!40000 ALTER TABLE `workflows` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1722,4 +1727,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2008-06-18 10:46:44
+-- Dump completed on 2008-06-18 22:25:50

@@ -32,6 +32,7 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
 
         $this->title('Security_Session::getSession()');
 
+        // getting a session now should throw exception
         try
         {
             $session = Security_Session::getSession();
@@ -81,13 +82,11 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
         }
         $this->assertFalse(Security_Session::isAdminModeEnabled());
 
-        $this->assertFalse(Security_Session::isAdminModeEnabled());
-
         $this->title('$user->canChangePassword()');
 
-        $this->assertTrue($user->canChangePassword());
+        $this->assertTrue($user->canChangeAuthConfig());
 
-        $user->changePassword(array('password'=>'new password'));
+        $user->changeAuthConfig(array('password'=>'new password'));
     }
 
     function testResume()
@@ -95,12 +94,13 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
         $this->title();
 
         $user1 = Security_User::getByUsername('admin');
-        $user1->changePassword(array('password'=>'123'));
+        $user1->changeAuthConfig(array('password'=>'123'));
 
         $this->title('$user1->authenticate()');
 
         $session1 = $user1->authenticate(array('password'=>'123', 'ip'=>'127.0.0.1'));
 
+        // we expect getting session to work now.
         try
         {
             $session1 = Security_Session::getSession();
@@ -143,13 +143,8 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
 
         $group->setSystemAdministrator(true);
 
-        try {
         $group->addUser($user1);
-        }
-        catch(Exception $ex)
-        {
-            // might not be a problem. fix add user to check before adding constraint
-        }
+
         $user1 = Security_User::getByUsername('admin');
 
         $this->title('$user1->isSystemAdministrator()');
@@ -163,7 +158,6 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
         $this->title('Security_Session::isAdminModeEnabled()');
         $this->assertTrue(Security_Session::isAdminModeEnabled());
 
-        $group->delete();
     }
 
 }

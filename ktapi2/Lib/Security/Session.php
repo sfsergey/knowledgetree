@@ -1,5 +1,7 @@
 <?php
 
+// TODO: change is_webservice to client_type. Options will be: webclient, webdav, webservice
+
 class Security_Session extends KTAPI_Base
 {
     const SESSION       = 'kt_session';
@@ -96,7 +98,8 @@ class Security_Session extends KTAPI_Base
             Util_Doctrine::simpleDelete('Base_ActiveSession', array('session'=>session_id()));
         }
 
-        session_unset();
+        $_SESSION = array();
+        session_destroy();
     }
 
     /**
@@ -214,8 +217,8 @@ class Security_Session extends KTAPI_Base
         $normalTimeout = KTAPI_Config::get(KTAPI_Config::SESSION_TIMEOUT);
         $webserviceTimeout = KTAPI_Config::get(KTAPI_Config::WEBSERVICE_SESSION_TIMEOUT);
 
-        $expiry = date("Y-m-d H:i:s", mktime($now['hours'],$now['minutes']-$normalTimeout,$now['seconds'],$now['day'], $now['mon'], $now['year']));
-        $webserviceExpiry = date("Y-m-d H:i:s", mktime($now['hours'],$now['minutes']-$webserviceTimeout,$now['seconds'],$now['day'], $now['mon'], $now['year']));
+        $expiry = date("Y-m-d H:i:s", time() - ($normalTimeout * 60));
+        $webserviceExpiry = date("Y-m-d H:i:s", time() - ($webserviceTimeout * 60));
 
 
         Doctrine_Query::create()
@@ -224,19 +227,18 @@ class Security_Session extends KTAPI_Base
             ->where('(s.activity_date <= :normal_expiry AND s.is_webservice != :webservice) OR (s.activity_date <= :webservice_expiry AND s.is_webservice = :webservice)',
                     array(':normal_expiry'=>$expiry, ':webservice_expiry'=>$webserviceExpiry, ':webservice'=>true))
             ->execute();
-
     }
 
     public static
-    function resumeSession($session, $options = array())
+    function resumeSession($phpSession, $options = array())
     {
         self::clearOldSessions();
 
         if (isset($_SESSION[self::SESSION ]))
         {
-            $sesion = $_SESSION[self::SESSION ]->getPHPsession();
+            $session = $_SESSION[self::SESSION ]->getPHPsession();
 
-            if ($session == $sesion)
+            if ($phpSession == $session)
             {
                 return $_SESSION[self::SESSION ];
             }
@@ -244,11 +246,13 @@ class Security_Session extends KTAPI_Base
 
         try
         {
-            $sesion = Util_Doctrine::simpleOneQuery('Base_ActiveSession', array('session'=>$session));
-            $sesion->activity_date = date('Y-m-d H:i:s');
-            $sesion->save();
+            $session = Util_Doctrine::simpleOneQuery('Base_ActiveSession', array('session'=>$phpSession));
+            $session->activity_date = date('Y-m-d H:i:s');
+            $session->save();
 
-            session_id($session);
+            session_id($phpSession);
+
+            $_SESSION[self::SESSION ] = new Security_Session($session);
         }
         catch(Exception $ex)
         {
@@ -299,6 +303,7 @@ class Security_Session extends KTAPI_Base
     function startUserSession($user, $options = array())
     {
         self::clearOldSessions();
+        // important - keep this. we must have an empty session.
         $_SESSION = array();
 
         $userId = $user->getId();
@@ -318,19 +323,10 @@ class Security_Session extends KTAPI_Base
         if (isset($options['anonymous']) && $options['anonymous'])
         {
             $_SESSION[self::ANONYMOUS] = true;
-
-            if (isset($_SESSION[self::AUTHENTICATED ]))
-            {
-                unset($_SESSION[self::AUTHENTICATED ]);
-            }
         }
         else
         {
             $_SESSION[self::AUTHENTICATED ] = true;
-            if (isset($_SESSION[self::ANONYMOUS ]))
-            {
-                unset($_SESSION[self::ANONYMOUS ]);
-            }
 
             if ($user->isSystemAdministrator())
             {
@@ -339,6 +335,7 @@ class Security_Session extends KTAPI_Base
 
             if ($user->isUnitAdministrator())
             {
+                $_SESSION[self::UNIT_ADMIN ] = true;
                 $_SESSION[self::ADMIN_UNITS ] = $user->getAdminUnits();
             }
 
@@ -351,7 +348,7 @@ class Security_Session extends KTAPI_Base
                     ->select('s.id')
                     ->from('Base_ActiveSession s')
                     ->where('user_member_id = :member_id', array(':member_id'=>$userId))
-                    ->orderBy('s.id')
+                    ->orderBy('s.id DESC')
                     ->limit($maxSessions)
                     ->offset($maxSessions)
                     ->execute();
@@ -400,6 +397,7 @@ class Security_Session extends KTAPI_Base
         return long2ip($this->base->ip);
     }
 
+    // TODO: change to ClientType
     public
     function isWebservice()
     {

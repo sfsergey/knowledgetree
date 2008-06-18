@@ -88,72 +88,100 @@ class Security_Authentication_Source extends KTAPI_Base
         return $source;
     }
 
-    private
-    function getOptions($options)
-    {
-        $config  = $this->base->module_config;
-
-        $config = unserialize($config);
-
-        return $config;
-    }
-
+    /**
+     * Returns the authentication source id.
+     *
+     * @return int
+     */
     public
     function getId()
     {
         return $this->base->id;
     }
 
+    /**
+     * Returns the authentication provider namespace associated with the source.
+     *
+     * @return string
+     */
     public
     function getProviderNamespace()
     {
         return $this->base->auth_module_namespace;
     }
 
+    /**
+     * Returns a reference to the authentication provider.
+     *
+     * @return Authentication_Source_Provider
+     */
     public
     function getProvider()
     {
         return PluginManager::getModule($this->getProviderNamespace());
     }
 
+    /**
+     * Returns the source display name.
+     *
+     * @return string
+     */
     public
     function getDisplayName()
     {
         return $this->base->display_name;
     }
 
+    /**
+     * Returns the auth source configuration.
+     *
+     * @return array
+     */
     public
     function getConfig()
     {
         return $this->base->auth_config;
     }
 
+    /**
+     * Indicates if the source is enabled.
+     *
+     * @return boolean
+     */
     public
     function isEnabled()
     {
-        return $this->base->status == 'Enabled';
+        $provider = $this->getProvider();
+        return ($this->base->status == 'Enabled') && (!is_null($provider) && $provider->isEnabled());
     }
 
+    /**
+     * Indicates if the souce is deleted.
+     *
+     * @return boolean
+     */
     public
     function isDeleted()
     {
         return $this->base->status == 'Deleted';
     }
 
+    /**
+     * Indicates if the source is a system source.
+     *
+     * @return unknown
+     */
     public
     function isSystemSource()
     {
         return $this->base->is_system;
     }
 
-    public
-    function getUserAuthConfig($options)
-    {
-        $provider = $this->getProvider();
-
-        return $provider->getUserAuthConfig($options);
-    }
-
+    /**
+     * Indicates if the provider has import capabilities to import users from the authentication source.
+     *
+     * @return boolean
+     */
     public
     function canImport()
     {
@@ -162,14 +190,26 @@ class Security_Authentication_Source extends KTAPI_Base
         return $provider->canImport($this);
     }
 
+    /**
+     * Queries the provider to find users that may be imported from the authentication source.
+     *
+     * @param string $filter
+     * @return array
+     */
     public
-    function filterUsers($filter)
+    function queryUsers($filter)
     {
         $provider = $this->getProvider();
 
         return $provider->filterUsers($this, $filter);
     }
 
+    /**
+     * Creates a user based on the query result.
+     *
+     * @param Security_Authentication_ImportUser $user
+     * @return Security_Authentication_User
+     */
     public
     function import($user)
     {

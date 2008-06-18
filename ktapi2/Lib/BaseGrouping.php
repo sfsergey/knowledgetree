@@ -2,6 +2,7 @@
 
 class BaseGrouping extends KTAPI_BaseMember
 {
+
     protected $propertyValues;
 
     /**
@@ -30,13 +31,12 @@ class BaseGrouping extends KTAPI_BaseMember
         return Util_Doctrine::getEntityByField($baseClass, $instanceClass, array('name' => $groupName));
     }
 
-
     protected
-    function getProperties()
+    function getPropertyValues()
     {
         if (is_null($this->propertyValues))
         {
-            $temp = Util_Doctrine::simpleQuery('Base_GroupingProperty', array('grouping_member_id'=>$this->getId()));
+            $temp = Util_Doctrine::simpleQuery('Base_GroupingPropertyValue', array('grouping_member_id'=>$this->getId()));
 
             $properties = array();
             foreach($temp as $property)
@@ -48,20 +48,10 @@ class BaseGrouping extends KTAPI_BaseMember
         return $this->propertyValues;
     }
 
-    private
-    function insertGroupingProperty($property_namespace, $value)
-    {
-        $prop = new Base_GroupingProperty();
-        $prop->grouping_member_id = $this->getId();
-        $prop->property_namespace = $property_namespace;
-        $prop->value = serialize($value);
-        $prop->save();
-    }
-
     protected
     function getPropertyByName($property_namespace, $default = null)
     {
-        $properties = $this->getProperties();
+        $properties = $this->getPropertyValues();
         if (isset($properties[$property_namespace]))
         {
             return $properties[$property_namespace];
@@ -71,9 +61,13 @@ class BaseGrouping extends KTAPI_BaseMember
             throw new KTapiUnknownPropertyException($property);
         }
 
-        $this->insertGroupingProperty($property_namespace, $default);
+        $prop = new Base_GroupingPropertyValue();
+        $prop->grouping_member_id = $this->getId();
+        $prop->property_namespace = $property_namespace;
+        $prop->value = serialize($default);
+        $prop->save();
 
-        $this->propertyValues = null;
+        $this->propertyValues[$property_namespace] = $default;
 
         return $default;
     }
@@ -89,12 +83,12 @@ class BaseGrouping extends KTAPI_BaseMember
 
         if ($val != $value)
         {
-            Util_Doctrine::update('Base_GroupingProperty',
+            Util_Doctrine::update('Base_GroupingPropertyValue',
                         array('value'=>serialize($value)),
                         array('grouping_member_id'=>$this->getId(), 'property_namespace'=>$property_namespace));
 
+            $this->propertyValues[$property_namespace] = $value;
         }
-        $this->propertyValues = null;
     }
 
 
@@ -240,6 +234,7 @@ class BaseGrouping extends KTAPI_BaseMember
 
             $member = new Base_Member();
             $member->member_type = $type;
+            if (isset($options['unitId'])) $member->unit_id = $options['unitId'];
             $member->save();
 
             $groupId = $member->id;
@@ -297,19 +292,35 @@ class BaseGrouping extends KTAPI_BaseMember
         $this->base->name = $name;
     }
 
+    /**
+     * Get the unit Id.
+     *
+     * @return unknown
+     */
     public
     function getUnitId()
     {
         return $this->base->unit_id;
     }
 
+    /**
+     * Associate the group with a specific unit.
+     *
+     * @param mixed $unit
+     */
     protected
-    function setUnitId($unit_id)
+    function setUnit($unit)
     {
-         $this->base->unit_id = $unit_id;
+        $unit = Util_Security::validateUnit($unit);
+        $this->base->unit_id = $unit->getId();
     }
 
-
+    /**
+     * Updates the effective users for the group.
+     *
+     * This is typically called when adding or removing subgroups.
+     *
+     */
     protected
     function updateEffectiveUsers()
     {
@@ -363,6 +374,13 @@ class BaseGrouping extends KTAPI_BaseMember
         $this->base->clearRelated();
     }
 
+    /**
+     * Return a list of effective users.
+     *
+     * @param string $filter
+     * @param array $options
+     * @return array
+     */
     public
     function getEffectiveUsers($filter = '', $options=array())
     {
@@ -376,6 +394,12 @@ class BaseGrouping extends KTAPI_BaseMember
 
     }
 
+    /**
+     * Indicates if the user is an effective user.
+     *
+     * @param Security_User $user
+     * @return boolean
+     */
     public
     function hasEffectiveUser($user)
     {
@@ -388,6 +412,13 @@ class BaseGrouping extends KTAPI_BaseMember
         return $effective !== false;
     }
 
+    /**
+     * An internal function to resolve the effective user.
+     *
+     * @param int $userId
+     * @param boolean $throwException
+     * @return Base_MemberEffectiveUser
+     */
     private
     function getEffectiveUser($userId, $throwException = true)
     {
@@ -400,10 +431,11 @@ class BaseGrouping extends KTAPI_BaseMember
         return $effective;
     }
 
-        /**
+    /**
      * Updates membership by adding a user to the current group.
      *
      * @param mixed $user Int or Security_User
+     * @return void
      */
     public
     function addUser($user)
@@ -503,6 +535,12 @@ class BaseGrouping extends KTAPI_BaseMember
         }
     }
 
+    /**
+     * Get a list of users assigned directly to the current group.
+     *
+     * @param string $filter
+     * @return array
+     */
     public
     function getUsers($filter = '')
     {
@@ -529,6 +567,12 @@ class BaseGrouping extends KTAPI_BaseMember
         return $users;
     }
 
+    /**
+     * Indicates if the user is a direct member of the current group.
+     *
+     * @param mixed $user
+     * @return boolean
+     */
     public
     function hasUser($user)
     {
@@ -537,6 +581,12 @@ class BaseGrouping extends KTAPI_BaseMember
         return $this->checkMembership($this->getId(), $user->getId());
     }
 
+    /**
+     * Reflective function to help deal with the dynamic group properies.
+     *
+     * @param string $property
+     * @return mixed
+     */
     protected
     function __get($property)
     {
@@ -556,10 +606,18 @@ class BaseGrouping extends KTAPI_BaseMember
                 return $this->getPropertyByName($ns, $gp->getDefault());
             }
 
+            // if the property could not be resolved, rethrow it.
             throw $ex;
         }
     }
 
+    /**
+     * Reflective function to help deal with dynamic group properties.
+     *
+     * @param string $property
+     * @param mixed $value
+     * @return void
+     */
     protected
     function __set($property, $value)
     {
@@ -583,10 +641,18 @@ class BaseGrouping extends KTAPI_BaseMember
                 }
             }
 
+            // if the property could not be resolved, rethrow it.
             throw $ex;
         }
     }
 
+    /**
+     * Reflective function to help deal with dynamic group functions.
+     *
+     * @param string $method
+     * @param array $params
+     * @return mixed
+     */
     protected
     function __call($method, $params)
     {
@@ -594,17 +660,24 @@ class BaseGrouping extends KTAPI_BaseMember
 
         if (isset($properties['funcs'][$method]))
         {
+            // resolve the namespace
             $ns = $properties['funcs'][$method];
+
+            // resolve the grouping property module
             $gp = $properties['namespaces'][$ns];
+
             $getter = $gp->getGetter();
             $setter = $gp->getSetter();
 
             switch ($method)
             {
                 case $getter:
+                    // the method is the getter function, get the property, possibly returning the default value.
                     $default = $gp->getDefault();
                     return $this->getPropertyByName($ns, $default);
+
                 case $setter:
+                    // the method is the setter function.
                     if (count($params) != 1)
                     {
                         throw new Exception('Only one parameter expected.');
@@ -616,8 +689,6 @@ class BaseGrouping extends KTAPI_BaseMember
         }
         throw new KTapiUnknownPropertyException($method);
     }
-
-
 }
 
 ?>

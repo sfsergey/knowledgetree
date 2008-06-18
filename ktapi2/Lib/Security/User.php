@@ -2,8 +2,6 @@
 
 class Security_User extends KTAPI_BaseMember
 {
-    // TODO: AUTHENTICATION SOURCE
-
 
     public static
     function get($id)
@@ -20,6 +18,7 @@ class Security_User extends KTAPI_BaseMember
     public static
     function getAnonymousUser()
     {
+        // TODO: define anonymous user in config
         return self::getByUsername('anonymous');
     }
 
@@ -70,16 +69,7 @@ class Security_User extends KTAPI_BaseMember
             throw new Exception('Unknown Authentication Source');
         }
 
-        if (isset($options['password']))
-        {
-            $password = $options['password'];
-        }
-        else
-        {
-            $password = Util_Security::randomPassword();
-            $options['password'] = $password;
-            $notifyUser = true;
-        }
+        $provider = $authSource->getProvider();
 
         $db = KTapi::getDb();
 
@@ -97,7 +87,7 @@ class Security_User extends KTAPI_BaseMember
             $user->name = $name;
             $user->email = $email;
             $user->auth_source_id = $authSource->getId();
-            $user->auth_config = $authSource->getUserAuthConfig($options);
+            $user->auth_config = $provider->getUserAuthConfig($options);
             $user->timezone = KTAPI_Config::get(KTAPI_Config::DEFAULT_TIMEZONE);
             $user->language_id = KTAPI_Config::get(KTAPI_Config::DEFAULT_LANGUAGE);
             $user->created_date = date('Y-m-d H:i:s');
@@ -112,12 +102,12 @@ class Security_User extends KTAPI_BaseMember
 
             $user = new Security_User($user);
 
-            if (isset($options['notifyUser'])) $notifyUser = $options['notifyUser'];
-
-            if ($notifyUser)
+            // TODO: send general creation email
+            if (isset($options['notifyUser']) && $options['notifyUser'])
             {
-                // TODO: mail user an email about password creation.
+                // $provider->getEmailContent($user, $options);
             }
+
         }
         catch(Exception $ex)
         {
@@ -226,16 +216,28 @@ class Security_User extends KTAPI_BaseMember
         return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');
     }
 
+
+    //TODO: clearRelated() should possibly be a seperate function. call it when really required.
+
+
     public
     function getEffectiveGroups()
     {
+        // Note. if one removes this, the dynamic getter functions fail to refresh correctly.
         $this->base->clearRelated();
         $rows = $this->base->EffectiveGroups;
 
         return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');
     }
 
-
+    /**
+     * Deletes the user by setting the status to 'deleted'.
+     *
+     * It sets the username to 'kt_deleted_(username)_(userid)'.
+     *
+     * @return void
+     *
+     */
     function delete()
     {
         $username = $this->base->username;
@@ -264,6 +266,11 @@ class Security_User extends KTAPI_BaseMember
         }
     }
 
+    /**
+     * Returns a reference to the authentication provider based on the assigned authentication source.
+     *
+     * @return Security_Authentication_provider
+     */
     private
     function getAuthProvider()
     {
@@ -280,33 +287,54 @@ class Security_User extends KTAPI_BaseMember
     }
 
 
+    /**
+     * Indicates if the auth config can be changed for the current user.
+     *
+     * @return boolean
+     */
     public
-    function canChangePassword()
+    function canChangeAuthConfig()
     {
         $provider = $this->getAuthProvider();
 
-        return $provider->canChangePassword($this);
+        return $provider->canChangeAuthConfig($this);
     }
 
+    /**
+     * Change the authentication configuration for the current user.
+     *
+     * @param array $options
+     * @return void
+     */
     public
-    function changePassword($password, $options = array())
+    function changeAuthConfig($options = array())
     {
         $provider = $this->getAuthProvider();
 
-        if (!$provider->canChangePassword($this))
+        if (!$provider->canChangeAuthConfig($this))
         {
-            throw new Exception('Cannot change password');
+            throw new Exception('Cannot change authentication configuration');
         }
 
-        return $provider->changePassword($this, $password, $options);
+        return $provider->changeAuthConfig($this, $options);
     }
 
+    /**
+     * Return the auth configuration for the current user.
+     *
+     * @return array
+     */
     public
     function getAuthConfig()
     {
         return $this->base->auth_config;
     }
 
+    /**
+     * Save the auth config for the current user.
+     *
+     * @param array $config
+     */
     public
     function setAuthConfig($config)
     {
@@ -314,6 +342,12 @@ class Security_User extends KTAPI_BaseMember
         $this->save();
     }
 
+    /**
+     * Authenticates the user on the system. This is the primary function that should be used.
+     *
+     * @param array $options
+     * @return Security_Session
+     */
     public
     function authenticate($options)
     {
@@ -340,29 +374,31 @@ class Security_User extends KTAPI_BaseMember
             $threshold = KTAPI_Config::get(KTAPI_Config::INVALID_PASSWORD_THRESHOLD);
             $threshold_action = KTAPI_Config::get(KTAPI_Config::INVALID_PASSWORD_THRESHOLD_ACTION );
 
-            $disabled = false;
-
-            if ($this->base->invalid_login > $threshold)
+            $thresholdExceeded = $this->base->invalid_login > $threshold;
+            if ($thresholdExceeded)
             {
                 if ($threshold_action == 'disable')
                 {
                     $this->base->status = 'Disabled';
-                    $disabled = true;
                 }
             }
 
             $this->save();
 
-            switch($threshold_action)
+            // now do communication bit.
+            if ($thresholdExceeded)
             {
-                case 'allow':
-                    break;
-                case 'disable':
-                    // TODO: send an email to the user and sysadmin/unitadmin that the account has been disabled
-                    break;
-                case 'alert':
-                    // TODO: send an email to the sysadmin/unitadmin that there is strange activity
-                    break;
+                switch($threshold_action)
+                {
+                    case 'allow':
+                        break;
+                    case 'disable':
+                        // TODO: send an email to the user and sysadmin/unitadmin that the account has been disabled
+                        break;
+                    case 'alert':
+                        // TODO: send an email to the sysadmin/unitadmin that there is strange activity
+                        break;
+                }
             }
         }
 
@@ -374,8 +410,18 @@ class Security_User extends KTAPI_BaseMember
         return Security_Session::getSession($options);
     }
 
+    /**
+     * A local attribute caching if the the current user is a system administrator.
+     *
+     * @var boolean
+     */
     private $isSystemAdmin;
 
+    /**
+     * Identifies if the current user is a system administrator.
+     *
+     * @return boolean
+     */
     public
     function isSystemAdministrator()
     {
@@ -394,8 +440,18 @@ class Security_User extends KTAPI_BaseMember
         return false;
     }
 
+    /**
+     * A local attribute caching units the user has unit adminsitration rights on.
+     *
+     * @var array
+     */
     private $adminUnits;
 
+    /**
+     * Identifies if the current user is a unit administrator.
+     *
+     * @return boolean
+     */
     public
     function isUnitAdministrator()
     {
@@ -417,23 +473,40 @@ class Security_User extends KTAPI_BaseMember
         return count($this->adminUnits) > 0;
     }
 
+    /**
+     * Returns the units that the current user may administrator.
+     *
+     * @return array
+     */
     public
     function getAdminUnits()
     {
+        if (!$this->isUnitAdministrator())
+        {
+            return array();
+        }
         return $this->adminUnits;
     }
 
     /**
-     * Get units that a member may be assigned to.
-     * Note in this scenario, we only allow direct group mappings, not effective group mappings.
+     * A local attribute caching the units.
      *
-     * @return unknown
+     * @var array
+     */
+    private $units;
+
+    /**
+     * Returns all the units the current user is a member of.
+     *
+     * @return array
      */
     public
     function getUnits()
     {
+        if (isset($this->units)) return $this->units;
+
         $units = array();
-        $groups = $this->getGroups();
+        $groups = $this->getEffectiveGroups();
         foreach($groups as $group)
         {
             $unit = $group->getUnit();
@@ -444,7 +517,9 @@ class Security_User extends KTAPI_BaseMember
             }
             $units[] = $unit;
         }
-        return $units;
+
+        $this->units = $units;
+        return $this->units;
     }
 }
 
