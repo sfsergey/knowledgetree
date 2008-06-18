@@ -265,7 +265,7 @@ abstract class Plugin
         }
 
         $action = new $class;
-        if (!$action instanceof Trigger )
+        if (!$action instanceof Action )
         {
             throw new KTapiException(_kt('Class %s wsa expected to be a Action', $class));
         }

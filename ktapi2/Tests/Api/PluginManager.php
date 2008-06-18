@@ -45,14 +45,14 @@ class PluginManagerTestCase extends KTAPI_TestCase
 
         $modules = PluginManager::getPluginModules();
         $this->assertTrue(count($modules) > 0);
-        var_dump($modules);
+        //var_dump($modules);
     }
 
     function testGetNewPlugins()
     {
         $plugins = PluginManager::getNewPlugins();
         $this->assertTrue(count($plugins) > 0);
-        var_dump($plugins);
+        //var_dump($plugins);
     }
 
     function testGetPlugins()
@@ -63,7 +63,7 @@ class PluginManagerTestCase extends KTAPI_TestCase
 
         $plugins = PluginManager::getPlugins();
         $this->assertTrue(count($plugins) > 0);
-        var_dump($plugins);
+        //var_dump($plugins);
     }
 
 

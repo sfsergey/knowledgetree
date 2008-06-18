@@ -17,9 +17,14 @@ class MetadataTestCase extends KTAPI_TestCase
         $documentType = Repository_Metadata_DocumentType::create('Default Type');
         $fieldset1 = Repository_Metadata_Fieldset::create('Invoice');
         $documentType->addFieldset($fieldset1);
+
+        $this->title('$field1->isTaggable()');
         $field1 = Repository_Metadata_Field::create('Invoice No');
+        $this->assertFalse($field1->isTaggable());
         $fieldset1->addField($field1);
         $field2 = Repository_Metadata_Field::create('Invoice Date');
+        $field2->setTaggable(true);
+        $this->assertTrue($field2->isTaggable());
         $fieldset1->addField($field2);
 
 

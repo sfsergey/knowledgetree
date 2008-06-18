@@ -533,14 +533,12 @@ final class PluginManager
     public static
     function isModuleEnabled($namespace)
     {
-        $query = Doctrine_Query::create();
-        $rows = $query->select('bpm.status')
+        $count = Doctrine_Query::create()
                 ->from('Base_PluginModule bpm')
                 ->innerJoin('bpm.Plugin bp')
-                ->where('bpm.namespace = :namespace AND bpm.status = :status AND bp.status = :status')
-                ->limit(1)
-                ->execute(array(':namespace'=>$namespace, ':status'=>PluginManager::ENABLED_STATUS ));
-        return ($rows->count() > 0);
+                ->where('bpm.namespace = :namespace AND bpm.status = :status AND bp.status = :status',array(':namespace'=>$namespace, ':status'=>PluginManager::ENABLED_STATUS ))
+                ->count();
+        return ($count > 0);
     }
 
     /**

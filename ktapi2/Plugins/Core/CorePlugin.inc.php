@@ -21,6 +21,7 @@ class CorePlugin extends Plugin
 
         $this->registerGroupingProperty('system.administrator', 'Security_Group', 'System Administrator',  'isSystemAdministrator', 'setSystemAdministrator','', 'boolean', false);
         $this->registerGroupingProperty('unit.administrator', 'Security_Group', 'Unit Administrator',  'isUnitAdministrator', 'setUnitAdministrator','', 'boolean', false);
+        $this->registerGroupingProperty('taggable', 'Repository_Metadata_Field', 'Taggable',  'isTaggable', 'setTaggable','', 'boolean', false);
 
         $this->registerAuthenticationProvider('HashedAuthenticationProvider', 'Authentication/HashedAuthentication.php');
     }
