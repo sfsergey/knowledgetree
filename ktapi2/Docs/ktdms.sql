@@ -26,7 +26,7 @@ CREATE TABLE `active_sessions` (
   `user_member_id` int(11) NOT NULL,
   `start_date` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `ip` int(10) unsigned NOT NULL,
-  `is_webservice` tinyint(3) unsigned NOT NULL default '0',
+  `client_type` enum('WebClient','WebDav','WebService') NOT NULL default 'WebClient',
   `activity_date` datetime NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
@@ -37,7 +37,7 @@ CREATE TABLE `active_sessions` (
 
 LOCK TABLES `active_sessions` WRITE;
 /*!40000 ALTER TABLE `active_sessions` DISABLE KEYS */;
-INSERT INTO `active_sessions` VALUES (47,'',1441,'2008-06-18 22:24:49',2130706433,0,'2008-06-19 00:24:49'),(48,'',1441,'2008-06-18 22:24:49',2130706433,0,'2008-06-19 00:24:49');
+INSERT INTO `active_sessions` VALUES (29,'',1701,'2008-06-19 15:45:26',2130706433,'WebClient','2008-06-19 14:49:36'),(30,'',1701,'2008-06-19 15:45:28',2130706433,'WebClient','2008-06-19 14:49:36'),(32,'',1727,'2008-06-19 15:45:29',2130706433,'WebClient','2008-06-19 14:50:22'),(33,'',1727,'2008-06-19 15:45:31',2130706433,'WebClient','2008-06-19 14:50:22');
 /*!40000 ALTER TABLE `active_sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,6 +64,25 @@ DROP TABLE IF EXISTS `active_users`;
 ) */;
 
 --
+-- Table structure for table `authentication_source_group_mapping`
+--
+
+DROP TABLE IF EXISTS `authentication_source_group_mapping`;
+CREATE TABLE `authentication_source_group_mapping` (
+  `auth_group_id` int(11) default NULL,
+  `group_member_id` int(11) default NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `authentication_source_group_mapping`
+--
+
+LOCK TABLES `authentication_source_group_mapping` WRITE;
+/*!40000 ALTER TABLE `authentication_source_group_mapping` DISABLE KEYS */;
+/*!40000 ALTER TABLE `authentication_source_group_mapping` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `authentication_source_groups`
 --
 
@@ -71,8 +90,9 @@ DROP TABLE IF EXISTS `authentication_source_groups`;
 CREATE TABLE `authentication_source_groups` (
   `auth_source_id` int(10) unsigned NOT NULL,
   `name` varchar(100) NOT NULL COMMENT 'group name on authentication source',
-  `member_group_id` int(10) unsigned NOT NULL COMMENT 'local group name',
-  `configuration` mediumtext NOT NULL COMMENT 'any configuration that may assist to identify the authentication sources group'
+  `configuration` mediumtext NOT NULL COMMENT 'any configuration that may assist to identify the authentication sources group',
+  `id` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
@@ -218,7 +238,7 @@ CREATE TABLE `config` (
 
 LOCK TABLES `config` WRITE;
 /*!40000 ALTER TABLE `config` DISABLE KEYS */;
-INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','allow, disable, alert',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','false','false',1,'bool','',0,''),(92,'timezone.default','Default Timezone','0','0',1,'int',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(204,'my.test','Test','Value',NULL,1,'string',NULL,30,'');
+INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','allow, disable, alert',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','false','false',1,'bool','',0,''),(92,'timezone.default','Default Timezone','0','0',1,'int',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(189,'my.test','Test','Value',NULL,1,'string',NULL,15,'');
 /*!40000 ALTER TABLE `config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -242,7 +262,7 @@ CREATE TABLE `config_groups` (
 
 LOCK TABLES `config_groups` WRITE;
 /*!40000 ALTER TABLE `config_groups` DISABLE KEYS */;
-INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(30,'stuff','stuff','group.test',NULL);
+INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(15,'stuff','stuff','group.test',NULL);
 /*!40000 ALTER TABLE `config_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -271,83 +291,6 @@ INSERT INTO `data` VALUES (1,188,'Africa',NULL,NULL),(2,188,'Europe',NULL,NULL),
 UNLOCK TABLES;
 
 --
--- Table structure for table `document_content_blob`
---
-
-DROP TABLE IF EXISTS `document_content_blob`;
-CREATE TABLE `document_content_blob` (
-  `document_content_version_id` int(10) unsigned NOT NULL,
-  `content` blob NOT NULL,
-  PRIMARY KEY  (`document_content_version_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-
---
--- Dumping data for table `document_content_blob`
---
-
-LOCK TABLES `document_content_blob` WRITE;
-/*!40000 ALTER TABLE `document_content_blob` DISABLE KEYS */;
-/*!40000 ALTER TABLE `document_content_blob` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `document_content_version`
---
-
-DROP TABLE IF EXISTS `document_content_version`;
-CREATE TABLE `document_content_version` (
-  `id` int(11) NOT NULL default '0',
-  `document_id` int(11) NOT NULL default '0',
-  `size` bigint(20) NOT NULL default '0',
-  `storage_config` mediumtext NOT NULL,
-  `storage_location_id` int(11) NOT NULL,
-  `md5hash` char(32) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `document_id_idx` (`document_id`),
-  CONSTRAINT `document_content_version_ibfk_1` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `document_content_version`
---
-
-LOCK TABLES `document_content_version` WRITE;
-/*!40000 ALTER TABLE `document_content_version` DISABLE KEYS */;
-INSERT INTO `document_content_version` VALUES (1,1,0,'',0,NULL);
-/*!40000 ALTER TABLE `document_content_version` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `document_metadata_version`
---
-
-DROP TABLE IF EXISTS `document_metadata_version`;
-CREATE TABLE `document_metadata_version` (
-  `node_metadata_version_id` int(11) NOT NULL default '0',
-  `document_type_id` int(11) NOT NULL default '0',
-  `workflow_state_id` int(11) default NULL,
-  `custom_doc_no` varchar(255) NOT NULL,
-  `version` float NOT NULL default '0.1',
-  `workflow_state_start_date` datetime default NULL,
-  `real_metadata_version_id` int(11) default NULL,
-  `node_content_version_id` int(11) default NULL,
-  `filename` mediumtext NOT NULL,
-  `mime_type_id` int(11) default NULL,
-  PRIMARY KEY  (`node_metadata_version_id`),
-  KEY `document_type_id` (`document_type_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `document_metadata_version`
---
-
-LOCK TABLES `document_metadata_version` WRITE;
-/*!40000 ALTER TABLE `document_metadata_version` DISABLE KEYS */;
-INSERT INTO `document_metadata_version` VALUES (1,1,NULL,'',0.1,NULL,NULL,NULL,'',NULL);
-/*!40000 ALTER TABLE `document_metadata_version` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Temporary table structure for view `document_types`
 --
 
@@ -359,49 +302,6 @@ DROP TABLE IF EXISTS `document_types`;
   `status` enum('Enabled','Disabled','Deleted'),
   `unit_id` int(11)
 ) */;
-
---
--- Table structure for table `documents`
---
-
-DROP TABLE IF EXISTS `documents`;
-CREATE TABLE `documents` (
-  `id` int(11) NOT NULL default '0',
-  `creator_id` int(11) default NULL,
-  `modified` datetime NOT NULL default '0000-00-00 00:00:00',
-  `folder_id` int(11) default NULL,
-  `is_checked_out` tinyint(4) NOT NULL default '0',
-  `parent_folder_ids` text,
-  `full_path` text,
-  `checked_out_user_id` int(11) default NULL,
-  `status_id` int(11) default NULL,
-  `created` datetime NOT NULL default '0000-00-00 00:00:00',
-  `permission_object_id` int(11) default NULL,
-  `permission_lookup_id` int(11) default NULL,
-  `metadata_version` int(11) NOT NULL default '0',
-  `modified_user_id` int(11) default NULL,
-  `metadata_version_id` int(11) default NULL,
-  `owner_id` int(11) default NULL,
-  `immutable` tinyint(4) NOT NULL default '0',
-  `restore_folder_id` int(11) default NULL,
-  `restore_folder_path` text,
-  `checkedout` datetime default NULL,
-  `oem_no` varchar(255) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `folder_id_idx` (`folder_id`),
-  KEY `metadata_version_id_idx` (`metadata_version_id`),
-  CONSTRAINT `documents_ibfk_2` FOREIGN KEY (`folder_id`) REFERENCES `folders` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `documents`
---
-
-LOCK TABLES `documents` WRITE;
-/*!40000 ALTER TABLE `documents` DISABLE KEYS */;
-INSERT INTO `documents` VALUES (1,1,'0000-00-00 00:00:00',1,0,NULL,'boo',NULL,NULL,'0000-00-00 00:00:00',NULL,NULL,0,NULL,1,NULL,0,NULL,NULL,NULL,NULL);
-/*!40000 ALTER TABLE `documents` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `email_templates`
@@ -455,42 +355,6 @@ DROP TABLE IF EXISTS `fieldsets`;
 ) */;
 
 --
--- Table structure for table `folders`
---
-
-DROP TABLE IF EXISTS `folders`;
-CREATE TABLE `folders` (
-  `id` int(11) NOT NULL default '0',
-  `name` varchar(255) default NULL,
-  `description` varchar(255) default NULL,
-  `parent_id` int(11) default NULL,
-  `creator_id` int(11) default NULL,
-  `is_public` tinyint(4) NOT NULL default '0',
-  `parent_folder_ids` text,
-  `full_path` text,
-  `permission_object_id` int(11) default NULL,
-  `permission_lookup_id` int(11) default NULL,
-  `restrict_document_types` tinyint(4) NOT NULL default '0',
-  `owner_id` int(11) default NULL,
-  `depth` int(10) unsigned NOT NULL,
-  `workflow_id` int(10) unsigned default NULL,
-  `document_type_id` int(11) default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `parent_id_idx` (`parent_id`),
-  CONSTRAINT `folders_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `folders` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `folders`
---
-
-LOCK TABLES `folders` WRITE;
-/*!40000 ALTER TABLE `folders` DISABLE KEYS */;
-INSERT INTO `folders` VALUES (1,'Root Folder','Root Folder',NULL,1,0,NULL,NULL,1,1,0,1,0,NULL,NULL),(2,'Invoice','Invoices',1,1,0,'1','invoice',1,1,0,1,1,NULL,NULL);
-/*!40000 ALTER TABLE `folders` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `grouping_property_values`
 --
 
@@ -511,7 +375,7 @@ CREATE TABLE `grouping_property_values` (
 
 LOCK TABLES `grouping_property_values` WRITE;
 /*!40000 ALTER TABLE `grouping_property_values` DISABLE KEYS */;
-INSERT INTO `grouping_property_values` VALUES (1465,'grouping.property.taggable.plugin.core','b:0;',159),(1466,'grouping.property.taggable.plugin.core','b:1;',160);
+INSERT INTO `grouping_property_values` VALUES (1751,'grouping.property.taggable.plugin.core','b:0;',223),(1752,'grouping.property.taggable.plugin.core','b:1;',224);
 /*!40000 ALTER TABLE `grouping_property_values` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -524,7 +388,7 @@ CREATE TABLE `groupings` (
   `id` int(11) NOT NULL auto_increment,
   `member_id` int(11) NOT NULL,
   `name` text NOT NULL,
-  `type` enum('Group','Role','Unit','Fieldset','Field','DocumentType','Data','DataTree') NOT NULL,
+  `type` enum('Group','Role','Unit','Fieldset','Field','DocumentType','Data','DataTree','MimeGroup') NOT NULL,
   `properties` mediumtext NOT NULL,
   `is_system` tinyint(4) default '0',
   PRIMARY KEY  (`id`),
@@ -538,7 +402,7 @@ CREATE TABLE `groupings` (
 
 LOCK TABLES `groupings` WRITE;
 /*!40000 ALTER TABLE `groupings` DISABLE KEYS */;
-INSERT INTO `groupings` VALUES (951,1463,'Default Type','DocumentType','',0),(952,1464,'Invoice','Fieldset','',0),(953,1465,'Invoice No','Field','',0),(954,1466,'Invoice Date','Field','',0);
+INSERT INTO `groupings` VALUES (1149,1749,'Default Type','DocumentType','',0),(1150,1750,'Invoice','Fieldset','',0),(1151,1751,'Invoice No','Field','',0),(1152,1752,'Invoice Date','Field','',0);
 /*!40000 ALTER TABLE `groupings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -556,15 +420,24 @@ DROP TABLE IF EXISTS `groups`;
 ) */;
 
 --
--- Temporary table structure for view `languages`
+-- Table structure for table `languages`
 --
 
 DROP TABLE IF EXISTS `languages`;
-/*!50001 DROP VIEW IF EXISTS `languages`*/;
-/*!50001 CREATE TABLE `languages` (
-  `id` longtext,
-  `display_name` varchar(255)
-) */;
+CREATE TABLE `languages` (
+  `id` char(5) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `languages`
+--
+
+LOCK TABLES `languages` WRITE;
+/*!40000 ALTER TABLE `languages` DISABLE KEYS */;
+/*!40000 ALTER TABLE `languages` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `member_effective_users`
@@ -609,7 +482,7 @@ CREATE TABLE `member_submembers` (
 
 LOCK TABLES `member_submembers` WRITE;
 /*!40000 ALTER TABLE `member_submembers` DISABLE KEYS */;
-INSERT INTO `member_submembers` VALUES (1463,1464),(1464,1465),(1464,1466);
+INSERT INTO `member_submembers` VALUES (1749,1750),(1750,1751),(1750,1752);
 /*!40000 ALTER TABLE `member_submembers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -633,7 +506,7 @@ CREATE TABLE `members` (
 
 LOCK TABLES `members` WRITE;
 /*!40000 ALTER TABLE `members` DISABLE KEYS */;
-INSERT INTO `members` VALUES (1463,'DocumentType','Enabled',NULL,NULL),(1464,'Fieldset','Enabled',NULL,NULL),(1465,'Field','Deleted',NULL,NULL),(1466,'Field','Enabled',NULL,NULL);
+INSERT INTO `members` VALUES (1749,'DocumentType','Enabled',NULL,NULL),(1750,'Fieldset','Enabled',NULL,NULL),(1751,'Field','Deleted',NULL,NULL),(1752,'Field','Enabled',NULL,NULL);
 /*!40000 ALTER TABLE `members` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -659,42 +532,22 @@ INSERT INTO `migration_version` VALUES (2,'plugin.testdiff'),(1,'plugin.test');
 UNLOCK TABLES;
 
 --
--- Table structure for table `mime_extensions`
+-- Table structure for table `mime_type_grouping`
 --
 
-DROP TABLE IF EXISTS `mime_extensions`;
-CREATE TABLE `mime_extensions` (
-  `extension` varchar(100) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `mime_type_id` int(11) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `mime_type_grouping`;
+CREATE TABLE `mime_type_grouping` (
+  `mime_type_id` int(11) default NULL,
+  `mime_group_id` int(11) default NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
--- Dumping data for table `mime_extensions`
+-- Dumping data for table `mime_type_grouping`
 --
 
-LOCK TABLES `mime_extensions` WRITE;
-/*!40000 ALTER TABLE `mime_extensions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mime_extensions` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `mime_groupings`
---
-
-DROP TABLE IF EXISTS `mime_groupings`;
-CREATE TABLE `mime_groupings` (
-  `mime_type_id` int(10) unsigned NOT NULL,
-  `mime_group_member_id` int(10) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `mime_groupings`
---
-
-LOCK TABLES `mime_groupings` WRITE;
-/*!40000 ALTER TABLE `mime_groupings` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mime_groupings` ENABLE KEYS */;
+LOCK TABLES `mime_type_grouping` WRITE;
+/*!40000 ALTER TABLE `mime_type_grouping` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mime_type_grouping` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -705,10 +558,10 @@ DROP TABLE IF EXISTS `mime_types`;
 CREATE TABLE `mime_types` (
   `id` int(10) unsigned NOT NULL,
   `mime_type` varchar(100) NOT NULL,
-  `group_id` int(10) unsigned default NULL,
-  `extractor_namespace` int(10) unsigned default NULL,
+  `extractor_namespace` varchar(100) default NULL,
   `icon` varchar(100) NOT NULL,
-  `mime_name` varchar(100) NOT NULL
+  `mime_name` varchar(100) NOT NULL,
+  `extensions` varchar(100) default NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
@@ -717,6 +570,7 @@ CREATE TABLE `mime_types` (
 
 LOCK TABLES `mime_types` WRITE;
 /*!40000 ALTER TABLE `mime_types` DISABLE KEYS */;
+INSERT INTO `mime_types` VALUES (1,'image/jpeg','extractor.jpeg','image','JPEG Image','jpg, jpeg');
 /*!40000 ALTER TABLE `mime_types` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -745,52 +599,99 @@ INSERT INTO `named_conditions` VALUES (1,'Immutable Documents','IsImmutable','Dy
 UNLOCK TABLES;
 
 --
--- Table structure for table `node_discussion_comments`
+-- Table structure for table `node_content_blobs`
 --
 
-DROP TABLE IF EXISTS `node_discussion_comments`;
-CREATE TABLE `node_discussion_comments` (
-  `id` int(11) NOT NULL,
-  `node_discussion_thread_id` int(11) NOT NULL,
-  `user_member_id` int(11) NOT NULL,
-  `subject` mediumtext,
-  `body` mediumtext,
-  `added_date` datetime default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `node_discussion_comments`
---
-
-LOCK TABLES `node_discussion_comments` WRITE;
-/*!40000 ALTER TABLE `node_discussion_comments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `node_discussion_comments` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `node_discussion_threads`
---
-
-DROP TABLE IF EXISTS `node_discussion_threads`;
-CREATE TABLE `node_discussion_threads` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `node_id` int(10) unsigned NOT NULL,
-  `user_member_id` int(11) NOT NULL,
-  `subject` mediumtext NOT NULL,
-  `added_date` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-  `views` int(10) unsigned NOT NULL default '0',
-  `replies` int(10) unsigned NOT NULL default '0',
-  `status` enum('Enabled','Disabled','Deleted') NOT NULL default 'Enabled',
-  PRIMARY KEY  (`id`)
+DROP TABLE IF EXISTS `node_content_blobs`;
+CREATE TABLE `node_content_blobs` (
+  `document_content_version_id` int(10) unsigned NOT NULL,
+  `content` blob NOT NULL,
+  PRIMARY KEY  (`document_content_version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
--- Dumping data for table `node_discussion_threads`
+-- Dumping data for table `node_content_blobs`
 --
 
-LOCK TABLES `node_discussion_threads` WRITE;
-/*!40000 ALTER TABLE `node_discussion_threads` DISABLE KEYS */;
-/*!40000 ALTER TABLE `node_discussion_threads` ENABLE KEYS */;
+LOCK TABLES `node_content_blobs` WRITE;
+/*!40000 ALTER TABLE `node_content_blobs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `node_content_blobs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `node_content_metadata_versions`
+--
+
+DROP TABLE IF EXISTS `node_content_metadata_versions`;
+CREATE TABLE `node_content_metadata_versions` (
+  `node_metadata_version_id` int(11) NOT NULL default '0',
+  `document_type_id` int(11) NOT NULL default '0',
+  `workflow_state_id` int(11) default NULL,
+  `custom_doc_no` varchar(255) NOT NULL,
+  `version` float NOT NULL default '0.1',
+  `workflow_state_start_date` datetime default NULL,
+  `real_metadata_version_id` int(11) default NULL,
+  `content_node_id` int(11) default NULL,
+  `filename` mediumtext NOT NULL,
+  PRIMARY KEY  (`node_metadata_version_id`),
+  KEY `document_type_id` (`document_type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `node_content_metadata_versions`
+--
+
+LOCK TABLES `node_content_metadata_versions` WRITE;
+/*!40000 ALTER TABLE `node_content_metadata_versions` DISABLE KEYS */;
+INSERT INTO `node_content_metadata_versions` VALUES (1,1,NULL,'',0.1,NULL,NULL,NULL,'');
+/*!40000 ALTER TABLE `node_content_metadata_versions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `node_content_version`
+--
+
+DROP TABLE IF EXISTS `node_content_version`;
+CREATE TABLE `node_content_version` (
+  `node_id` int(11) unsigned NOT NULL auto_increment,
+  `size` bigint(20) NOT NULL default '0',
+  `storage_config` mediumtext NOT NULL,
+  `storage_location_id` int(11) NOT NULL,
+  `md5hash` char(32) default NULL,
+  `mime_type_id` int(11) default NULL,
+  `language_id` char(5) default NULL,
+  `relation` enum('Original','Translation','Thumbnail') NOT NULL default 'Original',
+  PRIMARY KEY  (`node_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `node_content_version`
+--
+
+LOCK TABLES `node_content_version` WRITE;
+/*!40000 ALTER TABLE `node_content_version` DISABLE KEYS */;
+INSERT INTO `node_content_version` VALUES (1,0,'',0,NULL,NULL,NULL,'Original');
+/*!40000 ALTER TABLE `node_content_version` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `node_document_type_restrictions`
+--
+
+DROP TABLE IF EXISTS `node_document_type_restrictions`;
+CREATE TABLE `node_document_type_restrictions` (
+  `node_id` int(10) unsigned NOT NULL,
+  `document_type_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`node_id`,`document_type_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `node_document_type_restrictions`
+--
+
+LOCK TABLES `node_document_type_restrictions` WRITE;
+/*!40000 ALTER TABLE `node_document_type_restrictions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `node_document_type_restrictions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -886,6 +787,26 @@ LOCK TABLES `node_metadata_versions` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `node_property_values`
+--
+
+DROP TABLE IF EXISTS `node_property_values`;
+CREATE TABLE `node_property_values` (
+  `node_id` int(11) default NULL,
+  `property_namespace` varchar(100) default NULL,
+  `value` varchar(1024) default NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `node_property_values`
+--
+
+LOCK TABLES `node_property_values` WRITE;
+/*!40000 ALTER TABLE `node_property_values` DISABLE KEYS */;
+/*!40000 ALTER TABLE `node_property_values` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `node_relations`
 --
 
@@ -893,7 +814,7 @@ DROP TABLE IF EXISTS `node_relations`;
 CREATE TABLE `node_relations` (
   `node_id` int(10) unsigned NOT NULL,
   `related_node_id` int(10) unsigned NOT NULL,
-  `relation_type` enum('Related To','Depends On') default NULL,
+  `relation_type_id` int(10) unsigned NOT NULL,
   PRIMARY KEY  (`node_id`,`related_node_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -904,6 +825,26 @@ CREATE TABLE `node_relations` (
 LOCK TABLES `node_relations` WRITE;
 /*!40000 ALTER TABLE `node_relations` DISABLE KEYS */;
 /*!40000 ALTER TABLE `node_relations` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `node_shortcuts`
+--
+
+DROP TABLE IF EXISTS `node_shortcuts`;
+CREATE TABLE `node_shortcuts` (
+  `node_id` int(10) unsigned NOT NULL,
+  `shortcut_node_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`node_id`,`shortcut_node_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `node_shortcuts`
+--
+
+LOCK TABLES `node_shortcuts` WRITE;
+/*!40000 ALTER TABLE `node_shortcuts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `node_shortcuts` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -955,9 +896,20 @@ CREATE TABLE `nodes` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `parent_node_id` int(10) unsigned default NULL,
   `full_path` mediumtext NOT NULL,
-  `node_type` enum('Document','Folder','Shortcut','Blog','Wiki','Forum','Chat') NOT NULL,
+  `node_type` enum('Document','Folder','Shortcut','Content','Blog','Post','Form','Forum','Topic','Thread','List','Wiki','Email','ExternalUrl','Chapter') NOT NULL,
   `permission_node_id` int(11) NOT NULL,
   `unit_id` int(11) NOT NULL,
+  `depth` int(11) default NULL,
+  `title` mediumtext,
+  `owned_by_id` int(11) default NULL,
+  `created_by_id` int(11) default NULL,
+  `created_date` datetime default NULL,
+  `modified_by_id` int(11) default NULL,
+  `modified_date` datetime default NULL,
+  `status` enum('Available','Unavailable','Deleted','Archived') default NULL,
+  `metadata_version_id` int(11) default NULL,
+  `locked_by_id` int(11) default NULL,
+  `locked_date` datetime default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -967,7 +919,7 @@ CREATE TABLE `nodes` (
 
 LOCK TABLES `nodes` WRITE;
 /*!40000 ALTER TABLE `nodes` DISABLE KEYS */;
-INSERT INTO `nodes` VALUES (1,NULL,'','Folder',1,0),(2,1,'invoices','Folder',1,0),(3,2,'invoices/jamwarehouse','Folder',3,0),(4,3,'invoices/jamwarehouse/2008','Folder',3,0),(5,2,'invoices/knowledgetree','Folder',5,0),(6,1,'my inv','Shortcut',1,0),(7,2,'my inv','Shortcut',3,0);
+INSERT INTO `nodes` VALUES (1,NULL,'','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,1,'invoices','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,2,'invoices/jamwarehouse','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,3,'invoices/jamwarehouse/2008','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,2,'invoices/knowledgetree','Folder',5,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,1,'my inv','Shortcut',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,2,'my inv','Shortcut',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `nodes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1061,7 +1013,7 @@ CREATE TABLE `plugin_modules` (
 
 LOCK TABLES `plugin_modules` WRITE;
 /*!40000 ALTER TABLE `plugin_modules` DISABLE KEYS */;
-INSERT INTO `plugin_modules` VALUES (1337,170,'Action','_tr(Test Action)',0,'Test2Action','ktapi2/Tests/Plugin/Test2Upgrade/Test2Action.inc.php','s:0:\"\";',0,0,'action.test.plugin.test','s:0:\"\";'),(1338,171,'Action','_tr(Test 2 Diff Action)',0,'Test2DiffAction','ktapi2/Tests/Plugin/Test2Different/Test2Action.inc.php','s:0:\"\";',0,0,'action.test2diff.plugin.testdiff','s:0:\"\";'),(1647,197,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.system.administrator.plugin.core','s:0:\"\";'),(1648,197,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.unit.administrator.plugin.core','s:0:\"\";'),(1649,197,'GroupingProperty','',0,'Repository_Metadata_Field','','a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.taggable.plugin.core','s:0:\"\";'),(1650,197,'AuthenticationProvider','Hashed Password Provider',0,'HashedAuthenticationProvider','ktapi2/Plugins/Core/Authentication/HashedAuthentication.php','s:0:\"\";',0,0,'authentication.provider.hashed.password.plugin.core','s:0:\"\";');
+INSERT INTO `plugin_modules` VALUES (1337,170,'Action','_tr(Test Action)',0,'Test2Action','ktapi2/Tests/Plugin/Test2Upgrade/Test2Action.inc.php','s:0:\"\";',0,0,'action.test.plugin.test','s:0:\"\";'),(1338,171,'Action','_tr(Test 2 Diff Action)',0,'Test2DiffAction','ktapi2/Tests/Plugin/Test2Different/Test2Action.inc.php','s:0:\"\";',0,0,'action.test2diff.plugin.testdiff','s:0:\"\";'),(1342,173,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.system.administrator.plugin.core','s:0:\"\";'),(1343,173,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.unit.administrator.plugin.core','s:0:\"\";'),(1344,173,'GroupingProperty','',0,'Repository_Metadata_Field','','a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.taggable.plugin.core','s:0:\"\";');
 /*!40000 ALTER TABLE `plugin_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1113,7 +1065,7 @@ CREATE TABLE `plugins` (
 
 LOCK TABLES `plugins` WRITE;
 /*!40000 ALTER TABLE `plugins` DISABLE KEYS */;
-INSERT INTO `plugins` VALUES (170,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test2Upgrade/Test2Plugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(171,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}'),(197,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}');
+INSERT INTO `plugins` VALUES (170,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test2Upgrade/Test2Plugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(171,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}'),(173,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}');
 /*!40000 ALTER TABLE `plugins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1225,6 +1177,27 @@ LOCK TABLES `queue_uploads` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `relation_types`
+--
+
+DROP TABLE IF EXISTS `relation_types`;
+CREATE TABLE `relation_types` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `relation_from` varchar(100) default NULL,
+  `relation_to` varchar(100) default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `relation_types`
+--
+
+LOCK TABLES `relation_types` WRITE;
+/*!40000 ALTER TABLE `relation_types` DISABLE KEYS */;
+/*!40000 ALTER TABLE `relation_types` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Temporary table structure for view `roles`
 --
 
@@ -1290,25 +1263,6 @@ INSERT INTO `storage_locations` VALUES (1,'storage.engine.hashed','Default Stora
 UNLOCK TABLES;
 
 --
--- Table structure for table `tag`
---
-
-DROP TABLE IF EXISTS `tag`;
-CREATE TABLE `tag` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `tag`
---
-
-LOCK TABLES `tag` WRITE;
-/*!40000 ALTER TABLE `tag` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tag` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `tags`
 --
 
@@ -1342,6 +1296,7 @@ CREATE TABLE `transaction_log` (
   `action_namespace` varchar(100) NOT NULL,
   `action_config` mediumtext NOT NULL,
   `node_id` int(10) unsigned default NULL,
+  `transaction` mediumtext,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -1401,30 +1356,6 @@ LOCK TABLES `users` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `workflow_actions`
---
-
-DROP TABLE IF EXISTS `workflow_actions`;
-CREATE TABLE `workflow_actions` (
-  `workflow_state_id` int(10) unsigned NOT NULL,
-  `action_namespace` varchar(100) NOT NULL,
-  `action_config` mediumtext NOT NULL,
-  `node_id` int(11) default NULL,
-  `ordering` int(11) default '0',
-  `id` int(10) unsigned NOT NULL auto_increment,
-  PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-
---
--- Dumping data for table `workflow_actions`
---
-
-LOCK TABLES `workflow_actions` WRITE;
-/*!40000 ALTER TABLE `workflow_actions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `workflow_actions` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `workflow_auto_start`
 --
 
@@ -1445,11 +1376,11 @@ LOCK TABLES `workflow_auto_start` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `workflow_auto_transition`
+-- Table structure for table `workflow_auto_transitions`
 --
 
-DROP TABLE IF EXISTS `workflow_auto_transition`;
-CREATE TABLE `workflow_auto_transition` (
+DROP TABLE IF EXISTS `workflow_auto_transitions`;
+CREATE TABLE `workflow_auto_transitions` (
   `node_id` int(11) default NULL,
   `state_id` int(11) default NULL,
   `transition_id` int(11) default NULL,
@@ -1457,32 +1388,32 @@ CREATE TABLE `workflow_auto_transition` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `workflow_auto_transition`
+-- Dumping data for table `workflow_auto_transitions`
 --
 
-LOCK TABLES `workflow_auto_transition` WRITE;
-/*!40000 ALTER TABLE `workflow_auto_transition` DISABLE KEYS */;
-/*!40000 ALTER TABLE `workflow_auto_transition` ENABLE KEYS */;
+LOCK TABLES `workflow_auto_transitions` WRITE;
+/*!40000 ALTER TABLE `workflow_auto_transitions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_auto_transitions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `workflow_document_type_association`
+-- Table structure for table `workflow_document_type_associations`
 --
 
-DROP TABLE IF EXISTS `workflow_document_type_association`;
-CREATE TABLE `workflow_document_type_association` (
+DROP TABLE IF EXISTS `workflow_document_type_associations`;
+CREATE TABLE `workflow_document_type_associations` (
   `workflow_id` int(10) unsigned NOT NULL,
   `document_type_id` int(11) NOT NULL,
   PRIMARY KEY  (`workflow_id`,`document_type_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `workflow_document_type_association`
+-- Dumping data for table `workflow_document_type_associations`
 --
 
-LOCK TABLES `workflow_document_type_association` WRITE;
-/*!40000 ALTER TABLE `workflow_document_type_association` DISABLE KEYS */;
-/*!40000 ALTER TABLE `workflow_document_type_association` ENABLE KEYS */;
+LOCK TABLES `workflow_document_type_associations` WRITE;
+/*!40000 ALTER TABLE `workflow_document_type_associations` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_document_type_associations` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1506,43 +1437,49 @@ LOCK TABLES `workflow_node_associations` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `workflow_state_allow_actions`
+-- Table structure for table `workflow_node_transition_votes`
 --
 
-DROP TABLE IF EXISTS `workflow_state_allow_actions`;
-CREATE TABLE `workflow_state_allow_actions` (
-  `workflow_state_id` int(10) unsigned NOT NULL,
-  `action_namespace` varchar(100) NOT NULL,
-  PRIMARY KEY  (`workflow_state_id`,`action_namespace`)
+DROP TABLE IF EXISTS `workflow_node_transition_votes`;
+CREATE TABLE `workflow_node_transition_votes` (
+  `node_id` int(11) default NULL,
+  `workflow_state_id` int(11) default NULL,
+  `user_member_id` int(11) default NULL,
+  `transition_id` int(11) default NULL,
+  `transition_date` datetime default NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
--- Dumping data for table `workflow_state_allow_actions`
+-- Dumping data for table `workflow_node_transition_votes`
 --
 
-LOCK TABLES `workflow_state_allow_actions` WRITE;
-/*!40000 ALTER TABLE `workflow_state_allow_actions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `workflow_state_allow_actions` ENABLE KEYS */;
+LOCK TABLES `workflow_node_transition_votes` WRITE;
+/*!40000 ALTER TABLE `workflow_node_transition_votes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_node_transition_votes` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `workflow_state_block_actions`
+-- Table structure for table `workflow_state_actions`
 --
 
-DROP TABLE IF EXISTS `workflow_state_block_actions`;
-CREATE TABLE `workflow_state_block_actions` (
+DROP TABLE IF EXISTS `workflow_state_actions`;
+CREATE TABLE `workflow_state_actions` (
   `workflow_state_id` int(10) unsigned NOT NULL,
   `action_namespace` varchar(100) NOT NULL,
-  PRIMARY KEY  (`workflow_state_id`,`action_namespace`)
+  `action_config` mediumtext NOT NULL,
+  `node_id` int(11) default NULL,
+  `ordering` int(11) default '0',
+  `id` int(10) unsigned NOT NULL auto_increment,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
--- Dumping data for table `workflow_state_block_actions`
+-- Dumping data for table `workflow_state_actions`
 --
 
-LOCK TABLES `workflow_state_block_actions` WRITE;
-/*!40000 ALTER TABLE `workflow_state_block_actions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `workflow_state_block_actions` ENABLE KEYS */;
+LOCK TABLES `workflow_state_actions` WRITE;
+/*!40000 ALTER TABLE `workflow_state_actions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_state_actions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1553,7 +1490,8 @@ DROP TABLE IF EXISTS `workflow_state_permissions`;
 CREATE TABLE `workflow_state_permissions` (
   `workflow_state_id` int(10) unsigned NOT NULL,
   `permission_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`workflow_state_id`,`permission_id`)
+  `member_id` int(11) NOT NULL,
+  PRIMARY KEY  (`workflow_state_id`,`permission_id`,`member_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
@@ -1566,6 +1504,45 @@ LOCK TABLES `workflow_state_permissions` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `workflow_state_restrict_actions`
+--
+
+DROP TABLE IF EXISTS `workflow_state_restrict_actions`;
+CREATE TABLE `workflow_state_restrict_actions` (
+  `workflow_state_id` int(10) unsigned NOT NULL,
+  `action_namespace` varchar(100) NOT NULL,
+  PRIMARY KEY  (`workflow_state_id`,`action_namespace`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `workflow_state_restrict_actions`
+--
+
+LOCK TABLES `workflow_state_restrict_actions` WRITE;
+/*!40000 ALTER TABLE `workflow_state_restrict_actions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_state_restrict_actions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `workflow_state_voters`
+--
+
+DROP TABLE IF EXISTS `workflow_state_voters`;
+CREATE TABLE `workflow_state_voters` (
+  `workflow_state_id` int(11) default NULL,
+  `member_id` int(11) default NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `workflow_state_voters`
+--
+
+LOCK TABLES `workflow_state_voters` WRITE;
+/*!40000 ALTER TABLE `workflow_state_voters` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_state_voters` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `workflow_states`
 --
 
@@ -1575,6 +1552,8 @@ CREATE TABLE `workflow_states` (
   `workflow_id` int(11) NOT NULL,
   `display_name` varchar(100) NOT NULL,
   `status` enum('Enabled','Disabled','Deleted') NOT NULL default 'Enabled',
+  `has_voting` tinyint(4) NOT NULL default '0',
+  `deadlock_action` varchar(1000) default 'what do we do???? check with phil. i forgot.',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
@@ -1584,8 +1563,27 @@ CREATE TABLE `workflow_states` (
 
 LOCK TABLES `workflow_states` WRITE;
 /*!40000 ALTER TABLE `workflow_states` DISABLE KEYS */;
-INSERT INTO `workflow_states` VALUES (2,1,'Review','Enabled'),(3,1,'Approved','Enabled'),(4,1,'Rejected','Enabled');
+INSERT INTO `workflow_states` VALUES (2,1,'Review','Enabled',0,'what do we do???? check with phil. i forgot.'),(3,1,'Approved','Enabled',0,'what do we do???? check with phil. i forgot.'),(4,1,'Rejected','Enabled',0,'what do we do???? check with phil. i forgot.');
 /*!40000 ALTER TABLE `workflow_states` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `workflow_transition_restrictions`
+--
+
+DROP TABLE IF EXISTS `workflow_transition_restrictions`;
+CREATE TABLE `workflow_transition_restrictions` (
+  `workflow_transition_id` int(11) default NULL,
+  `guard_id` int(11) default NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `workflow_transition_restrictions`
+--
+
+LOCK TABLES `workflow_transition_restrictions` WRITE;
+/*!40000 ALTER TABLE `workflow_transition_restrictions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow_transition_restrictions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1601,6 +1599,7 @@ CREATE TABLE `workflow_transitions` (
   `status` enum('Enabled','Disabled','Deleted') NOT NULL default 'Enabled',
   `period_type` enum('DayPeriod','DayOfMonth','SpecificDate') default NULL,
   `period_value` varchar(10) default NULL,
+  `votes_required` int(11) default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -1610,7 +1609,7 @@ CREATE TABLE `workflow_transitions` (
 
 LOCK TABLES `workflow_transitions` WRITE;
 /*!40000 ALTER TABLE `workflow_transitions` DISABLE KEYS */;
-INSERT INTO `workflow_transitions` VALUES (1,2,3,'Approve','Enabled',NULL,NULL),(2,2,4,'Reject','Enabled',NULL,NULL);
+INSERT INTO `workflow_transitions` VALUES (1,2,3,'Approve','Enabled',NULL,NULL,0),(2,2,4,'Reject','Enabled',NULL,NULL,0);
 /*!40000 ALTER TABLE `workflow_transitions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1689,16 +1688,6 @@ UNLOCK TABLES;
 /*!50001 VIEW `groups` AS select `m`.`id` AS `member_id`,`g`.`name` AS `name`,`m`.`status` AS `status`,`m`.`unit_id` AS `unit_id` from (`groupings` `g` join `members` `m` on((`g`.`member_id` = `m`.`id`))) where ((`g`.`type` = _utf8'Group') and (`m`.`status` <> _utf8'Deleted')) */;
 
 --
--- Final view structure for view `languages`
---
-
-/*!50001 DROP TABLE IF EXISTS `languages`*/;
-/*!50001 DROP VIEW IF EXISTS `languages`*/;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `languages` AS select substr(`plugin_modules`.`classname`,4) AS `id`,`plugin_modules`.`display_name` AS `display_name` from `plugin_modules` where (`plugin_modules`.`namespace` like _utf8'language.%') */;
-
---
 -- Final view structure for view `roles`
 --
 
@@ -1727,4 +1716,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2008-06-18 22:25:50
+-- Dump completed on 2008-06-20  8:08:46
