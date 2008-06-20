@@ -1,0 +1,62 @@
+core framework
+--------------
+
+easy stuff
+==========
+
+authentication source (groups/group mapping) (megan)
+basic permissions (megan/conrad)
+mime stuff (conrad)
+
+threads (megan)
+queuing stuff (megan)
+metadata framework (megan/conrad)
+node metadata (megan/conrad)
+unit administration (megan)
+notifications (by email)
+scheduled tasks (megan)
+action/trigger framework (megan/conrad)
+transasction history (conrad)
+rss (megan)
+exceptions (add more general use cases) (conrad)
+workflow admin (megan/conrad)
+storage engine / content (conrad)
+extractors (conrad)
+
+medium
+======
+
+conditional permissions
+folder navigation
+tags (ponder)
+workflow engine
+
+conditional metadata
+
+actions (wrapping framework actions)
+triggers
+
+search
+upgrades
+custom numbering
+
+web service (soap, json)
+web dav
+web service (compatability mode)
+
+
+
+UI framework
+------------
+
+dashlets
+tag clouds
+browse columns
+forms and validation
+
+extjs
+-----
+
+
+
+
