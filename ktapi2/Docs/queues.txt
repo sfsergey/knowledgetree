@@ -1,0 +1,68 @@
+Queues
+======
+
+There are a number of queues that can are implemented.
+
+Queue_Download
+--------------
+
+This is enabled to allow time based downloads.
+
+An add(node) function adds the node and derives the hash and expiry_date.
+
+A cleanup() function removes expired entries. This is run periodically.
+
+A download() function would remove the item from the list, and allow the download.
+
+Queue_Expunge
+-------------
+
+This is to allow for backgrounding of expunge events. The purpose is to speed up the
+user experience in the event of mass deletes.
+
+An add(node) function adds the node to the queue.
+
+A cleanup() function is run periodically to actually expunge the content from the storage location.
+
+Queue_Indexing
+--------------
+
+This is to assist in backgrounding of index requests.
+
+An add(node) adds a reference to the queue. The stage field is set to 'Request', and request_date = now().
+
+The Indexing Engine will call getEntries($maxLimit) to get $maxLimit number of entries from the queue.
+This is to allow the system to batch requests and not hog the system cpu as indexing may be processor intensive.
+getEntries() sets the stage='processed', error = '', processed_date = now(). Have a look at Indexer::indexDocuments() to see the query that this currently runs.
+
+Iterating through each of the entries, the Indexing Engine may call indexingSuccess() or indexingError($errorMsg).
+indexingSuccess() can remove the item from the queue. indexingError() sets the error field to $errorMsg and stage='Error'.
+
+Queue_Notifications
+-------------------
+
+This is to background the mailing of recipients so that the client application is not bogged down waiting for smtp requests to go out.
+
+The request can basically include email, content. We may want to change the structure of this depending on how we implement this.
+
+Functionally, I think we'll probably add the following:
+add(to, subject, body, bodyHtml, attachments) - this implies the structure may need to change. 'to' and 'attachments' could be an array.
+cleanup() - basically iterates through the queue and sends messages, removing items when they have been sent. We could have an error flag. Depending
+on the status of the smtp response, failure could imply a retry in a few hours. Do we want to go this far. Retry 3 times and then delete the entry.
+
+Queue_Uploads
+-------------
+
+This is currently used as part of the 2 phase web service upload. 1st phase uses this table. when a file is uploaded, it is added to this table.
+temp_filename = full path on server (to var/uploads). The orig_filename is the filename on the client (excluding the pathname). filesize and hash are set
+- hash = md5 of file. based on the upload we could validate with a md5 sent by the client. created date is populated when the record is added.
+
+Queue_BulkUpload
+----------------
+
+
+
+
+
+
+
