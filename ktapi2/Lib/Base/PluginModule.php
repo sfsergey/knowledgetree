@@ -1,32 +1,30 @@
 <?php
 
-class Base_PluginModule extends Doctrine_Record
+class Base_PluginModule extends KTAPI_Record
 {
 
-    public function setTableDefinition()
+    public function setDefinition()
     {
         $this->setTableName('plugin_modules');
-        $this->hasColumn('id', 'integer', 4, array('unsigned' => 1, 'primary' => true, 'notnull' => true, 'autoincrement' => true));
-        $this->hasColumn('plugin_id', 'integer', 4, array('unsigned' => 1, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('module_type', 'enum', null, array('fixed' => false, 'values' =>  array(  0 => 'Action', 1 => 'Trigger', 2 => 'Table', 3 => 'Field', 4 => 'Language', 5 => 'UnitTest', 6=>'GroupingProperty', 7=>'AuthenticationProvider'  ), 'primary' => false, 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('display_name', 'string', 255, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('status', 'enum', null, array(  'values' =>  array(  'Enabled',    'Disabled'  ), 'primary' => false, 'default' => 'Enabled', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('classname', 'string', 255, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('path', 'string', null, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('module_config', 'string', null, array('fixed' => false, 'primary' => false, 'notnull' => false, 'autoincrement' => false));
-        $this->hasColumn('ordering', 'integer', 4, array('unsigned' => 0, 'primary' => false, 'default' => '0', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('can_disable', 'integer', 1, array('unsigned' => 1, 'primary' => false, 'default' => '0', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('namespace', 'string', 255, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
-        $this->hasColumn('dependencies', 'string', null, array('fixed' => false, 'primary' => false, 'default' => '', 'notnull' => true, 'autoincrement' => false));
 
-        $this->index('namespace', array('fields'=>array('namespace'=>array()),  'type'=>'unique' ));
+        $this->addAutoInc('id');
+        $this->addInteger('plugin_id');
+        $this->addEnumeration('module_type', PluginModuleType::get());
+        $this->addString('display_name', 255);
+        $this->addEnumeration('status', PluginStatus::get(), PluginStatus::ENABLED);
+        $this->addString('classname', 255);
+        $this->addString('path', null);
+        $this->addArray('module_config');
+        $this->addIntegerWithDefault('ordering', 0);
+        $this->addBooleanWithDefault('can_disable', 1);
+        $this->addNamespace('namespace');
+        $this->addArray('dependencies');
 
     }
 
     public function setUp()
     {
-        parent::setUp();
-        $this->hasOne('Base_Plugin as Plugin', array('local' => 'plugin_id', 'foreign' => 'id', 'onDelete'=>'CASCADE', 'onUpdate'=>'CASCADE'));
+        $this->hasOne('Base_Plugin','Plugin',   'plugin_id',  'id' );
     }
 
 }

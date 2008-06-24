@@ -1,23 +1,26 @@
 <?php
 
-class Base_ActiveSession extends Doctrine_Record
+// DONE
+
+class Base_ActiveSession extends KTAPI_Record
 {
-
-    public function setTableDefinition()
+    public
+    function setDefinition()
     {
-        $notnull = KTconstant::get(KTconstant::BASE_DB_NOT_NULL);
-
         $this->setTableName('active_sessions');
-        $this->hasColumn('id', 'integer', 4, KTconstant::get(KTconstant::BASE_DB_AUTOINC));
-        $this->hasColumn('session', 'string', 100, $notnull);
-        $this->hasColumn('user_member_id', 'integer', $notnull);
-        $this->hasColumn('start_date', 'timestamp', $notnull);
-        $this->hasColumn('ip', 'int', $notnull);
-        $this->hasColumn('is_webservice', 'integer', 1, array('notnull'=>true, 'unsigned'=>true, 'default'=>0));
-        $this->hasColumn('activity_date', 'timestamp', $notnull);
+
+        $this->addAutoInc('id');
+        $this->addString('session', 40);
+        $this->addInteger('user_member_id');
+        $this->addTimestamp('start_date');
+        $this->addInteger('user_member_id');
+        $this->addUnsignedInteger('ip');
+        $this->addEnumeration('client_type', ClientType::get());
+        $this->addTimestamp('activity_date', false);
     }
 
     public function setUp()
     {
+        $this->hasOne('Base_User', 'User', 'user_member_id', 'id');
     }
 }

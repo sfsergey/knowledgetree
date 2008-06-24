@@ -1,27 +1,28 @@
 <?php
 
-class Base_Config extends Doctrine_Record
+// DONE
+
+class Base_Config extends KTAPI_Record
 {
 
-    public function setTableDefinition()
+    public function setDefinition()
     {
-        $notnull = KTconstant::get(KTconstant::BASE_DB_NOT_NULL);
-
         $this->setTableName('config');
-        $this->hasColumn('id', 'integer', 4, KTconstant::get(KTconstant::BASE_DB_AUTOINC));
-        $this->hasColumn('config_namespace', 'string', 100, $notnull);
-        $this->hasColumn('display_name', 'string', 100, $notnull);
-        $this->hasColumn('value', 'string', 255, $notnull);
-        $this->hasColumn('default', 'string', 255, $notnull);
-        $this->hasColumn('can_edit', 'tinyint', 1, $notnull);
-        $this->hasColumn('type', 'enum', null, $notnull);
-        $this->hasColumn('type_config', 'string', null, $notnull);
-        $this->hasColumn('config_group_id', 'int', null, $notnull);
-        $this->hasColumn('description', 'string', 255, $notnull);
+
+        $this->addAutoInc('id');
+        $this->addString('config_namespace', 100);
+        $this->addString('display_name', 100);
+        $this->addString('value', 255);
+        $this->addString('default', 255);
+        $this->addBooleanWithDefault('can_edit', 1);
+        $this->addEnumeration('type', DataType::get());
+        $this->addArray('type_config');
+        $this->addInteger('config_group_id');
+        $this->addString('description', 255);
     }
 
     public function setUp()
     {
+        $this->hasOne('Base_ConfigGroup', 'ConfigGroup', 'config_group_id', 'id');
     }
-
 }

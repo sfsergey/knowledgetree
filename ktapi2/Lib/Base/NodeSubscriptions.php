@@ -1,18 +1,20 @@
 <?php
 
-class Base_NodeSubscriptions extends Doctrine_Record
+class Base_NodeSubscriptions extends KTAPI_Record
 {
 
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('node_subscriptions');
-    $this->hasColumn('node_id', 'integer', 4);
-    $this->hasColumn('user_id', 'integer', 4);
-    $this->hasColumn('action_namespace', 'string', null);
+
+    $this->addIntegerPrimary('node_id');
+    $this->addIntegerPrimary('user_id');
+    $this->addNamespace('action_namespace', false);
   }
 
   public function setUp()
   {
-    parent::setUp();
+    $this->hasOne('Base_Node','Node', 'node_id', 'id');
+    $this->hasOne('Base_User','User', 'user_id', 'member_id');
   }
 }

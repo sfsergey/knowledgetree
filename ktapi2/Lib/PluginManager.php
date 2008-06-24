@@ -149,10 +149,10 @@ final class PluginManager
         {
             $query = Doctrine_Query::create();
             $rows = $query->update('Base_Plugin bp')
-                ->set('bp.status', ':status', array(':status'=>PluginManager::DISABLED_STATUS ))
-                ->whereIn('bpm.namespace',$namespaces)
+                ->set('bp.status', '?', array(PluginManager::DISABLED_STATUS))
+                ->whereIn('bp.namespace',$namespaces)
                 ->execute();
-            $disabled += $rows->count();
+            $disabled += $rows;
         }
 
         if ($disabled != 0)
@@ -858,11 +858,11 @@ final class PluginManager
         $rows = $query->select('m.*')
                     ->from('Plugin_Module m')
                     ->where('m.classname = :classname AND m.module_type = :module_type',
-                                array(':classname'=>$classname,':module_type'=>'GroupingProperty'))
+                                array(':classname'=>$classname,':module_type'=>'Property'))
 //                    ->useResultCache(true)
                     ->execute();
 
-        $groupProperties  = Util_Doctrine::getObjectArrayFromCollection($rows, 'GroupingPropertyModule');
+        $groupProperties  = Util_Doctrine::getObjectArrayFromCollection($rows, 'MemberPropertyModule');
         $ns = array();
         $funcs = array();
         $props = array();

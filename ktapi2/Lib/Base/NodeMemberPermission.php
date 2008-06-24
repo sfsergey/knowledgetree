@@ -1,17 +1,20 @@
 <?php
 
-class Base_NodeMemberPermission extends Doctrine_Record
+class Base_NodeMemberPermission extends KTAPI_Record
 {
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('node_member_permissions');
-    $this->hasColumn('node_id', 'integer', 4);
-    $this->hasColumn('member_id', 'integer', 4);
-    $this->hasColumn('permission_id', 'integer', 4);
+
+    $this->addIntegerPrimary('node_id');
+    $this->addIntegerPrimary('member_id');
+    $this->addInteger('permission_id');
   }
 
   public function setUp()
   {
-    parent::setUp();
+    $this->hasOne('Base_Node', 'Node', 'node_id', 'id');
+    $this->hasOne('Base_Member', 'Member', 'member_id', 'id');
+    $this->hasOne('Base_Permission', 'Permission', 'permission_id', 'id');
   }
 }

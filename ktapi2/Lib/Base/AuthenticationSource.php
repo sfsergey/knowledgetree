@@ -1,24 +1,27 @@
 <?php
 
-class Base_AuthenticationSource extends Doctrine_Record
+// DONE
+
+class Base_AuthenticationSource extends KTAPI_Record
 {
 
-    public function setTableDefinition()
+    public
+    function setDefinition()
     {
-        $notnull = KTconstant::get(KTconstant::BASE_DB_NOT_NULL);
-
         $this->setTableName('authentication_sources');
-        $this->hasColumn('id', 'integer', 4, KTconstant::get(KTconstant::BASE_DB_AUTOINC));
-        $this->hasColumn('auth_module_namespace', 'string', 100, $notnull);
-        $this->hasColumn('display_name', 'string', 100, $notnull);
-        $this->hasColumn('auth_config', 'array', null, $notnull);
-        $this->hasColumn('status', 'enum', null, KTconstant::get(KTconstant::BASE_DB_GENERAL_STATUS));
-        $this->hasColumn('is_system', 'int', 1, $notnull);
+
+        $this->addAutoInc('id');
+        $this->addString('auth_module_namespace', 100);
+        $this->addString('display_name', 100);
+        $this->addArray('auth_config');
+        $this->addGeneralStatus('status');
+        $this->addBooleanWithDefault('is_system', 0);
     }
 
-    public function setUp()
+    public
+    function setUp()
     {
-        $this->hasOne('Base_PluginModule as AuthenticationProvider', array('local' => 'auth_module_namespace', 'foreign' => 'namespace'));
+        $this->hasOne('Base_PluginModule','AuthenticationProvider', 'auth_module_namespace','namespace');
     }
 
 }

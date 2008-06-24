@@ -13,6 +13,12 @@ class Util_Metadata
     {
         return KTapi::validateClass('Repository_Metadata_Fieldset', $fieldset);
     }
+
+    public static
+    function validateMimeType($mimeType)
+    {
+        return KTapi::validateClass('MimeType', $mimeType);
+    }
 }
 
 ?>

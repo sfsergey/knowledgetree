@@ -1,23 +1,21 @@
 <?php
 
-class Base_Field extends Doctrine_Record
+class Base_Field extends KTAPI_Record
 {
 
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('fields');
-    $this->hasColumn('member_id', 'integer', 4, array('primary' => true,  'notnull' => true ));
-    $this->hasColumn('name', 'string', null);
-    $this->hasColumn('status', 'enum', null, array('values' =>  array(  0 => 'Enabled', 1 => 'Deleted' ),'default'=>'Enabled','notnull' => true));
-    $this->hasColumn('unit_id', 'int', 4);
+
+    $this->addIntegerPrimary('member_id');
+    $this->addString('name', null);
+    $this->addGeneralStatus('status');
+    $this->addInteger('unit_id');
   }
 
   public function setUp()
   {
-    $this->hasOne('Base_Fieldset as Fieldset', array(
-                                     'local' => 'submember_id',
-                                     'foreign' => 'member_id',
-                                     'refClass' => 'Base_MemberSubMember'
-                                     ));
+    $this->hasOne('Base_Fieldset','Fieldset','submember_id','member_id','Base_MemberSubMember');
+    $this->hasOne('Base_Unit','Unit','unit_id','member_id');
   }
 }

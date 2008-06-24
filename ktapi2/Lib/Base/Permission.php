@@ -1,14 +1,15 @@
 <?php
 
-class Base_Permission extends Doctrine_Record
+class Base_Permission extends KTAPI_Record
 {
 
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('permissions');
-    $this->hasColumn('id', 'integer', 4, array('unsigned' => 0, 'primary' => true,  'notnull' => true, 'autoincrement' => true));
-    $this->hasColumn('display_name', 'string', null);
-    $this->hasColumn('namespace', 'string', null);
+
+    $this->addAutoInc('id');
+    $this->addString('display_name');
+//    $this->addNamespace('namespace');  - i don't think we need this one.
   }
 
   public function setUp()

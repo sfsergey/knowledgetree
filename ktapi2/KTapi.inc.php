@@ -1,61 +1,6 @@
 <?php
 
-final class KTconstant
-{
-    const GENERAL_STATUS    = 'status';
-    const BASE_DB_ID        = 'base_db_id';
-    const BASE_DB_AUTOINC   = 'base_db_id_inc';
-    const BASE_DB_NOT_NULL  = 'base_db_not_null';
-    const BASE_DB_GENERAL_STATUS  = 'base_db_status';
-
-    private static $constants;
-
-    private static
-    function init()
-    {
-        self::$constants = array();
-        self::add(self::GENERAL_STATUS, array(0=>'Enabled',1=>'Disabled',2=>'Disabled'), 'Enabled');
-        self::add(self::BASE_DB_ID, array('unsigned' => true, 'primary' => true,  'notnull' => true ));
-        self::add(self::BASE_DB_AUTOINC, array('unsigned' => true, 'primary' => true,  'notnull' => true, 'autoincrement'=>true ));
-        self::add(self::BASE_DB_NOT_NULL, array(  'notnull' => true ));
-        self::add(self::BASE_DB_GENERAL_STATUS, array('values'=>array(0=>'Enabled',1=>'Disabled',2=>'Disabled'), 'default'=>'Enabled',  'notnull' => true ));
-    }
-
-    private static
-    function add($const, $values, $default=null)
-    {
-        self::$constants[$const] = array('values'=>$values, 'default'=>$default);
-    }
-
-    private static
-    function validate($const)
-    {
-        if (is_null(self::$constants))
-        {
-            self::init();
-        }
-        if (!isset(self::$constants[$const]))
-        {
-            throw new KTapiException(_str('Unknown constant group %s', $const));
-        }
-    }
-
-    public static
-    function get($const)
-    {
-        self::validate($const);
-
-        return self::$constants[$const]['values'];
-    }
-
-    public static
-    function getDefault($const)
-    {
-        self::validate($const);
-
-        return self::$constants[$const]['default'];
-    }
-}
+require_once('KTconstants.inc.php');
 
 
 final class KTapi
@@ -151,7 +96,7 @@ final class KTapi
             $testPath = KT_ROOT_DIR . $path;
             if (!is_dir($testPath))
             {
-                throw new KTapiConfigurationException('Include path does not exist: %s', $testPath);
+                throw new KTapiConfigurationException(_str('Include path does not exist: %s', $testPath));
             }
             $path = $testPath;
         }
@@ -199,6 +144,16 @@ final class KTapi
         require_once(_path($fullPath . 'simpletest/autorun.php'));
 
         KTapi::initModule('test');
+    }
+
+    public static
+    function initTimezone()
+    {
+        $timezone = KTAPI_Config::get(KTAPI_Config::DEFAULT_TIMEZONE);
+        if (!empty($timezone))
+        {
+            date_default_timezone_set($timezone);
+        }
     }
 
     private static
@@ -336,6 +291,21 @@ final class KTapi
         KTapi::initModule('paths');
     }
 
+    public static
+    function exceptionHandler($ex)
+    {
+        $logger = LoggerManager::getLogger('init');
+        $logger->error($ex->getMessage());
+    }
+
+
+    private static
+    function initExceptionHandler()
+    {
+        set_exception_handler('KTapi::exceptionHandler');
+    }
+
+
     private static
     function registerPostInit($func)
     {
@@ -363,6 +333,8 @@ final class KTapi
     public static
     function init($standalone = false)
     {
+        date_default_timezone_set('GMT');
+
         // initialise KTapi class loading
         spl_autoload_register(array('KTapi', 'autoload'));
 
@@ -380,6 +352,9 @@ final class KTapi
 
         // Connect to DB
         KTAPI::connect();
+
+        KTapi::initTimezone();
+        KTapi::initExceptionHandler();
 
         $logger = LoggerManager::getLogger('sql');
         if ($logger->isDebugEnabled())

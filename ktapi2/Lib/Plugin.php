@@ -171,7 +171,7 @@ abstract class Plugin
         }
         else
         {
-             $record = $db->create('Base_Plugin');
+             $record = new Base_Plugin();
         }
 
         $dependencies = $this->getDependencies();
@@ -182,15 +182,15 @@ abstract class Plugin
 
         $record->display_name = $this->getDisplayName();
         $record->path = _relativepath($path);
-        $record->status = 'Enabled';
+        $record->status = PluginStatus::ENABLED;
         $record->version = $this->getVersion();
         $record->can_disable = $this->canDisable();
         $record->can_delete = $this->canDelete();
         $record->namespace = $namespace;
-        $record->dependencies = _serialize(
+        $record->dependencies =
             array(
                 'dependencies'=>$dependencies,
-                'includes'=>$this->getIncludes()));
+                'includes'=>$this->getIncludes());
 
         $record->save();
 
@@ -216,10 +216,10 @@ abstract class Plugin
 
 
     protected
-    function registerLanguage($locale, $language, $POfilename)
+    function registerTranslation($locale, $language, $POfilename)
     {
         $POfilename = _require($POfilename, $this->getBasePath());
-        $lang = new Language();
+        $lang = new Translation();
         $lang->register($this, $locale, $language, $POfilename);
     }
 
@@ -239,9 +239,9 @@ abstract class Plugin
     }
 
     protected
-    function registerGroupingProperty($namespace, $baseClass, $displayName, $getter, $setter, $propertyName, $type, $default=null)
+    function registerMemberProperty($namespace, $baseClass, $displayName, $getter, $setter, $propertyName, $type, $default=null)
     {
-        $property = new GroupingPropertyModule();
+        $property = new MemberPropertyModule();
         $property->register($this, $namespace, $baseClass, $displayName, $getter, $setter, $propertyName, $type, $default);
     }
 

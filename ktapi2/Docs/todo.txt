@@ -2,10 +2,6 @@
 I'm just listing functions - not differentiating between static, methods etc.
 
 
-MimeType::add($mimeTypeName, $mimeGroupId, $extractorNamespace, $icon, $mimeName)
-MimeType::update($mimeType, $mimeType, $mimeGroupId, $extractorNamespace, $icon, $mimeName)
-MimeType::delete($mimeType)
-MimeType::getList(filter)
 
 MimeGroup::add($groupName)
 MimeGroup::update($mimeGroup, $groupName)
@@ -13,10 +9,7 @@ MimeGroup::delete($mimeGroup)
 MimeGroup::getList($filter)
 MimeGroup::addExtension($mimeExtension)
 
-MimeExtension::add($mimeType, $extension, $name)
-MimeExtension::delete($extension)
-MimeExtension::update($extension, $name)
-MimeExtension::getAllBy($mimeType)
+
 
 
 

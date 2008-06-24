@@ -45,6 +45,29 @@ class MetadataTestCase extends KTAPI_TestCase
 
     }
 
+    function testMimeType()
+    {
+        MimeType::create('text/html', 'html','HTML page', array('htm','html'));
+
+
+        $mime = MimeType::create('image/jpeg', 'image','JPEG Image', array('jpeg','jpg'));
+        $mime->setExtensions(array('jpeg'));
+        $mime->setName('JPG Image');
+        $mime->save();
+
+        $mime = MimeType::get('text/html');
+        $this->assertEqual($mime->getName(), 'HTML page');
+
+        $mime = MimeType::getByExtension('jpeg');
+        $this->assertEqual($mime->getName(), 'JPEG Image');
+
+        $mimeTypes = MimeType::getAll();
+        $this->assertTrue(count($mimeTypes), 2);
+
+        $mimeTypes = MimeType::getAll('JPEG');
+        $this->assertTrue(count($mimeTypes), 1);
+    }
+
 }
 
 ?>

@@ -138,6 +138,7 @@ CREATE TABLE `cache` (
   `cache_namespace` varchar(100) NOT NULL,
   `cache_id` int(11) NOT NULL,
   `cache_date` mediumtext NOT NULL,
+  `member_id` int(11) default NULL,
   PRIMARY KEY  (`cache_namespace`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -238,7 +239,7 @@ CREATE TABLE `config` (
 
 LOCK TABLES `config` WRITE;
 /*!40000 ALTER TABLE `config` DISABLE KEYS */;
-INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','allow, disable, alert',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','false','false',1,'bool','',0,''),(92,'timezone.default','Default Timezone','0','0',1,'int',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(189,'my.test','Test','Value',NULL,1,'string',NULL,15,'');
+INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','a:3:{i:0;s:5:\"allow\";i:1;s:7:\"disable\";i:2;s:5:\"alert\";}1',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','true','false',1,'bool',NULL,0,''),(92,'timezone.default','Default Timezone',NULL,'Africa/Johannesburg',1,'enum',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(179,'my.test','Test','Value',NULL,1,'string',NULL,5,'');
 /*!40000 ALTER TABLE `config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -262,7 +263,7 @@ CREATE TABLE `config_groups` (
 
 LOCK TABLES `config_groups` WRITE;
 /*!40000 ALTER TABLE `config_groups` DISABLE KEYS */;
-INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(15,'stuff','stuff','group.test',NULL);
+INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(5,'stuff','stuff','group.test',NULL);
 /*!40000 ALTER TABLE `config_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -355,31 +356,6 @@ DROP TABLE IF EXISTS `fieldsets`;
 ) */;
 
 --
--- Table structure for table `grouping_property_values`
---
-
-DROP TABLE IF EXISTS `grouping_property_values`;
-CREATE TABLE `grouping_property_values` (
-  `grouping_member_id` int(11) NOT NULL,
-  `property_namespace` varchar(100) NOT NULL,
-  `value` mediumtext NOT NULL,
-  `id` int(10) unsigned NOT NULL auto_increment,
-  PRIMARY KEY  (`id`),
-  UNIQUE KEY `grouping_member_id` (`grouping_member_id`,`property_namespace`),
-  CONSTRAINT `FK_grouping_properties` FOREIGN KEY (`grouping_member_id`) REFERENCES `groupings` (`member_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
-
---
--- Dumping data for table `grouping_property_values`
---
-
-LOCK TABLES `grouping_property_values` WRITE;
-/*!40000 ALTER TABLE `grouping_property_values` DISABLE KEYS */;
-INSERT INTO `grouping_property_values` VALUES (1751,'grouping.property.taggable.plugin.core','b:0;',223),(1752,'grouping.property.taggable.plugin.core','b:1;',224);
-/*!40000 ALTER TABLE `grouping_property_values` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `groupings`
 --
 
@@ -388,7 +364,7 @@ CREATE TABLE `groupings` (
   `id` int(11) NOT NULL auto_increment,
   `member_id` int(11) NOT NULL,
   `name` text NOT NULL,
-  `type` enum('Group','Role','Unit','Fieldset','Field','DocumentType','Data','DataTree','MimeGroup') NOT NULL,
+  `type` enum('Group','Role','Unit','Fieldset','Field','DocumentType','Data','DataTree','MimeGroup','NodeType') NOT NULL,
   `properties` mediumtext NOT NULL,
   `is_system` tinyint(4) default '0',
   PRIMARY KEY  (`id`),
@@ -402,7 +378,6 @@ CREATE TABLE `groupings` (
 
 LOCK TABLES `groupings` WRITE;
 /*!40000 ALTER TABLE `groupings` DISABLE KEYS */;
-INSERT INTO `groupings` VALUES (1149,1749,'Default Type','DocumentType','',0),(1150,1750,'Invoice','Fieldset','',0),(1151,1751,'Invoice No','Field','',0),(1152,1752,'Invoice Date','Field','',0);
 /*!40000 ALTER TABLE `groupings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -463,6 +438,30 @@ LOCK TABLES `member_effective_users` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `member_property_values`
+--
+
+DROP TABLE IF EXISTS `member_property_values`;
+CREATE TABLE `member_property_values` (
+  `grouping_member_id` int(11) NOT NULL,
+  `property_namespace` varchar(100) NOT NULL,
+  `value` mediumtext NOT NULL,
+  `id` int(10) unsigned NOT NULL auto_increment,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `grouping_member_id` (`grouping_member_id`,`property_namespace`),
+  CONSTRAINT `FK_grouping_properties` FOREIGN KEY (`grouping_member_id`) REFERENCES `groupings` (`member_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `member_property_values`
+--
+
+LOCK TABLES `member_property_values` WRITE;
+/*!40000 ALTER TABLE `member_property_values` DISABLE KEYS */;
+/*!40000 ALTER TABLE `member_property_values` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `member_submembers`
 --
 
@@ -482,7 +481,6 @@ CREATE TABLE `member_submembers` (
 
 LOCK TABLES `member_submembers` WRITE;
 /*!40000 ALTER TABLE `member_submembers` DISABLE KEYS */;
-INSERT INTO `member_submembers` VALUES (1749,1750),(1750,1751),(1750,1752);
 /*!40000 ALTER TABLE `member_submembers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -506,7 +504,6 @@ CREATE TABLE `members` (
 
 LOCK TABLES `members` WRITE;
 /*!40000 ALTER TABLE `members` DISABLE KEYS */;
-INSERT INTO `members` VALUES (1749,'DocumentType','Enabled',NULL,NULL),(1750,'Fieldset','Enabled',NULL,NULL),(1751,'Field','Deleted',NULL,NULL),(1752,'Field','Enabled',NULL,NULL);
 /*!40000 ALTER TABLE `members` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -532,22 +529,23 @@ INSERT INTO `migration_version` VALUES (2,'plugin.testdiff'),(1,'plugin.test');
 UNLOCK TABLES;
 
 --
--- Table structure for table `mime_type_grouping`
+-- Table structure for table `mime_type_extensions`
 --
 
-DROP TABLE IF EXISTS `mime_type_grouping`;
-CREATE TABLE `mime_type_grouping` (
-  `mime_type_id` int(11) default NULL,
-  `mime_group_id` int(11) default NULL
+DROP TABLE IF EXISTS `mime_type_extensions`;
+CREATE TABLE `mime_type_extensions` (
+  `mime_type_id` int(10) unsigned NOT NULL,
+  `extension` varchar(100) NOT NULL,
+  PRIMARY KEY  (`mime_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
--- Dumping data for table `mime_type_grouping`
+-- Dumping data for table `mime_type_extensions`
 --
 
-LOCK TABLES `mime_type_grouping` WRITE;
-/*!40000 ALTER TABLE `mime_type_grouping` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mime_type_grouping` ENABLE KEYS */;
+LOCK TABLES `mime_type_extensions` WRITE;
+/*!40000 ALTER TABLE `mime_type_extensions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mime_type_extensions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -558,10 +556,11 @@ DROP TABLE IF EXISTS `mime_types`;
 CREATE TABLE `mime_types` (
   `id` int(10) unsigned NOT NULL,
   `mime_type` varchar(100) NOT NULL,
-  `extractor_namespace` varchar(100) default NULL,
+  `name` varchar(100) NOT NULL,
   `icon` varchar(100) NOT NULL,
-  `mime_name` varchar(100) NOT NULL,
-  `extensions` varchar(100) default NULL
+  `extractor_namespace` varchar(100) default NULL,
+  `group_member_id` int(11) default NULL,
+  `extensions` varchar(100) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
@@ -570,32 +569,8 @@ CREATE TABLE `mime_types` (
 
 LOCK TABLES `mime_types` WRITE;
 /*!40000 ALTER TABLE `mime_types` DISABLE KEYS */;
-INSERT INTO `mime_types` VALUES (1,'image/jpeg','extractor.jpeg','image','JPEG Image','jpg, jpeg');
+INSERT INTO `mime_types` VALUES (1,'image/jpeg','JPEG Image','image','extractor.jpeg',NULL,'jpg, jpeg');
 /*!40000 ALTER TABLE `mime_types` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `named_conditions`
---
-
-DROP TABLE IF EXISTS `named_conditions`;
-CREATE TABLE `named_conditions` (
-  `id` int(11) unsigned NOT NULL auto_increment,
-  `name` varchar(100) NOT NULL,
-  `expression` mediumtext NOT NULL,
-  `type` enum('DynamicCondition','SavedSearch','ComplexConditionalMetadata') NOT NULL,
-  `user_member_id` int(11) default NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `named_conditions`
---
-
-LOCK TABLES `named_conditions` WRITE;
-/*!40000 ALTER TABLE `named_conditions` DISABLE KEYS */;
-INSERT INTO `named_conditions` VALUES (1,'Immutable Documents','IsImmutable','DynamicCondition',0);
-/*!40000 ALTER TABLE `named_conditions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -702,7 +677,7 @@ DROP TABLE IF EXISTS `node_dynamic_permissions`;
 CREATE TABLE `node_dynamic_permissions` (
   `node_id` int(11) default NULL,
   `group_id` int(11) default NULL,
-  `dynamic_condition_id` int(11) default NULL,
+  `condition` varchar(1024) default NULL,
   `permission_id` int(11) default NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -910,6 +885,7 @@ CREATE TABLE `nodes` (
   `metadata_version_id` int(11) default NULL,
   `locked_by_id` int(11) default NULL,
   `locked_date` datetime default NULL,
+  `has_document_type_restriction` tinyint(4) default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -919,7 +895,7 @@ CREATE TABLE `nodes` (
 
 LOCK TABLES `nodes` WRITE;
 /*!40000 ALTER TABLE `nodes` DISABLE KEYS */;
-INSERT INTO `nodes` VALUES (1,NULL,'','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,1,'invoices','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,2,'invoices/jamwarehouse','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,3,'invoices/jamwarehouse/2008','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,2,'invoices/knowledgetree','Folder',5,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,1,'my inv','Shortcut',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,2,'my inv','Shortcut',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `nodes` VALUES (1,NULL,'','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(2,1,'invoices','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(3,2,'invoices/jamwarehouse','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(4,3,'invoices/jamwarehouse/2008','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(5,2,'invoices/knowledgetree','Folder',5,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(6,1,'my inv','Shortcut',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(7,2,'my inv','Shortcut',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0);
 /*!40000 ALTER TABLE `nodes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1013,7 +989,7 @@ CREATE TABLE `plugin_modules` (
 
 LOCK TABLES `plugin_modules` WRITE;
 /*!40000 ALTER TABLE `plugin_modules` DISABLE KEYS */;
-INSERT INTO `plugin_modules` VALUES (1337,170,'Action','_tr(Test Action)',0,'Test2Action','ktapi2/Tests/Plugin/Test2Upgrade/Test2Action.inc.php','s:0:\"\";',0,0,'action.test.plugin.test','s:0:\"\";'),(1338,171,'Action','_tr(Test 2 Diff Action)',0,'Test2DiffAction','ktapi2/Tests/Plugin/Test2Different/Test2Action.inc.php','s:0:\"\";',0,0,'action.test2diff.plugin.testdiff','s:0:\"\";'),(1342,173,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.system.administrator.plugin.core','s:0:\"\";'),(1343,173,'GroupingProperty','',0,'Security_Group','','a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.unit.administrator.plugin.core','s:0:\"\";'),(1344,173,'GroupingProperty','',0,'Repository_Metadata_Field','','a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}',0,0,'grouping.property.taggable.plugin.core','s:0:\"\";');
+INSERT INTO `plugin_modules` VALUES (1800,248,'','',0,'Security_Group','','s:182:\"a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.system.administrator.plugin.core','s:7:\"s:0:\"\";\";'),(1801,248,'','',0,'Security_Group','','s:176:\"a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.unit.administrator.plugin.core','s:7:\"s:0:\"\";\";'),(1802,248,'','',0,'Repository_Metadata_Field','','s:147:\"a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.taggable.plugin.core','s:7:\"s:0:\"\";\";'),(1803,248,'AuthenticationProvider','Hashed Password Provider',0,'HashedAuthenticationProvider','ktapi2/Plugins/Core/Authentication/HashedAuthentication.php','s:7:\"s:0:\"\";\";',0,1,'authentication.provider.hashed.password.plugin.core','s:7:\"s:0:\"\";\";'),(1810,254,'Action','_tr(Test Action)',0,'TestAction','ktapi2/Tests/Plugin/Test/TestAction.inc.php','s:7:\"s:0:\"\";\";',0,1,'action.test.plugin.test','s:7:\"s:0:\"\";\";'),(1811,254,'','tag',0,'Base_Tag','ktapi2/Tests/Plugin/Test/BaseTag.inc.php','s:2:\"N;\";',0,1,'table.tag.plugin.test','s:7:\"s:0:\"\";\";'),(1812,254,'','CustomDocumentNo',0,'Document','','s:85:\"a:2:{s:9:\"tablename\";s:13:\"Base_Document\";s:9:\"fieldname\";s:18:\"custom_document_no\";}\";',0,1,'field.base_document.custom_document_no.plugin.test','s:7:\"s:0:\"\";\";'),(1813,254,'','Français',0,'fr_FR','ktapi2/Tests/Plugin/Test/TestLanguage.po','s:7:\"s:0:\"\";\";',0,1,'translation.fr_fr.plugin.test','s:7:\"s:0:\"\";\";'),(1814,254,'Trigger','_tr(Test Trigger)',0,'TestTrigger','ktapi2/Tests/Plugin/Test/TestTrigger.inc.php','s:7:\"s:0:\"\";\";',0,1,'trigger.test.plugin.test','s:7:\"s:0:\"\";\";'),(1815,254,'','TestUnitTest',0,'TestUnitTest','ktapi2/Tests/Plugin/Test/TestUnitTest.inc.php','s:7:\"s:0:\"\";\";',0,1,'unittest.testunittest.plugin.test','s:7:\"s:0:\"\";\";');
 /*!40000 ALTER TABLE `plugin_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1065,7 +1041,7 @@ CREATE TABLE `plugins` (
 
 LOCK TABLES `plugins` WRITE;
 /*!40000 ALTER TABLE `plugins` DISABLE KEYS */;
-INSERT INTO `plugins` VALUES (170,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test2Upgrade/Test2Plugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(171,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}'),(173,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}');
+INSERT INTO `plugins` VALUES (248,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(254,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test/TestPlugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:1:{i:0;s:16:\"Base_Tag.inc.php\";}}'),(255,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}');
 /*!40000 ALTER TABLE `plugins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1211,6 +1187,30 @@ DROP TABLE IF EXISTS `roles`;
 ) */;
 
 --
+-- Table structure for table `saved_search`
+--
+
+DROP TABLE IF EXISTS `saved_search`;
+CREATE TABLE `saved_search` (
+  `id` int(11) unsigned NOT NULL auto_increment,
+  `name` varchar(100) NOT NULL,
+  `expression` mediumtext NOT NULL,
+  `is_subscribed` tinyint(4) NOT NULL default '0',
+  `user_member_id` int(11) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `saved_search`
+--
+
+LOCK TABLES `saved_search` WRITE;
+/*!40000 ALTER TABLE `saved_search` DISABLE KEYS */;
+INSERT INTO `saved_search` VALUES (1,'Immutable Documents','IsImmutable',1,0);
+/*!40000 ALTER TABLE `saved_search` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `storage_location_history`
 --
 
@@ -1260,6 +1260,25 @@ LOCK TABLES `storage_locations` WRITE;
 /*!40000 ALTER TABLE `storage_locations` DISABLE KEYS */;
 INSERT INTO `storage_locations` VALUES (1,'storage.engine.hashed','Default Storage','','Enabled',0,0,'var/Documents',1,0);
 /*!40000 ALTER TABLE `storage_locations` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tag`
+--
+
+DROP TABLE IF EXISTS `tag`;
+CREATE TABLE `tag` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `tag`
+--
+
+LOCK TABLES `tag` WRITE;
+/*!40000 ALTER TABLE `tag` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tag` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1353,26 +1372,6 @@ CREATE TABLE `users` (
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `workflow_auto_start`
---
-
-DROP TABLE IF EXISTS `workflow_auto_start`;
-CREATE TABLE `workflow_auto_start` (
-  `node_id` int(11) default NULL,
-  `workflow_id` int(11) default NULL,
-  `action_date` datetime default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `workflow_auto_start`
---
-
-LOCK TABLES `workflow_auto_start` WRITE;
-/*!40000 ALTER TABLE `workflow_auto_start` DISABLE KEYS */;
-/*!40000 ALTER TABLE `workflow_auto_start` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1553,7 +1552,7 @@ CREATE TABLE `workflow_states` (
   `display_name` varchar(100) NOT NULL,
   `status` enum('Enabled','Disabled','Deleted') NOT NULL default 'Enabled',
   `has_voting` tinyint(4) NOT NULL default '0',
-  `deadlock_action` varchar(1000) default 'what do we do???? check with phil. i forgot.',
+  `restrict_actions` tinyint(4) NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
@@ -1563,7 +1562,7 @@ CREATE TABLE `workflow_states` (
 
 LOCK TABLES `workflow_states` WRITE;
 /*!40000 ALTER TABLE `workflow_states` DISABLE KEYS */;
-INSERT INTO `workflow_states` VALUES (2,1,'Review','Enabled',0,'what do we do???? check with phil. i forgot.'),(3,1,'Approved','Enabled',0,'what do we do???? check with phil. i forgot.'),(4,1,'Rejected','Enabled',0,'what do we do???? check with phil. i forgot.');
+INSERT INTO `workflow_states` VALUES (2,1,'Review','Enabled',0,0),(3,1,'Approved','Enabled',0,0),(4,1,'Rejected','Enabled',0,0);
 /*!40000 ALTER TABLE `workflow_states` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1574,7 +1573,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `workflow_transition_restrictions`;
 CREATE TABLE `workflow_transition_restrictions` (
   `workflow_transition_id` int(11) default NULL,
-  `guard_id` int(11) default NULL
+  `condition` varchar(1000) default NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
@@ -1600,6 +1599,7 @@ CREATE TABLE `workflow_transitions` (
   `period_type` enum('DayPeriod','DayOfMonth','SpecificDate') default NULL,
   `period_value` varchar(10) default NULL,
   `votes_required` int(11) default '0',
+  `has_restrictions` tinyint(4) default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
@@ -1609,7 +1609,7 @@ CREATE TABLE `workflow_transitions` (
 
 LOCK TABLES `workflow_transitions` WRITE;
 /*!40000 ALTER TABLE `workflow_transitions` DISABLE KEYS */;
-INSERT INTO `workflow_transitions` VALUES (1,2,3,'Approve','Enabled',NULL,NULL,0),(2,2,4,'Reject','Enabled',NULL,NULL,0);
+INSERT INTO `workflow_transitions` VALUES (1,2,3,'Approve','Enabled',NULL,NULL,0,0),(2,2,4,'Reject','Enabled',NULL,NULL,0,0);
 /*!40000 ALTER TABLE `workflow_transitions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1716,4 +1716,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2008-06-20  8:08:46
+-- Dump completed on 2008-06-24 13:52:30

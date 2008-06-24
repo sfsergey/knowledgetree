@@ -1,5 +1,7 @@
 <?php
 
+// TODO: authentication source group import and mapping
+
 abstract class Security_Authentication_Provider extends PluginModule
 {
     /**

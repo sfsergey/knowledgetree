@@ -1,16 +1,17 @@
 <?php
 
-class Base_PermissionActionAllocation extends Doctrine_Record
+class Base_PermissionActionAllocation extends KTAPI_Record
 {
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('permission_action_allocation');
-    $this->hasColumn('permission_id', 'integer', 4);
-    $this->hasColumn('action_namespace', 'string', null);
+
+    $this->addIntegerPrimary('permission_id');
+    $this->addStringPrimary('action_namespace');
   }
 
   public function setUp()
   {
-    parent::setUp();
+    $this->hasOne('Base_Permission', 'Permission', 'permission_id', 'id');
   }
 }

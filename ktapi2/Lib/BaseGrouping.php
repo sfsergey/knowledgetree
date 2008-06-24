@@ -3,7 +3,6 @@
 class BaseGrouping extends KTAPI_BaseMember
 {
 
-    protected $propertyValues;
 
     /**
      * Get a reference to a group object(s) using an int, or array of int.
@@ -31,65 +30,7 @@ class BaseGrouping extends KTAPI_BaseMember
         return Util_Doctrine::getEntityByField($baseClass, $instanceClass, array('name' => $groupName));
     }
 
-    protected
-    function getPropertyValues()
-    {
-        if (is_null($this->propertyValues))
-        {
-            $temp = Util_Doctrine::simpleQuery('Base_GroupingPropertyValue', array('grouping_member_id'=>$this->getId()));
 
-            $properties = array();
-            foreach($temp as $property)
-            {
-                $properties[$property->property_namespace] = unserialize($property->value);
-            }
-            $this->propertyValues = $properties;
-        }
-        return $this->propertyValues;
-    }
-
-    protected
-    function getPropertyByName($property_namespace, $default = null)
-    {
-        $properties = $this->getPropertyValues();
-        if (isset($properties[$property_namespace]))
-        {
-            return $properties[$property_namespace];
-        }
-        if (is_null($default))
-        {
-            throw new KTapiUnknownPropertyException($property);
-        }
-
-        $prop = new Base_GroupingPropertyValue();
-        $prop->grouping_member_id = $this->getId();
-        $prop->property_namespace = $property_namespace;
-        $prop->value = serialize($default);
-        $prop->save();
-
-        $this->propertyValues[$property_namespace] = $default;
-
-        return $default;
-    }
-
-    protected
-    function setPropertyByName(GroupingPropertyModule $groupingProperty, $value)
-    {
-        $groupingProperty->isValueValid($value);
-
-        $property_namespace = $groupingProperty->getNamespace();
-
-        $val = $this->getPropertyByName($property_namespace, $value);
-
-        if ($val != $value)
-        {
-            Util_Doctrine::update('Base_GroupingPropertyValue',
-                        array('value'=>serialize($value)),
-                        array('grouping_member_id'=>$this->getId(), 'property_namespace'=>$property_namespace));
-
-            $this->propertyValues[$property_namespace] = $value;
-        }
-    }
 
 
     /**
@@ -581,114 +522,7 @@ class BaseGrouping extends KTAPI_BaseMember
         return $this->checkMembership($this->getId(), $user->getId());
     }
 
-    /**
-     * Reflective function to help deal with the dynamic group properies.
-     *
-     * @param string $property
-     * @return mixed
-     */
-    protected
-    function __get($property)
-    {
-        try
-        {
-            return parent::__get($property);
-        }
-        catch(KTapiUnknownPropertyException $ex)
-        {
-            $properties = PluginManager::getGroupingProperties(get_class($this));
 
-            if (isset($properties['properties'][$property]))
-            {
-                $ns = $properties['properties'][$property];
-                $gp = $properties['ns'][$ns];
-
-                return $this->getPropertyByName($ns, $gp->getDefault());
-            }
-
-            // if the property could not be resolved, rethrow it.
-            throw $ex;
-        }
-    }
-
-    /**
-     * Reflective function to help deal with dynamic group properties.
-     *
-     * @param string $property
-     * @param mixed $value
-     * @return void
-     */
-    protected
-    function __set($property, $value)
-    {
-        try
-        {
-            return parent::__set($property, $value);
-        }
-        catch(KTapiUnknownPropertyException $ex)
-        {
-            $properties = PluginManager::getGroupingProperties(get_class($this));
-
-            if (isset($properties['properties'][$property]))
-            {
-                $ns = $properties['properties'][$property];
-                $gp = $properties['ns'][$ns];
-
-                $setter = $gp->getSetter();
-                if (!empty($setter))
-                {
-                    $this->setPropertyByName($gp, $value);
-                }
-            }
-
-            // if the property could not be resolved, rethrow it.
-            throw $ex;
-        }
-    }
-
-    /**
-     * Reflective function to help deal with dynamic group functions.
-     *
-     * @param string $method
-     * @param array $params
-     * @return mixed
-     */
-    protected
-    function __call($method, $params)
-    {
-        $properties = PluginManager::getGroupingProperties(get_class($this));
-
-        if (isset($properties['funcs'][$method]))
-        {
-            // resolve the namespace
-            $ns = $properties['funcs'][$method];
-
-            // resolve the grouping property module
-            $gp = $properties['namespaces'][$ns];
-
-            $getter = $gp->getGetter();
-            $setter = $gp->getSetter();
-
-            switch ($method)
-            {
-                case $getter:
-                    // the method is the getter function, get the property, possibly returning the default value.
-                    $default = $gp->getDefault();
-                    return $this->getPropertyByName($ns, $default);
-
-                case $setter:
-                    // the method is the setter function.
-                    if (count($params) != 1)
-                    {
-                        throw new Exception('Only one parameter expected.');
-                    }
-                    $value = $params[0];
-                    $this->setPropertyByName($gp, $value);
-                    return;
-            }
-        }
-        throw new KTapiUnknownPropertyException($method);
-    }
 }
 
 ?>

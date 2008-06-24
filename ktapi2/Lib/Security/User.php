@@ -216,15 +216,9 @@ class Security_User extends KTAPI_BaseMember
         return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');
     }
 
-
-    //TODO: clearRelated() should possibly be a seperate function. call it when really required.
-
-
     public
     function getEffectiveGroups()
     {
-        // Note. if one removes this, the dynamic getter functions fail to refresh correctly.
-        $this->base->clearRelated();
         $rows = $this->base->EffectiveGroups;
 
         return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');

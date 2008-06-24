@@ -1,11 +1,11 @@
 <?php
 
-class GroupingPropertyModule extends PluginModule
+class MemberPropertyModule extends PluginModule
 {
     public
     function register($plugin, $namespace, $baseClass, $displayName, $getter, $setter, $property, $type, $default=null)
     {
-        $namespace = strtolower('grouping.property.' . $namespace);
+        $namespace = strtolower('member.property.' . $namespace);
 
         $config = array(
             'display_name' => $displayName,
@@ -15,7 +15,7 @@ class GroupingPropertyModule extends PluginModule
             'default' => $default
         );
 
-        $this->base = Plugin_Module::registerParams($plugin, 'GroupingProperty', '',
+        $this->base = Plugin_Module::registerParams($plugin, 'Property', '',
             array(
                 'namespace'=>$namespace,
                 'classname'=>$baseClass,

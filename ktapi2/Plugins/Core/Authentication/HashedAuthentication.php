@@ -2,6 +2,18 @@
 
 class HashedAuthenticationProvider extends Security_Authentication_Provider
 {
+    protected
+    function getProviderConfig()
+    {
+        return array(
+            'provider_namespace' => 'hashed.password',
+            'display_name' => 'Hashed Password Provider',
+            'can_change_auth_config' => true,
+
+        );
+    }
+
+
     /**
      * The namespace of the hashed provider.
      *
@@ -43,7 +55,7 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
      * @return array
      */
     public
-    function getInputParams()
+    function getInputParams() // TODO: getAuthConfigParams()
     {
         $input = StructureParameter::create()
             ->add(StringParameter::create('password'));

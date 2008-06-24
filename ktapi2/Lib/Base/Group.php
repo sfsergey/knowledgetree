@@ -1,48 +1,25 @@
 <?php
 
-class Base_Group extends Doctrine_Record
+class Base_Group extends KTAPI_Record
 {
 
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('groups');
-    $this->hasColumn('member_id', 'integer', 4, array('primary' => true,  'notnull' => true ));
-    $this->hasColumn('name', 'string', null);
-    $this->hasColumn('status', 'enum', null, array('values' =>  array(  0 => 'Enabled', 1 => 'Deleted' ),'default'=>'Enabled','notnull' => true));
-    $this->hasColumn('unit_id', 'int', 4);
 
+    $this->addIntegerPrimary('member_id');
+    $this->addString('name', null);
+    $this->addGeneralStatus('status');
+    $this->addInteger('unit_id');
   }
 
   public function setUp()
   {
-    $this->hasMany('Base_GroupingPropertyValue as Properties', array(
-                                     'local' => 'member_id',
-                                     'foreign' => 'grouping_id'
-                                     ));
-
-    $this->hasMany('Base_Group as Children', array(
-                                     'local' => 'member_id',
-                                     'foreign' => 'submember_id',
-                                     'refClass' => 'Base_MemberSubMember',
-                                     ));
-
-    $this->hasMany('Base_Group as Parents', array(
-                                     'local' => 'submember_id',
-                                     'foreign' => 'member_id',
-                                     'refClass' => 'Base_MemberSubMember'
-                                     ));
-
-    $this->hasMany('Base_User as Users', array(
-                                     'local' => 'member_id',
-                                     'foreign' => 'submember_id',
-                                     'refClass' => 'Base_MemberSubMember',
-                                     ));
-
-    $this->hasMany('Base_User as EffectiveUsers', array(
-                                     'local' => 'member_id',
-                                     'foreign' => 'user_member_id',
-                                     'refClass' => 'Base_MemberEffectiveUser',
-                                     ));
+    $this->hasMany('Base_MemberPropertyValue','Properties', 'member_id', 'grouping_id' );
+    $this->hasMany('Base_Group','Children', 'member_id', 'submember_id', 'Base_MemberSubMember' );
+    $this->hasMany('Base_Group','Parents',  'submember_id', 'member_id', 'Base_MemberSubMember' );
+    $this->hasMany('Base_User','Users', 'member_id', 'submember_id', 'Base_MemberSubMember' );
+    $this->hasMany('Base_User','EffectiveUsers',  'member_id', 'user_member_id', 'Base_MemberEffectiveUser' );
   }
 
 }

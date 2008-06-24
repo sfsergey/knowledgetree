@@ -56,24 +56,8 @@ class KTAPI_Config
 
         if (isset(self::$config[$namespace]))
         {
-            // TODO: refactor into util class so we can reuse in other components
-
             $config = self::$config[$namespace];
-            $value = $config->value;
-            switch ($config->type)
-            {
-                case 'bool':
-                case 'boolean':
-                    return ($value == 'true')?true:false;
-                case 'int':
-                case 'integer':
-                    return (int) $value;
-                case 'double':
-                case 'float':
-                    return (double) $value;
-                default:
-                    return $value;
-            }
+            return Util_Type::encodeValue($config->value, $config->type);
         }
 
         if (isset($default))
@@ -97,32 +81,8 @@ class KTAPI_Config
 
         if (isset(self::$config[$namespace]))
         {
-            // TODO: refactor into util class so we can reuse in other components
             $config = self::$config[$namespace];
-            switch($config->type)
-            {
-                case 'bool':
-                case 'boolean':
-                    switch($value)
-                    {
-                        case 1:
-                        case true:
-                        case 'true':
-                            $value = 'true';
-                            break;
-                        case 0:
-                        case false:
-                        case 'false':
-                            $value = 'false';
-                            break;
-                        default:
-                            throw new Exception('Invalid value');
-
-                    }
-                default:
-                    $config->value = $value;
-            }
-
+            $config->value = Util_Type::decodeValue($config->value, $config->type);
             $config->save();
             return;
         }

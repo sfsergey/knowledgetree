@@ -1,21 +1,22 @@
 <?php
 
-class Base_Member extends Doctrine_Record
+class Base_Member extends KTAPI_Record
 {
-  public function setTableDefinition()
+  public function setDefinition()
   {
     $this->setTableName('members');
-    $this->hasColumn('id', 'integer', 4, array('primary' => true,  'notnull' => true, 'autoincrement' => true));
-    $this->hasColumn('member_type', 'enum', null, array('values' =>  array(  0 => 'Group', 1 => 'User', 2=>'Role', 3=>'Unit', 4=>'DocumentType', 5=>'Fieldset', 6=>'Field' ), 'notnull' => true));
-    $this->hasColumn('status', 'enum', null, array('values' =>  array(  0 => 'Enabled', 1=>'Disabled', 2 => 'Deleted' ),'default'=>'Enabled','notnull' => true));
-    $this->hasColumn('node_id', 'integer', 4);
-    $this->hasColumn('unit_id', 'integer', 4);
 
-    $this->option('type', 'INNODB');
+    $this->addAutoInc('id');
+    $this->addEnumeration('member_type', MemberType::get());
+    $this->addGeneralStatus('status');
+    $this->addInteger('node_id');
+    $this->addInteger('unit_id');
 
   }
 
   public function setUp()
   {
+      $this->hasOne('Base_Node', 'Node', 'node_id', 'id');
+      $this->hasOne('Base_Unit', 'Unit', 'unit_id', 'member_id');
   }
 }
