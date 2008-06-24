@@ -1,0 +1,53 @@
+Exceptions
+==========
+
+The exception tree:
+
+
+KTAPI_Exception
+|
+|---- KTAPI_AuthenticationException
+|
+|---- KTAPI_NodeException
+|     |
+|     |---- KTAPI_BrowseException
+|
+|---- KTAPI_ConfigurationException
+|
+|---- KTAPI_DatabaseException
+|     |
+|     |---- KTAPI_RecordException
+|           |
+|           |---- KTAPI_DeleteRecordException
+|           |
+|           |---- KTAPI_DisableRecordException
+|           |
+|           |---- KTAPI_KnownRecordException
+|           |
+|           |---- KTAPI_UnknownRecordException
+|
+|---- KTAPI_ParameterValueException
+|
+|---- KTAPI_SessionException
+|     |
+|     |---- KTAPI_SessionExpiredException
+|
+|---- KTAPI_StorageLocationException
+|     |
+|     |---- KTAPI_StorageLocationFullException
+|     |
+|     |---- KTAPI_StorageLocationReadOnlyException
+|     |
+|     |---- KTAPI_StorageLocationIOException
+|           |
+|           |---- KTAPI_StorageLocationReadException
+|           |
+|           |---- KTAPI_StorageLocationWriteException
+|
+|---- KTAPI_UnexpectedTypeException
+|
+|---- KTAPI_UnimplementedMethodException
+|
+|---- KTAPI_UnknownMethodException
+|
+|---- KTAPI_UnknownPropertyException
