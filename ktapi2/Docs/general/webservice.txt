@@ -1,0 +1,11 @@
+Webservice
+==========
+
+Using the reflective nature of actions, we can create the following dynamically:
+1) wsdl based on the current plugins
+2) option to snapshot wsdl definition based on state of actions....
+3) expose SOAP, XML-RPC functions
+4) expose JSON functions - input via HTTP POST params, output as json structure. Arrays are are type suffixed with 'Collection'.
+Eg. Structure[Array]OfDocuments => DocumentCollection
+5) generate client stubs in different languages based on template code
+

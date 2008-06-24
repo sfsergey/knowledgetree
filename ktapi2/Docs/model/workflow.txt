@@ -1,0 +1,43 @@
+Workflow
+========
+
+
+Creation of Workflow
+--------------------
+
+
+Workflow::add($name, $options)
+Workflow::delete($workflow)
+Workflow::update($workflow, $name, $options)
+Workflow::setStartState($workflow, $state)
+Workflow::disable()
+Workflow::enable()
+Workflow::delete()
+
+Workflow::startWorkflowForNode($node, $onDate)
+
+Workflow::addState($name) : WorkflowState
+Workflow::getStates()
+
+Workflow::addTransition($startState, $endState, $name, $options)
+Workflow::getTransitions()
+
+Workflow::startWorkflowForDocumentType($documentType)
+
+
+WorkflowState::delete()
+WorkflowState::save()
+WorkflowState::disable()
+WorkflowState::enable()
+WorkflowState::delete()
+WorkflowState::getTransitions()
+WorkflowState::blockAction($actionNamespace)
+WorkflowState::allowAction($actionNamespace)
+WorkflowState::addPermission($permission)
+WorkflowState::removePermission($permission)
+WorkflowState::getPermissions($permission)
+
+WorkflowState::addAction($action, $config, $options)
+
+
+WorkflowState::startTransitionForNode($transition, $forNode, $onDate)

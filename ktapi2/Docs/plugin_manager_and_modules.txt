@@ -1,4 +1,0 @@
-Plugin Manager and Plugin Modules
----------------------------------
-
-TODO

@@ -1,0 +1,34 @@
+Metadata
+========
+
+All nodes may have metadata.
+
+
+Metadata Status
+---------------
+
+Metadata may have the following status: Available, Unavailable, Deleted.
+
+Furthermore, is_published is defined as a seperate status. // TODO.
+
+This is because a published content version might be made unavailable temporarily if it is moved to another storage location.
+
+
+Structured Metadata
+-------------------
+
+Defining a taxonomy is a form results in a full path being metadata for a document/node.
+
+Furthermore, fieldsets may be defined being composed of fields.
+
+
+Unstructured Metadata
+---------------------
+
+All nodes may have tags associated with them.
+
+
+Related Nodes
+-------------
+
+Nodes may have relations defined between them.

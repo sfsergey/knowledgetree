@@ -1,0 +1,68 @@
+Storage Provider
+================
+
+A storage provider is a 'driver' that deals genericly with the process of storing files on a specific medium.
+
+The storage driver is configured for use by a storage location definition.
+
+This architecture allows us to store files across multiple file systems, and using complex media.
+
+
+StorageProvider Methods
+-----------------------
+
+The storage provider provides the following methods:
+
+a) StorageProvider::getMountParameters()
+
+Returns the parameters required to specify the storage location so that the storage provider may work.
+
+b) StorageProvider::addFile($location, $filename, $options) : Repository_Content
+
+Adds a file to the repository. Reference count set to 1.
+
+c) StorageProvider::referenceContent($location, Repository_Content $content)
+
+Increments the reference count on the file in the repository. Typically this would be called by symbolic link
+or by the copy function.
+
+d) StorageProvider::deleteFile($location, Repository_Content $content)
+
+Decrements the reference count. If the count becomes 0, then the content can be deleted physically from the storage location.
+
+e) StorageProvider::validate($location, Repository_Content $content)
+
+This will attempt a basic hash on the content to check it is not corrupt.
+
+f) StorageProvider::validateAll($location)
+
+This will perform the validation on all content on the storage location.
+
+g) StorageProvider::mount($location, $options)
+
+This will mount the location provided with the required parameters.
+
+h) StorageProvider::unmount($location, $options)
+
+This will unmount the location. All content on the location will be set to unavailable.
+
+i) StorageProvider::isReadOnly($location)
+j) StorageProvider::isRemovable($location)
+k) StorageProvider::isMounted($location)
+l) StorageProvider::canEject($location)
+m) StorageProvider::canMount($location)
+n) StorageProvider::canAddFile($location, $filename, $options)
+o) StorageProvider::eject($location, $options)
+p) StorageProvider::canBurn($location, $options)
+q) StorageProvider::burn($location, $options)
+
+Burning
+-------
+
+This is to allow for the possibility of backing up a location onto removable media such as cd/dvdrom.
+
+Might need to configure global settings for a cd/dvd drive. A special provider would be required for this possibly?
+
+Open source software that could be used to help with process:
+
+http://cdrdao.sourceforge.net/example.html

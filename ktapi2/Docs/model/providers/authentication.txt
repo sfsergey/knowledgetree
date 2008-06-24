@@ -1,0 +1,70 @@
+Authentication Providers
+========================
+
+Authentication sources define configuration for authentication providers so that they may be used.
+
+Examples of providers are: LDAP Provider, Hashed Password Provider
+
+Authentication Provider Methods
+-------------------------------
+
+An authentication provider must implement the following:
+
+a) AuthenticationProvider::authenticate($user, $options = array())
+
+This is the core function that must be implemented in order to test authentication.
+
+e.g. The Hashed Password Provider requires $options['password'] to be the user defined password.
+
+b) AuthenticationProvider::canChangeAuthConfig($user)
+
+This indicates if the user may change authentication configuration parameters.
+
+e.g. The Hashed Password Provider returns 'true'.
+
+c) AuthenticationProvider::changeAuthConfig($user, $options = array())
+
+Allows the user to change authentication configuration parameters.
+
+e.g. The Hashed Password Provider requires $options['password'] to include the user defined password.
+
+d) AuthenticationProvider::getSourceConfigParams()
+
+Indicates the parameters required for the authentication source definition.
+
+e.g. For LDAP Provider, this would include the following: Hostname, Port, SSL, Base DN, Search User, Search User Password
+
+e) AuthenticationProvider::getInputParams()
+
+Indicates the parameters the user must enter in order to authenticate themselves.
+
+e.g. For Hashed Password Provider and LDAP Provider, 'password' would be returned.
+
+f) AuthenticationProvider::getUserAuthConfig(&$options)
+
+This method is called by the User::create() method. // TODO: this overlaps with changeAuthConfig
+
+g) AuthenticationProvider::canImport($source)
+
+Indicates that the provider allows users to be imported from the authentication provider into KnowledgeTree.
+
+e.g. We may want to import users from an LDAP Provider.
+
+h) AuthenticationProvider::queryUsers($source, $filter)
+
+Applying the filter to the source, we return an array of Security_Authentication_ImportUser.// TODO: name might change
+
+i) AuthenticationProvider::import($source, Security_Authentication_ImportUser $user)
+
+Imports a user based on $user.
+
+Importing
+---------
+
+Security_Authentication_ImportUser structures must be populated to provide the following:
+
+a) display name (mandatory)
+b) username (mandatory)
+c) mobile (if available)
+d) email (if available)
+e) configuration (mandatory for auth_config)

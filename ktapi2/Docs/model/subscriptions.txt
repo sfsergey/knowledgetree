@@ -1,0 +1,61 @@
+Subscriptions
+=============
+
+Database
+--------
+
+'node_subscriptions' tracks the relation of nodes to members.
+
+As a member may be a user, group or role, the structure is very rich in offering.
+
+
+Subsription
+-----------
+
+1) Subscription::add($node, $member, $options = array())
+
+This will create the association.
+
+$options may contain parameters:
+- actionDate = set a timed notification on node (optional)
+- message = message for timed notification on node (optional)
+
+2) Subscription::check($now = null)
+
+This will check for timed subscriptions/notifications.
+
+calls Subscription::timedNotify.
+
+3) Subscription::processAction($node, $action, $params)
+
+After an action is executed, this function should be called so notifications can be sent on all actions.
+calls Subscription::notify.
+
+if there are notifications, it will
+
+4) Subscription::getSubscriptions($node = null)
+
+if null, return all subscriptions.
+if not null, return subscriptions on a specific node only.
+
+5) Subscription::delete()
+
+Delete a subscription.
+
+6) Subscription::get($id)
+
+Resolve a subscription by id.
+
+7) Subscription::notify($members, $node, $action, $params)
+
+helper function to populate queue_notifications for each of the members.
+
+calls $action->getNotificationMessage($node, $params) to get a message. // TODO
+
+8) Subscription::timedNotify($members, $node, $message)
+
+helper function to populate queue_notifications for each of the members.
+
+calls $node->getNotificationMessage($message) // TODO
+
+

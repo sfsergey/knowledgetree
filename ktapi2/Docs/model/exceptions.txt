@@ -6,6 +6,8 @@ The exception tree:
 
 KTAPI_Exception
 |
+|---- KTAPI_BlockActionException - a pre-trigger may throw this.
+|
 |---- KTAPI_AuthenticationException
 |
 |---- KTAPI_NodeException
@@ -31,6 +33,8 @@ KTAPI_Exception
 |---- KTAPI_SessionException
 |     |
 |     |---- KTAPI_SessionExpiredException
+|     |
+|     |---- KTAPI_AnonymousSessionNotAllowedException
 |
 |---- KTAPI_StorageLocationException
 |     |
@@ -43,6 +47,8 @@ KTAPI_Exception
 |           |---- KTAPI_StorageLocationReadException
 |           |
 |           |---- KTAPI_StorageLocationWriteException
+|
+|---- KTAPI_PermissionDeniedException - blocking an action based on permissions.
 |
 |---- KTAPI_UnexpectedTypeException
 |

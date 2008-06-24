@@ -1,0 +1,44 @@
+Actions And Triggers
+====================
+
+Actions are reflective actions that are a foundation feature of the framework.
+
+Key features include:
+1) export functions that can be reflectively discovered/queried by the user interface and interfaces such as web services
+2) provide 'metadata' so that parameters are well defined.
+3) identify if function is exportable as web service by providing a web service function name.
+4) identify class and function name on which the action may be exposed reflectively. e.g. Document->action($params)
+
+Triggers are essentially actions, but may be scheduled before or after an action runs.
+
+A trigger running before an action may serve as a 'blocking' mechanism.
+
+Information the plugin must provide;
+1) default category
+2) parameters
+3) return parameter
+4) web service function name
+5) class and method name
+
+Parameters should be used as follows:
+1) StructureParameter is a general container. This should be used for the return type for complex types.
+2) A Parameter has 'setAsArray()' and 'isArray()' to allow for array of parameter.
+3) For web service, we may need to override the parameters with a specific
+4) all node type classes need to provide a method 'exportProperties()' method.
+
+
+
+Core List Of Actions
+--------------------
+
+* startUserSession(username, array of [name,value]) : session
+* startAnonymousSession(array of [name,value]) : session
+* endSession(session)
+* enableAdminMode(session) : session
+* setCurrentUnit(session, unit) : session
+
+* getRootFolder($session) : folder
+
+* addUser(session, username, $name, $email, array of [name,value]) : user
+* removeUser(session, user)
+* updateUser(session, user, array of [name,value]) : user

@@ -1,0 +1,27 @@
+Plugin Manager and Plugin Modules
+---------------------------------
+
+
+// TODO: move static functions for module onto PluginModule....
+
+
+PluginManager::addPluginLocation($location)
+::clearPluginLocations()
+::readAllPluginLocations()
+::probeAllPluginLocations()
+::installPlugin($path, $validateRelations = true)
+::uninstallPlugin($namespace, $options = array())
+::getModule($namespace)
+::enableModule($namespace, $options=array())
+::disableModule($namespace, $options=array())
+::isModuleEnabled($namespace)
+::setModuleOrder($namespace, $order)
+::disablePlugin($namespace, $options = array())
+::enablePlugin($namespace, $options = array())
+::isPluginRegistered($namespace)
+::isPluginEnabled($namespace)
+::setPluginOrder($namespace, $order)
+::getPluginModules($namespaceFilter = '', $status = null)
+::getPlugins($filter = '', $status = null)
+::getNewPlugins()
+::getGroupingProperties($classname)

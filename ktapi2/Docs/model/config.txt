@@ -1,0 +1,24 @@
+Configuration
+=============
+
+1) KTAPI_Config::deleteGroup($groupNamespace) // TODO: rather KTAPI_Config::delete()
+
+Remove a configuration group based on namespace.
+
+2) KTAPI_Config::createGroup($groupNamespace , $name, $description); // TODO: rather KTAPI_ConfigGroup::create($namespace, $name, $description)
+
+Create a configuration group.
+
+3) KTAPI_Config::getGroup($groupNamespace) // TODO: rather KTAPI_ConfigGroup::get($namespace)
+
+Get a configuration group.
+
+4) KTAPI_Config::getGroups() // TODO: rather KTAPI_ConfigGroup::getAll()
+
+5) KTAPI_Config::delete($namespace); // TODO:: rather KTAPI_Config::delete()
+6) KTAPI_Config::create($namespace, $displayName, $value, $groupNamespace, $options)
+
+$options may have the following values: 'default', 'can_edit', 'type','type_config','description'
+
+7) KTAPI_Config::set($namespace, $value);
+8) KTAPI_Config::get($namespace, $default);

@@ -1,0 +1,16 @@
+Constants
+=========
+
+Various useful constants are defined on the following classes:
+- Length
+- ClientType
+- Frequency
+- ContentVersionRelation
+- DataType
+- IndexStage
+- PluginModuleType
+- GroupType
+- MemberType
+- GeneralStatus
+- PluginStatus
+- NodeStatus

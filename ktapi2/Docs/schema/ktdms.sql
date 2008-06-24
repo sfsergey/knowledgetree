@@ -746,6 +746,7 @@ CREATE TABLE `node_metadata_versions` (
   `metadata_version` mediumint(9) NOT NULL default '0',
   `created_date` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `created_by_id` int(11) NOT NULL,
+  `is_published` tinyint(3) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `FK_node_metadata_versions` (`node_id`),
   KEY `FK_node_metadata_versions2` (`created_by_id`),
@@ -829,8 +830,8 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `node_subscriptions`;
 CREATE TABLE `node_subscriptions` (
   `node_id` int(10) unsigned NOT NULL,
-  `user_member_id` int(11) NOT NULL,
-  PRIMARY KEY  (`node_id`,`user_member_id`)
+  `member_id` int(11) NOT NULL,
+  PRIMARY KEY  (`node_id`,`member_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
@@ -1103,6 +1104,7 @@ CREATE TABLE `queue_indexing` (
 
 LOCK TABLES `queue_indexing` WRITE;
 /*!40000 ALTER TABLE `queue_indexing` DISABLE KEYS */;
+INSERT INTO `queue_indexing` VALUES (0,'','0000-00-00 00:00:00',NULL,'');
 /*!40000 ALTER TABLE `queue_indexing` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1716,4 +1718,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2008-06-24 13:52:30
+-- Dump completed on 2008-06-24 22:48:24

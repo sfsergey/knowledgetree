@@ -1,0 +1,31 @@
+Authentication and Sessions
+===========================
+
+Security_Session::isAuthenticated()
+Security_Session::isAnonymous()
+
+Security_Session::isSystemAdminUser()
+Security_Session::isUnitAdminUser()
+Security_Session::isAdminUser()
+
+Security_Session::isAdminModeEnabled()
+
+
+// TODO: must add to AuthProvider....
+Security_Session::getEnvironmentParams() // TODO: to prompt environment as to which environment is available. e.g. NTLM
+Security_Session::startBasedOnEnvironment($options = array()) // TODO: pass environment variables through to resolve user... e.g. NTLM
+
+Security_Session::startUserSession($user, $options = array())
+Security_Session::startAnonymousSession($options = array())
+Security_Session::resumeSession($phpSession, $options = array())
+Security_Session::endSession($options = array())
+
+Security_Session::enableAdminMode()
+Security_Session::disableAdminMode()
+
+Security_Session::getSession($options = array())
+Security_Session::getSessionUser($options = array())
+Security_Session::isSessionActive($options = array())
+Security_Session::startPHPsession()
+
+Security_Session::setCurrentUnit($unit)

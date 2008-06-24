@@ -1,0 +1,27 @@
+Permissions
+===========
+
+General
+-------
+
+Permissions is defined in terms of user, group and roles.
+
+A group may contain subgroups and users. A role is essentially a group, but in the context of a folder node.
+
+Dynamic Permissions
+-------------------
+
+A dynamic permission is defined on a node for a specific group where a permission is available when a specific condition is true.
+
+TODO: This may be interesting to implement. interesting performance issues....
+
+Node Member Permissions
+-----------------------
+
+Permissions may be assigned to a node per member type.
+
+Workflow Permissions
+--------------------
+
+This is the last consideration on visibility of nodes and availability of actions.
+

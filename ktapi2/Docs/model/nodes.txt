@@ -1,0 +1,41 @@
+Nodes
+=====
+
+Node Types
+----------
+
+The new structure requires all entities to be defined as nodes - identified by a node type.
+
+These include
+- Document
+- Folder
+- Shortcut
+- Content
+- Blog
+- Forum
+- Thread
+- Post
+
+Everything is a 'folder'
+------------------------
+
+A document node is a virtual folder. It basically contains content nodes.
+
+A folder node may any node type.
+
+Status
+------
+
+A node may have the following status: Available, Unavailable, Deleted.
+
+On a document, the archive action sets the status on the document node to unavailable.
+
+If content on a document is archived to removable media and it is removed, the content node is set to unavailable.
+
+The published state is set using the node properties.
+
+
+
+
+
+

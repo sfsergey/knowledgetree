@@ -1,0 +1,35 @@
+Database
+========
+
+All database interaction is done using Php Doctrine (www.phpdoctrine.org).
+
+Naming Conventions
+------------------
+
+Tables are named in plural.
+
+The table names are mapped onto classes in the 'ktapi2/Lib/Base' directory. The base classes are used to implement
+ActiveRecord-like functionality.
+
+All tables that require an auto increment field include a field named 'id'.
+
+
+Installation
+------------
+
+During development, 'ktapi2/Docs/ktdms.sql' will be used as a dump file for the database schema.
+
+For production, 'ktapi2/Bin/buildDb.php' will be used.
+
+KnowledgeTree Specific Notes
+----------------------------
+
+We implement a few database views mapping onto 'groupings'.
+
+'groupings' and 'users' share a common id based on the 'members' table.
+
+The members table is quite useful as it allows us to manage the parent child relation between a number of different entities
+and allows us to reduce the complexity of the way these relations are stored.
+
+
+
