@@ -60,7 +60,13 @@ temp_filename = full path on server (to var/uploads). The orig_filename is the f
 Queue_BulkUpload
 ----------------
 
+The idea with this is to help with backgrounding of bulk uploads.
 
+Discussion points:
+1) merging this with Queue_Uploads
+2) Unzip to server location
+3) import from server location
+4) persistance of metadata soo that (3) can work correctly
 
 
 

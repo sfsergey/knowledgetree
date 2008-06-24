@@ -1,0 +1,39 @@
+Translations
+------------
+
+The following illustrates how to make a translation.
+
+class TestPlugin extends Plugin
+{
+    public
+    function getDisplayName()
+    {
+        return _kt('Test Plugin');
+    }
+
+    public
+    function getNamespace()
+    {
+        return 'plugin.test';
+    }
+
+    public
+    function getIncludes()
+    {
+        return array('Base_Tag.inc.php');
+    }
+
+    public
+    function register()
+    {
+        parent::register(__FILE__);
+        $this->registerTranslation('fr_FR', 'Français', 'TestTranslation.po');
+    }
+}
+
+
+
+registerTranslation($locale, $translationLanguage, $translationPOfilename);
+
+
+TODO
