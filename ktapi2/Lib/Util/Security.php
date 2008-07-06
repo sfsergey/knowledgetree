@@ -1,6 +1,6 @@
 <?php
 
-class Util_Security
+class SecurityUtil
 {
 
     public static

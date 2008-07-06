@@ -9,7 +9,7 @@ class Base_Grouping extends KTAPI_Record
 
     $this->addAutoInc('id');
     $this->addInteger('member_id');
-    $this->addString('name', null);
+    $this->addString('name', Length::NAME);
     $this->addEnumeration('type', GroupType::get());
     $this->addInteger('unit_id');
 
@@ -18,7 +18,7 @@ class Base_Grouping extends KTAPI_Record
   public function setUp()
   {
     $this->hasOne('Base_Member','Member',  'member_id', 'id' );
-    $this->hasOne('Base_Group as Group', 'id', 'member_id');
+    $this->hasOne('Base_Group','Group', 'id', 'member_id');
   }
 
 }

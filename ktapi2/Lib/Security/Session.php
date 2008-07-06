@@ -95,7 +95,7 @@ class Security_Session extends KTAPI_Base
     {
         if (self::isSessionActive($options))
         {
-            Util_Doctrine::simpleDelete('Base_ActiveSession', array('session'=>session_id()));
+            DoctrineUtil::simpleDelete('Base_ActiveSession', array('session'=>session_id()));
         }
 
         $_SESSION = array();
@@ -111,7 +111,7 @@ class Security_Session extends KTAPI_Base
     {
         if (!self::isAdminUser())
         {
-            throw new Exception('Cannot assign admin mode');
+            throw new KTAPI_SessionException('Cannot start admin mode.');
         }
         $_SESSION[self::ADMIN_MODE] = true;
     }
@@ -146,7 +146,7 @@ class Security_Session extends KTAPI_Base
         }
         else
         {
-            throw new KTapiException('Cannot start anonymous session.');
+            throw new KTAPI_SessionException('Cannot start anonymous session');
         }
     }
 
@@ -205,8 +205,7 @@ class Security_Session extends KTAPI_Base
             return $_SESSION[self::SESSION ];
         }
 
-        throw new KTapiException('No session is active');
-
+        throw new KTAPI_Session_NotActiveException();
     }
 
     private static
@@ -224,8 +223,8 @@ class Security_Session extends KTAPI_Base
         Doctrine_Query::create()
             ->delete()
             ->from('Base_ActiveSession s')
-            ->where('(s.activity_date <= :normal_expiry AND s.is_webservice != :webservice) OR (s.activity_date <= :webservice_expiry AND s.is_webservice = :webservice)',
-                    array(':normal_expiry'=>$expiry, ':webservice_expiry'=>$webserviceExpiry, ':webservice'=>true))
+            ->where('(s.activity_date <= :normal_expiry AND s.client_type = :webclient) OR (s.activity_date <= :webservice_expiry AND s.client_type != :webclient)',
+                    array(':normal_expiry'=>$expiry, ':webservice_expiry'=>$webserviceExpiry, ':webclient'=>ClientType::WEBCLIENT))
             ->execute();
     }
 
@@ -246,7 +245,7 @@ class Security_Session extends KTAPI_Base
 
         try
         {
-            $session = Util_Doctrine::simpleOneQuery('Base_ActiveSession', array('session'=>$phpSession));
+            $session = DoctrineUtil::simpleOneQuery('Base_ActiveSession', array('session'=>$phpSession));
             $session->activity_date = date('Y-m-d H:i:s');
             $session->save();
 
@@ -256,7 +255,7 @@ class Security_Session extends KTAPI_Base
         }
         catch(Exception $ex)
         {
-            throw new KTapiException('Session expired!');
+            throw new KTAPI_Session_ExpiredException();
         }
 
         return $_SESSION[self::SESSION ];
@@ -308,15 +307,23 @@ class Security_Session extends KTAPI_Base
 
         $userId = $user->getId();
 
+        $now = date('Y-m-d H:i:s');
+
         $session = new Base_ActiveSession();
         $session->session = session_id();
         $session->user_member_id = $userId;
         $session->ip = self::resolveIp($options);
-        $session->is_webservice = isset($options['is_webservice']) && $options['is_webservice'];
-        $session->activity_date = date('Y-m-d H:i:s');
-        if (isset($options['is_webservice']) && $options['is_webservice']) $session->is_webservice = true;
+        $session->client_type = ClientType::WEBCLIENT;
+        $session->activity_date = $now;
+        $session->start_date = $now;
+        if (isset($options['client_type']))
+        {
+            $session->client_type = $options['client_type'];
+        }
 
         $session->save();
+
+        $session = new Security_Session($session);
 
         $_SESSION[self::USER] = $user;
 
@@ -342,8 +349,7 @@ class Security_Session extends KTAPI_Base
             $_SESSION[self::UNITS ] = $user->getUnits();
 
             // delete sessions
-            $maxSessions = $session->is_webservice?KTAPI_Config::get(KTAPI_Config::MAX_WEBSERVICE_SESSIONS ):KTAPI_Config::get(KTAPI_Config::MAX_SESSIONS);
-
+            $maxSessions = $session->getMaxSessions();
             $rows = Doctrine_Query::create()
                     ->select('s.id')
                     ->from('Base_ActiveSession s')
@@ -357,6 +363,13 @@ class Security_Session extends KTAPI_Base
         }
 
         $_SESSION[self::SESSION ] = new Security_Session($session);
+    }
+
+    public
+    function getMaxSessions()
+    {
+        $namespace = $this->isWebClient()?(KTAPI_Config::MAX_SESSIONS):(KTAPI_Config::MAX_WEBSERVICE_SESSIONS);
+        return KTAPI_Config::get($namespace, 3);
     }
 
     /**
@@ -397,11 +410,28 @@ class Security_Session extends KTAPI_Base
         return long2ip($this->base->ip);
     }
 
-    // TODO: change to ClientType
     public
-    function isWebservice()
+    function getClientType()
     {
-        return $this->base->is_webservice;
+        return $this->base->client_type;
+    }
+
+    public
+    function isWebService()
+    {
+        return $this->base->client_type == ClientType::WEBSERVICE;
+    }
+
+    public
+    function isWebClient()
+    {
+        return $this->base->client_type == ClientType::WEBCLIENT;
+    }
+
+    public
+    function isWebDav()
+    {
+        return $this->base->client_type == ClientType::WEBDAV;
     }
 
     public
@@ -409,9 +439,6 @@ class Security_Session extends KTAPI_Base
     {
         return $this->base->activity_date;
     }
-
 }
-
-
 
 ?>

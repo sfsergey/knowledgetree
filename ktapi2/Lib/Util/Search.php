@@ -1,6 +1,6 @@
 <?php
 
-class Util_Search
+class SearchUtil
 {
 
     public static

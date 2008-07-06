@@ -8,8 +8,8 @@ class Base_Role extends KTAPI_Record
     $this->setTableName('roles');
 
     $this->addIntegerPrimary('member_id');
-    $this->addString('name', null);
-    $this->addGeneralStatus('status');
+    $this->addString('name', Length::NAME);
+    $this->addGeneralStatus('status', true);
     $this->addInteger('unit_id');
   }
 

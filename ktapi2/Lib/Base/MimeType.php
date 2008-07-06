@@ -11,13 +11,13 @@ class Base_MimeType extends KTAPI_Record
         $this->addString('name', 100);
         $this->addString('icon', 20);
         $this->addNamespace('extractor_namespace');
-        $this->addInteger('group_id');
+        $this->addInteger('group_member_id');
         $this->addString('extensions', 100);
     }
 
     public function setUp()
     {
-        $this->hasOne('Base_MimeTypeGroup','MimeTypeGroup', 'group_id', 'member_id');
+        $this->hasOne('Base_MimeTypeGroup','MimeTypeGroup', 'group_member_id', 'member_id');
         $this->hasMany('Base_MimeTypeExtension','Extensions', 'id', 'mime_type_id');
     }
 }

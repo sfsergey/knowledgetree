@@ -18,7 +18,7 @@ class Base_User extends KTAPI_Record
     $this->addString('language_id', Length::LANGUAGE_ID);
     $this->addTimestamp('last_login_date', false);
     $this->addIntegerWithDefault('invalid_login', 0);
-    $this->addStringWithDefault('timezone', 2);
+    $this->addStringWithDefault('timezone', 5, KTAPI_Config::get(KTAPI_Config::DEFAULT_TIMEZONE ));
     $this->addGeneralStatus('status', true);
     $this->addInteger('auth_source_id');
     $this->addArray('auth_config');
@@ -27,13 +27,11 @@ class Base_User extends KTAPI_Record
 
   public function setUp()
   {
-    $this->hasMany('Base_Group','Groups',  'submember_id', 'member_id', 'Base_MemberSubMember' );
+      $this->hasMany('Base_Group','Groups',  'submember_id', 'member_id', 'Base_MemberSubMember' );
 
-    $this->hasMany('Base_Group','EffectiveGroups',  'user_member_id', 'member_id', 'Base_MemberEffectiveUser' );
+      $this->hasMany('Base_Group','EffectiveGroups',  'user_member_id', 'member_id', 'Base_MemberEffectiveUser' );
 
-        $this->hasOne('Base_AuthenticationSource','AuthenticationSource','auth_source_id',  'id');
-
-
+      $this->hasOne('Base_AuthenticationSource','AuthenticationSource','auth_source_id',  'id');
 
   }
 }

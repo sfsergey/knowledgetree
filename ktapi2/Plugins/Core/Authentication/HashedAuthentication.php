@@ -7,33 +7,8 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
     {
         return array(
             'provider_namespace' => 'hashed.password',
-            'display_name' => 'Hashed Password Provider',
-            'can_change_auth_config' => true,
-
+            'display_name' => 'Hashed Password Provider'
         );
-    }
-
-
-    /**
-     * The namespace of the hashed provider.
-     *
-     * @return string
-     */
-    public
-    function getProviderNamespace()
-    {
-        return 'hashed.password';
-    }
-
-    /**
-     * This display name for the hased provider.
-     *
-     * @return string
-     */
-    public
-    function getDisplayName()
-    {
-        return 'Hashed Password Provider';
     }
 
     /**
@@ -85,18 +60,14 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
     public
     function authenticate($user, $options = array())
     {
-        $user = Util_Security::validateUser($user);
+        $user = SecurityUtil::validateUser($user);
 
-        if (!isset($options['password']))
-        {
-            throw new Exception('Expected password');
-        }
+        ValidationUtil::arrayExpected($options, 'options');
+        ValidationUtil::arrayOptionExpected($options, 'password');
 
         $config = $user->getAuthConfig();
-        if (!isset($config['password']))
-        {
-            return false;
-        }
+
+        ValidationUtil::arrayOptionExpected($config, 'password');
 
         return ($config['password'] == self::hash($options['password']));
 
@@ -114,16 +85,9 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
     public
     function changeAuthConfig($user, $options = array())
     {
-        $user = Util_Security::validateUser($user);
-        if (!is_array($options))
-        {
-            throw new Exception('Options array expected');
-        }
+        $user = SecurityUtil::validateUser($user);
 
-        if (!isset($options['password']))
-        {
-            throw new Exception('Expected password');
-        }
+        ValidationUtil::arrayOptionExpected($options, 'password');
 
         $config = $user->getAuthConfig();
 
@@ -161,7 +125,7 @@ class HashedAuthenticationProvider extends Security_Authentication_Provider
         }
         else
         {
-            $password = Util_Security::randomPassword();
+            $password = SecurityUtil::randomPassword();
 
             $options['password'] = $password;
             $options['notifyUser'] = true;

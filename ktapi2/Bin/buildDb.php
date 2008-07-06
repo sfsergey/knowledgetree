@@ -16,9 +16,9 @@ $manager = Doctrine_Manager::getInstance();
 $manager->setAttribute(Doctrine::ATTR_EXPORT, Doctrine::EXPORT_ALL ); // Doctrine::EXPORT_TABLES | Doctrine::EXPORT_CONSTRAINTS
 $db->export->exportClasses($classes);
 
-//Util_Doctrine::dropField('groupings', 'id');
-//Util_Doctrine::addPrimaryKey('groupings', array('member_id'));
-//Util_Doctrine::dropIndex('groupings', 'member_id');
+//DoctrineUtil::dropField('groupings', 'id');
+//DoctrineUtil::addPrimaryKey('groupings', array('member_id'));
+//DoctrineUtil::dropIndex('groupings', 'member_id');
 
 createView('groups','g','Group');
 createView('roles','r','Role');
@@ -35,7 +35,7 @@ function createTable($table, $class)
 
     $obj = new $class();
 
-    Util_Doctrine::dropTable($obj->getTable()->getTableName());
+    DoctrineUtil::dropTable($obj->getTable()->getTableName());
 }
 
 
@@ -43,7 +43,7 @@ function createView($name, $letter, $type)
 {
     global $db;
 
-    Util_Doctrine::dropView($name);
+    DoctrineUtil::dropView($name);
     $db->execute("CREATE VIEW $name AS select m.id as member_id, $letter.name, m.status, m.unit_id from groupings $letter inner join members m on $letter.member_id=m.id WHERE $letter.type='$type' AND m.status != 'Deleted'");
 }
 

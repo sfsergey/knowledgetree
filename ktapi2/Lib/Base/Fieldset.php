@@ -8,8 +8,8 @@ class Base_Fieldset extends KTAPI_Record
     $this->setTableName('fieldsets');
 
     $this->addIntegerPrimary('member_id');
-    $this->addString('name', null);
-    $this->addGeneralStatus('status');
+    $this->addString('name', Length::NAME);
+    $this->addGeneralStatus('status', true);
     $this->addInteger('unit_id');
   }
 

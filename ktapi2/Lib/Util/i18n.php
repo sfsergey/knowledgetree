@@ -1,6 +1,6 @@
 <?php
 
-class Util_i18n
+class i18nUtil
 {
     public static
     function translate($format, $params = array())

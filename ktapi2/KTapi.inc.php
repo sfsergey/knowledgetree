@@ -1,7 +1,6 @@
 <?php
 
-require_once('KTconstants.inc.php');
-
+require_once(realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'KTconstants.inc.php');
 
 final class KTapi
 {
@@ -255,7 +254,8 @@ final class KTapi
         if ($init == KTapi::PRE_INIT)
         {
             define('KTAPI2_DIR', realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR);
-            define('KT_ROOT_DIR', realpath(KTAPI2_DIR . '..') . DIRECTORY_SEPARATOR);
+            define('KT_ROOT_DIR', realpath(KTAPI2_DIR . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR);
+            define('KT_WEBSERVICE_DIR', KT_ROOT_DIR . 'ktwebservice2' . DIRECTORY_SEPARATOR);
             KTapi::registerPostInit('initPaths');
             return;
         }
@@ -340,7 +340,7 @@ final class KTapi
 
         KTapi::initPaths();
 
-        Util_KT::init();
+        KTUtil::init();
 
         KTapi::initPEAR();
         KTapi::initLogging();
@@ -355,6 +355,9 @@ final class KTapi
 
         KTapi::initTimezone();
         KTapi::initExceptionHandler();
+
+
+
 
         $logger = LoggerManager::getLogger('sql');
         if ($logger->isDebugEnabled())
@@ -386,7 +389,8 @@ final class KTapi
     public static
     function autoload($classname)
     {
-        if (class_exists($classname, false) || interface_exists($classname, false)) {
+        if (class_exists($classname, false) || interface_exists($classname, false))
+        {
             return false;
         }
 
@@ -399,23 +403,18 @@ final class KTapi
 //        if(strpos($classname, 'Base') === 0){
 //            $directory .=  'Base' . DIRECTORY_SEPARATOR;
 //        }
-        if (substr($classname, -9) == 'Exception')
-        {
-            $directory .= 'Exception' . DIRECTORY_SEPARATOR;
-            if (strpos($classname,'KTapi') === 0)
-            {
-                $filename = substr($classname, 5);
-            }
-        }
-        elseif (substr($classname, -9) == 'Parameter')
-        {
-            $directory .= 'Parameter' . DIRECTORY_SEPARATOR;
-            if (strpos($classname,'KTapi') === 0)
-            {
-                $filename = substr($classname, 5);
-            }
-        }
 
+        $suffixes = array('Exception', 'Parameter', 'Util');
+        foreach($suffixes as $suffix)
+        {
+            $len = strlen($suffix);
+            if (substr($classname, -$len) == $suffix)
+            {
+                $directory .= $suffix . DIRECTORY_SEPARATOR;
+                $filename = substr($filename, 0, strlen($filename) - $len);
+                break;
+            }
+        }
 
         $source = array('');
         foreach ($source as $dir) {
@@ -447,7 +446,8 @@ final class KTapi
             $logger->debug(_str('KTapi::connect() to database'));
         }
 
-        if(is_null($dsn)){
+        if(is_null($dsn))
+        {
             $dsn = DSN;
         }
         $db = Doctrine_Manager::connection($dsn);
@@ -465,7 +465,8 @@ final class KTapi
     public static
     function getDb($dsn = null)
     {
-        if(is_null(KTAPI::$db)){
+        if(is_null(KTAPI::$db))
+        {
             $db = KTAPI::connect($dsn);
             if(is_null($db)){
                 throw new KTapiException(_kt('Database connection not established.'));

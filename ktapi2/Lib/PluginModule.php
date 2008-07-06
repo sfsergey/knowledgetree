@@ -38,6 +38,18 @@ abstract class PluginModule
     }
 
     public
+    function getClassName()
+    {
+        return $this->module->class_name;
+    }
+
+    public
+    function getPath()
+    {
+        return $this->module->path;
+    }
+
+    public
     function getOrder()
     {
         return $this->module->order;

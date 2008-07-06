@@ -7,8 +7,8 @@ class Base_PluginRelation extends KTAPI_Record
     {
         $this->setTableName('plugin_relations');
 
-        $this->addNamespace('plugin_namespace');
-        $this->addNamespace('related_plugin_namespace');
+        $this->addNamespacePrimary('plugin_namespace');
+        $this->addNamespacePrimary('related_plugin_namespace');
 
     }
 

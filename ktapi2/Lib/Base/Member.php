@@ -8,7 +8,7 @@ class Base_Member extends KTAPI_Record
 
     $this->addAutoInc('id');
     $this->addEnumeration('member_type', MemberType::get());
-    $this->addGeneralStatus('status');
+    $this->addGeneralStatus('status', true);
     $this->addInteger('node_id');
     $this->addInteger('unit_id');
 

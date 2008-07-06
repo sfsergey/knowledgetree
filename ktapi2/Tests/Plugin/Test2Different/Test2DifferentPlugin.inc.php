@@ -3,42 +3,19 @@
 class Test2DifferentPlugin extends Plugin
 {
     public
-    function getDisplayName()
+    function getConfig()
     {
-        return _kt('Test 2 Diff Plugin');
+        return array(
+            'namespace' => 'testdiff',
+            'display_name' => 'Test 2 Diff Plugin',
+            'description' => 'My Test 2 Diff Plugin.',
+            'includes' => array('Base_Tag.inc.php'),
+            'dependencies' => array('plugin.test'),
+            'can_delete' => false,
+            'version' => '1.0a',
+            'db_version' => 2
+        );
     }
-
-    public
-    function getNamespace()
-    {
-        return 'plugin.testdiff';
-    }
-
-    public
-    function getDbVersion()
-    {
-        return 2;
-    }
-
-    public
-    function getDependencies()
-    {
-        return array('plugin.test');
-    }
-
-
-    public
-    function canDelete()
-    {
-        return false;
-    }
-
-    public
-    function getVersion()
-    {
-        return '1.0a';
-    }
-
 
     public
     function register()

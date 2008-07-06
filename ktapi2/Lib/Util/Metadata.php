@@ -1,6 +1,6 @@
 <?php
 
-class Util_Metadata
+class MetadataUtil
 {
     public static
     function validateField($field)

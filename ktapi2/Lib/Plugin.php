@@ -1,24 +1,35 @@
 <?php
-abstract class Plugin
+abstract class Plugin extends KTAPI_Base
 {
-    protected $basePlugin;
+    public
+    function __construct($base = null)
+    {
+        parent::__construct($base);
+    }
 
     public
-    function __construct($basePlugin = null)
+    function getDisplayName()
     {
-        $this->basePlugin = $basePlugin;
+        $config = $this->getConfig();
+        ValidationUtil::arrayKeyExpected('display_name', $config);
+        return _kt($config['display_name']);
+    }
+
+    public
+    function getNamespace()
+    {
+        $config = $this->getConfig();
+        ValidationUtil::arrayKeyExpected('namespace', $config);
+        return 'plugin.' . $config['namespace'];
     }
 
     public abstract
-    function getDisplayName();
-
-    public abstract
-    function getNamespace();
+    function getConfig();
 
     public
     function getId()
     {
-        return $this->basePlugin->id;
+        return $this->base->id;
     }
 
     /**
@@ -29,7 +40,7 @@ abstract class Plugin
     public
     function getVersion()
     {
-        return '0.1';
+        return $this->base->config['version'];
     }
 
     /**
@@ -43,36 +54,36 @@ abstract class Plugin
     public
     function getDbVersion()
     {
-        return 0;
+        return $this->base->config['db_version'];
     }
 
     public
     function getIncludes()
     {
-        return array();
+        return $this->base->config['includes'];
     }
 
     public
     function getCurrentVersion()
     {
-        if (is_null($this->basePlugin))
+        if (is_null($this->base))
         {
             return 0;
         }
 
-        return $this->basePlugin->version;
+        return $this->base->version;
     }
 
     public
     function loadBase()
     {
-        if (is_null($this->basePlugin))
+        if (is_null($this->base))
         {
             $namespace = $this->getNamespace();
-            $basePlugin = Doctrine::getTable('Base_Plugin')->findOneByNamespace($namespace);
-            $this->basePlugin = empty($basePlugin)?null:$basePlugin;
+            $base = Doctrine::getTable('Base_Plugin')->findOneByNamespace($namespace);
+            $this->base = empty($base)?null:$base;
         }
-        return $this->basePlugin;
+        return $this->base;
     }
 
     public
@@ -127,31 +138,31 @@ abstract class Plugin
     public
     function canDisable()
     {
-        return true;
+        return $this->base->can_disabled;
     }
 
     public
     function canDelete()
     {
-        return true;
+        return $this->base->can_delete;
     }
 
     public
     function getOrder()
     {
-        return 0;
+        $this->base->ordering;
     }
 
     public
     function getDependencies()
     {
-        return array();
+        return $this->base->config['dependencies'];
     }
 
     public
     function getBasePath()
     {
-        return _ktpath(dirname($this->basePlugin->path));
+        return _ktpath(dirname($this->base->path));
     }
 
     public
@@ -174,23 +185,44 @@ abstract class Plugin
              $record = new Base_Plugin();
         }
 
-        $dependencies = $this->getDependencies();
+        $config = $this->getConfig();
 
         // TODO: in future, we could validate dependencies.
         // complications come in when reading plugins in random order.
         // better to do dependency checking at a higher level which has more scope.
 
-        $record->display_name = $this->getDisplayName();
+        ValidationUtil::arrayKeyExpected('display_name', $config);
+
+        if (!isset($config['description']))
+        {
+            $config['description'] = '';
+        }
+        if (!isset($config['version']))
+        {
+            $config['version'] = '0.1';
+        }
+        if (!isset($config['db_version']))
+        {
+            $config['db_version'] = 0;
+        }
+        if (!isset($config['dependencies']))
+        {
+            $config['dependencies'] = array();
+        }
+        if (!isset($config['includes']))
+        {
+            $config['includes'] = array();
+        }
+
+        $record->display_name = $config['display_name'];
         $record->path = _relativepath($path);
         $record->status = PluginStatus::ENABLED;
-        $record->version = $this->getVersion();
-        $record->can_disable = $this->canDisable();
-        $record->can_delete = $this->canDelete();
-        $record->namespace = $namespace;
-        $record->dependencies =
-            array(
-                'dependencies'=>$dependencies,
-                'includes'=>$this->getIncludes());
+        $record->version = isset($config['version'])?$config['version']:'0.1';
+        $record->can_disable = isset($config['can_disable'])?$config['can_disable']:true;
+        $record->can_delete = isset($config['can_delete'])?$config['can_delete']:true;
+        $record->namespace = $this->getNamespace();
+        $record->config = $config;
+
 
         $record->save();
 
@@ -207,7 +239,7 @@ abstract class Plugin
             }
         }
 
-        $this->basePlugin = $record;
+        $this->base = $record;
 
         $this->upgrade();
 
@@ -254,44 +286,33 @@ abstract class Plugin
     }
 
     protected
-    function registerAction($class, $path)
+    function registerAction($classname, $path)
     {
         $path = _require($path, $this->getBasePath());
 
         require_once($path);
-        if (!class_exists($class))
-        {
-           throw new KTapiException(_kt('Class %s was expected in: %s', $class, $path));
-        }
 
-        $action = new $class;
-        if (!$action instanceof Action )
-        {
-            throw new KTapiException(_kt('Class %s wsa expected to be a Action', $class));
-        }
+        ValidationUtil::classExists($classname, $path);
 
+        $action = new $classname;
+
+        ValidationUtil::validateType($action, 'Action');
 
         $action->register($this, $path);
     }
 
     protected
-    function registerTrigger($class, $path)
+    function registerTrigger($classname, $path)
     {
         $path = _require($path, $this->getBasePath());
 
         require_once($path);
-        if (!class_exists($class))
-        {
-           throw new KTapiException(_kt('Class %s was expected in: %s', $class, $path));
-        }
 
-        $trigger = new $class;
-        if (!$trigger instanceof Trigger )
-        {
-            throw new KTapiException(_kt('Class %s wsa expected to be a Trigger'));
-        }
+        ValidationUtil::classExists($classname, $path);
 
+        $trigger = new $classname;
 
+        ValidationUtil::validateType($trigger, 'Trigger');
 
         $trigger->register($this, $path);
     }
@@ -302,16 +323,12 @@ abstract class Plugin
         $path = _require($path, $this->getBasePath());
 
         require_once($path);
-        if (!class_exists($classname))
-        {
-           throw new KTapiException(_kt('Class %s was expected in: %s', $classname, $path));
-        }
+
+        ValidationUtil::classExists($classname, $path);
 
         $provider = new $classname;
-        if (!$provider instanceof Security_Authentication_Provider)
-        {
-            throw new KTapiException(_kt('Class %s wsa expected to be a Security_Authentication_Provider'));
-        }
+
+        ValidationUtil::validateType($provider, 'Security_Authentication_Provider');
 
         $provider->register($this, $path);
 
@@ -324,20 +341,14 @@ abstract class Plugin
         $path = _require($path, $this->getBasePath());
 
         require_once($path);
-        if (!class_exists($class))
-        {
-           throw new KTapiException(_kt('Class %s was expected in: %s', $class, $path));
-        }
+
+        ValidationUtil::classExists($classname, $path);
 
         $provider = new $classname;
-        if (!$provider instanceof Security_Authentication_Provider)
-        {
-            throw new KTapiException(_kt('Class %s wsa expected to be a Security_Authentication_Provider'));
-        }
+
+        ValidationUtil::validateType($provider, 'Security_Storage_Provider');
 
         $provider->register($this, $path);
     }
-
-
 }
 ?>

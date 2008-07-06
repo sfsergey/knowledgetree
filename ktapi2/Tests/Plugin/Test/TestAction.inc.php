@@ -3,15 +3,16 @@
 class TestAction extends Action
 {
     public
-    function getNamespace()
+    function getConfig()
     {
-        return 'action.test';
-    }
-
-    public
-    function getDisplayName()
-    {
-        return _kt('Test Action');
+        return array(
+            'module_namespace'=>'test',
+            'function' => 'test',
+            'display_name' => 'Test Action',
+            'documentation'=> 'general description of test().',
+            'category_namespace'=> 'test',
+            'category_name' => 'Test Category'
+            );
     }
 
     public
@@ -26,25 +27,11 @@ class TestAction extends Action
         return $params->getContents();
     }
 
-    public
-    function getCategoryNamespace()
-    {
-        return '';
-    }
-
-
     protected
     function executeAction($context, $params)
     {
 
     }
-
-    function getConfig()
-    {
-        return ;
-    }
-
-
 }
 
 ?>

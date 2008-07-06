@@ -310,7 +310,7 @@ public
 
         $rows = $query->execute();
 
-        $documents = Util_Doctrine::getObjectArrayFromCollection($rows, 'Repository_Document');
+        $documents = DoctrineUtil::getObjectArrayFromCollection($rows, 'Repository_Document');
 
         $count = count($folders);
 

@@ -268,7 +268,7 @@ class Repository_Folder extends Repository_FolderItem
                 ->whereIn('f.id', $id)
                 ->execute();
 
-        $folders = Util_Doctrine::getObjectArrayFromCollection($rows, 'Repository_Folder');
+        $folders = DoctrineUtil::getObjectArrayFromCollection($rows, 'Repository_Folder');
 
         $count = count($folders);
 

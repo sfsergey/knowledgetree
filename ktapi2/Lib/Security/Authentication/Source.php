@@ -15,7 +15,7 @@ class Security_Authentication_Source extends KTAPI_Base
             ->where('b.status != :deleted', array(':deleted'=>'Deleted'))
             ->execute();
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, 'Base_AuthenticationSource');
+        return DoctrineUtil::getObjectArrayFromCollection($rows, 'Base_AuthenticationSource');
     }
 
     private
@@ -30,7 +30,7 @@ class Security_Authentication_Source extends KTAPI_Base
     {
        try
        {
-        $source = Util_Doctrine::simpleOneQuery('Base_AuthenticationSource', array('auth_module_namespace'=>Security_Authentication_Source::HASHED_PASSWORD_NAMESPACE));
+        $source = DoctrineUtil::simpleOneQuery('Base_AuthenticationSource', array('auth_module_namespace'=>Security_Authentication_Source::HASHED_PASSWORD_NAMESPACE));
        }
        catch(Exception $ex)
        {

@@ -3,15 +3,16 @@
 class CorePlugin extends Plugin
 {
     public
-    function getDisplayName()
+    function getConfig()
     {
-        return _kt('KT Core Plugin');
-    }
-
-    public
-    function getNamespace()
-    {
-        return 'plugin.core';
+        return array(
+            'namespace' => 'core',
+            'display_name' => 'KT Core Plugin',
+            'description' => 'My test plugin.',
+            'version' => '0.1',
+            'includes' => array('Base_Tag.inc.php'),
+            'dependencies' => array()
+        );
     }
 
     public
@@ -30,9 +31,9 @@ class CorePlugin extends Plugin
 
         $this->registerAuthenticationProvider('HashedAuthenticationProvider', 'Authentication/HashedAuthentication.php');
 
-        $this->registerStorageProvider('DiskStorageProvider', 'Storage/DiskStorageProvider.php');
-        $this->registerStorageProvider('MirrorStorageProvider', 'Storage/MirrorStorageProvider.php');
-        $this->registerStorageProvider('S3StorageProvider', 'Storage/S3StorageProvider.php');
+//        $this->registerStorageProvider('DiskStorageProvider', 'Storage/DiskStorageProvider.php');
+//        $this->registerStorageProvider('MirrorStorageProvider', 'Storage/MirrorStorageProvider.php');
+//        $this->registerStorageProvider('S3StorageProvider', 'Storage/S3StorageProvider.php');
     }
 
 }

@@ -150,7 +150,7 @@ class KTAPI_BaseMember extends KTAPI_Base
 
         $rows = $query->execute();
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, $instanceClass);
+        return DoctrineUtil::getObjectArrayFromCollection($rows, $instanceClass);
 
     }
 
@@ -172,7 +172,7 @@ class KTAPI_BaseMember extends KTAPI_Base
     {
         if (is_null($this->propertyValues))
         {
-            $temp = Util_Doctrine::simpleQuery('Base_MemberPropertyValue', array('grouping_member_id'=>$this->getId()));
+            $temp = DoctrineUtil::simpleQuery('Base_MemberPropertyValue', array('member_id'=>$this->getId()));
 
             $properties = array();
             foreach($temp as $property)
@@ -206,7 +206,7 @@ class KTAPI_BaseMember extends KTAPI_Base
         }
 
         $prop = new Base_MemberPropertyValue();
-        $prop->grouping_member_id = $this->getId();
+        $prop->member_id = $this->getId();
         $prop->property_namespace = $property_namespace;
         $prop->value = serialize($default);
         $prop->save();
@@ -235,11 +235,12 @@ class KTAPI_BaseMember extends KTAPI_Base
 
         if ($val != $value)
         {
-            Util_Doctrine::update('Base_MemberPropertyValue',
+            DoctrineUtil::update('Base_MemberPropertyValue',
                         array('value'=>serialize($value)),
-                        array('grouping_member_id'=>$this->getId(), 'property_namespace'=>$property_namespace));
+                        array('member_id'=>$this->getId(), 'property_namespace'=>$property_namespace));
 
             $this->propertyValues[$property_namespace] = $value;
+            $this->base->clearRelated();
         }
     }
 
@@ -346,14 +347,14 @@ class KTAPI_BaseMember extends KTAPI_Base
                     // the method is the setter function.
                     if (count($params) != 1)
                     {
-                        throw new Exception('Only one parameter expected.');
+                        throw new KTAPI_ParameterValueException('Only one parameter expected.');
                     }
                     $value = $params[0];
                     $this->setPropertyByName($gp, $value);
                     return;
             }
         }
-        throw new KTapiUnknownPropertyException($method);
+        throw new KTAPI_UnknownMethodException($method);
     }
 }
 

@@ -47,7 +47,7 @@ abstract class KTAPI_Record extends Doctrine_Record
         }
         else
         {
-            $notnull = null;
+            $notnull = '';
         }
         return $notnull;
     }
@@ -77,7 +77,13 @@ abstract class KTAPI_Record extends Doctrine_Record
     protected
     function addNamespace($name, $notNull = true)
     {
-        $this->addString($name, 100, $notNull);
+        $this->addString($name, Length::NAMESPACE , $notNull);
+    }
+
+    protected
+    function addNamespacePrimary($name, $notNull = true)
+    {
+        $this->addStringPrimary($name, Length::NAMESPACE , $notNull);
     }
 
     protected
@@ -183,8 +189,10 @@ abstract class KTAPI_Record extends Doctrine_Record
                                      'onUpdate'=>'CASCADE'
                                      );
 
-
-        if (isset($refclass)) $options['refClass'] = $refClass;
+        if (isset($refClass))
+        {
+            $options['refClass'] = $refClass;
+        }
 
         parent::hasOne($baseTable . ' as ' . $alias, $options);
     }
@@ -200,7 +208,10 @@ abstract class KTAPI_Record extends Doctrine_Record
                                      );
 
 
-        if (isset($refclass)) $options['refClass'] = $refClass;
+        if (isset($refClass))
+        {
+            $options['refClass'] = $refClass;
+        }
 
         parent::hasMany($baseTable . ' as ' . $alias, $options);
     }

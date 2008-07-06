@@ -40,7 +40,7 @@ class Repository_Metadata_Fieldset extends BaseGrouping
     public
     function addField($field, $options = array())
     {
-        $field = Util_Metadata::validateField($field);
+        $field = MetadataUtil::validateField($field);
 
         return parent::addSubmember($field, $options);
     }
@@ -48,7 +48,7 @@ class Repository_Metadata_Fieldset extends BaseGrouping
     public
     function removeField($field, $options = array())
     {
-        $field = Util_Metadata::validateField($field);
+        $field = MetadataUtil::validateField($field);
 
         $field->delete();
 

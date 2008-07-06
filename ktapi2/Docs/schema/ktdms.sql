@@ -37,7 +37,7 @@ CREATE TABLE `active_sessions` (
 
 LOCK TABLES `active_sessions` WRITE;
 /*!40000 ALTER TABLE `active_sessions` DISABLE KEYS */;
-INSERT INTO `active_sessions` VALUES (29,'',1701,'2008-06-19 15:45:26',2130706433,'WebClient','2008-06-19 14:49:36'),(30,'',1701,'2008-06-19 15:45:28',2130706433,'WebClient','2008-06-19 14:49:36'),(32,'',1727,'2008-06-19 15:45:29',2130706433,'WebClient','2008-06-19 14:50:22'),(33,'',1727,'2008-06-19 15:45:31',2130706433,'WebClient','2008-06-19 14:50:22');
+INSERT INTO `active_sessions` VALUES (158,'',790,'2008-07-06 15:04:21',2130706433,'WebClient','2008-07-06 17:04:21'),(159,'',792,'2008-07-06 15:04:21',2130706433,'WebClient','2008-07-06 17:04:21');
 /*!40000 ALTER TABLE `active_sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -239,7 +239,7 @@ CREATE TABLE `config` (
 
 LOCK TABLES `config` WRITE;
 /*!40000 ALTER TABLE `config` DISABLE KEYS */;
-INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','a:3:{i:0;s:5:\"allow\";i:1;s:7:\"disable\";i:2;s:5:\"alert\";}1',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','true','false',1,'bool',NULL,0,''),(92,'timezone.default','Default Timezone',NULL,'Africa/Johannesburg',1,'enum',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(179,'my.test','Test','Value',NULL,1,'string',NULL,5,'');
+INSERT INTO `config` VALUES (1,'session.max','Maximum Sessions','3','3',1,'string',NULL,0,''),(3,'invalid.password.threshold','Invalid Password Count','3','3',1,'int',NULL,0,''),(4,'invalid.password.threshold.action','Invalid Password Threshold Action','disable','disable',1,'enum','a:3:{i:0;s:5:\"allow\";i:1;s:7:\"disable\";i:2;s:5:\"alert\";}1',0,''),(5,'smtp.host','Host','localhost',NULL,1,'string',NULL,0,''),(6,'smtp.port','Port','25',NULL,1,'int',NULL,0,''),(7,'smtp.username','Authentication Username',NULL,NULL,1,'string',NULL,0,''),(8,'smtp.password','Authentication Password',NULL,NULL,1,'string',NULL,0,''),(9,'smtp.ssl','Enable SSL','false',NULL,1,'bool',NULL,0,''),(11,'language.default','Default Language','EN','EN',1,'string',NULL,0,''),(12,'session.timeout','Session Timeout (minutes)','10','10',1,'int',NULL,0,''),(13,'session.allow.anonymous','Allow Anonymous Users','false','false',1,'bool',NULL,0,''),(92,'timezone.default','Default Timezone',NULL,'Africa/Johannesburg',1,'enum',NULL,0,''),(177,'session.webservice.timeout','Webservice Session Timeout (minutes)','30','30',1,'int',NULL,0,''),(178,'session.webservice.max','Maximum Webservice Sessions','3','3',1,'int',NULL,0,''),(187,'directory.cache','Cache Directory','/knowledgetree/ktdms.3.6.megan/var/cache','',1,'string',NULL,13,''),(197,'my.test','Test','Value',NULL,1,'string',NULL,23,'');
 /*!40000 ALTER TABLE `config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -263,7 +263,7 @@ CREATE TABLE `config_groups` (
 
 LOCK TABLES `config_groups` WRITE;
 /*!40000 ALTER TABLE `config_groups` DISABLE KEYS */;
-INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(5,'stuff','stuff','group.test',NULL);
+INSERT INTO `config_groups` VALUES (4,'stuff','stuff','gen.t',NULL),(23,'stuff','stuff','group.test',NULL);
 /*!40000 ALTER TABLE `config_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -378,6 +378,7 @@ CREATE TABLE `groupings` (
 
 LOCK TABLES `groupings` WRITE;
 /*!40000 ALTER TABLE `groupings` DISABLE KEYS */;
+INSERT INTO `groupings` VALUES (491,791,'sysadmin group','Group','',0);
 /*!40000 ALTER TABLE `groupings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -434,6 +435,7 @@ CREATE TABLE `member_effective_users` (
 
 LOCK TABLES `member_effective_users` WRITE;
 /*!40000 ALTER TABLE `member_effective_users` DISABLE KEYS */;
+INSERT INTO `member_effective_users` VALUES (791,792);
 /*!40000 ALTER TABLE `member_effective_users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -443,13 +445,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `member_property_values`;
 CREATE TABLE `member_property_values` (
-  `grouping_member_id` int(11) NOT NULL,
+  `member_id` int(11) NOT NULL,
   `property_namespace` varchar(100) NOT NULL,
   `value` mediumtext NOT NULL,
   `id` int(10) unsigned NOT NULL auto_increment,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `grouping_member_id` (`grouping_member_id`,`property_namespace`),
-  CONSTRAINT `FK_grouping_properties` FOREIGN KEY (`grouping_member_id`) REFERENCES `groupings` (`member_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `grouping_member_id` (`member_id`,`property_namespace`),
+  CONSTRAINT `FK_member_property_values` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
@@ -458,6 +460,7 @@ CREATE TABLE `member_property_values` (
 
 LOCK TABLES `member_property_values` WRITE;
 /*!40000 ALTER TABLE `member_property_values` DISABLE KEYS */;
+INSERT INTO `member_property_values` VALUES (791,'member.property.system.administrator.plugin.core','b:1;',61),(791,'member.property.unit.administrator.plugin.core','b:0;',62);
 /*!40000 ALTER TABLE `member_property_values` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -481,6 +484,7 @@ CREATE TABLE `member_submembers` (
 
 LOCK TABLES `member_submembers` WRITE;
 /*!40000 ALTER TABLE `member_submembers` DISABLE KEYS */;
+INSERT INTO `member_submembers` VALUES (791,792);
 /*!40000 ALTER TABLE `member_submembers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -504,6 +508,7 @@ CREATE TABLE `members` (
 
 LOCK TABLES `members` WRITE;
 /*!40000 ALTER TABLE `members` DISABLE KEYS */;
+INSERT INTO `members` VALUES (791,'Group','Enabled',NULL,NULL),(792,'User','Enabled',NULL,NULL);
 /*!40000 ALTER TABLE `members` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -536,7 +541,8 @@ DROP TABLE IF EXISTS `mime_type_extensions`;
 CREATE TABLE `mime_type_extensions` (
   `mime_type_id` int(10) unsigned NOT NULL,
   `extension` varchar(100) NOT NULL,
-  PRIMARY KEY  (`mime_type_id`)
+  PRIMARY KEY  (`mime_type_id`,`extension`),
+  CONSTRAINT `mime_type_extensions_ibfk_1` FOREIGN KEY (`mime_type_id`) REFERENCES `mime_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
@@ -545,6 +551,7 @@ CREATE TABLE `mime_type_extensions` (
 
 LOCK TABLES `mime_type_extensions` WRITE;
 /*!40000 ALTER TABLE `mime_type_extensions` DISABLE KEYS */;
+INSERT INTO `mime_type_extensions` VALUES (64,'htm'),(64,'html'),(65,'jpeg');
 /*!40000 ALTER TABLE `mime_type_extensions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -554,14 +561,15 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `mime_types`;
 CREATE TABLE `mime_types` (
-  `id` int(10) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL auto_increment,
   `mime_type` varchar(100) NOT NULL,
   `name` varchar(100) NOT NULL,
   `icon` varchar(100) NOT NULL,
   `extractor_namespace` varchar(100) default NULL,
   `group_member_id` int(11) default NULL,
-  `extensions` varchar(100) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `extensions` varchar(100) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `mime_types`
@@ -569,7 +577,7 @@ CREATE TABLE `mime_types` (
 
 LOCK TABLES `mime_types` WRITE;
 /*!40000 ALTER TABLE `mime_types` DISABLE KEYS */;
-INSERT INTO `mime_types` VALUES (1,'image/jpeg','JPEG Image','image','extractor.jpeg',NULL,'jpg, jpeg');
+INSERT INTO `mime_types` VALUES (64,'text/html','HTML page','html',NULL,NULL,'htm, html'),(65,'image/jpeg','JPG Image','image',NULL,NULL,'jpeg');
 /*!40000 ALTER TABLE `mime_types` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -879,7 +887,7 @@ CREATE TABLE `nodes` (
   `title` mediumtext,
   `owned_by_id` int(11) default NULL,
   `created_by_id` int(11) default NULL,
-  `created_date` datetime default NULL,
+  `created_date` datetime NOT NULL,
   `modified_by_id` int(11) default NULL,
   `modified_date` datetime default NULL,
   `status` enum('Available','Unavailable','Deleted','Archived') default NULL,
@@ -896,7 +904,7 @@ CREATE TABLE `nodes` (
 
 LOCK TABLES `nodes` WRITE;
 /*!40000 ALTER TABLE `nodes` DISABLE KEYS */;
-INSERT INTO `nodes` VALUES (1,NULL,'','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(2,1,'invoices','Folder',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(3,2,'invoices/jamwarehouse','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(4,3,'invoices/jamwarehouse/2008','Folder',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(5,2,'invoices/knowledgetree','Folder',5,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(6,1,'my inv','Shortcut',1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(7,2,'my inv','Shortcut',3,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0);
+INSERT INTO `nodes` VALUES (1,NULL,'','Folder',1,0,NULL,'Root Folder',NULL,NULL,'0000-00-00 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,0),(2,1,'invoices','Folder',1,0,NULL,'invoices',NULL,NULL,'0000-00-00 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,0),(3,2,'invoices/jamwarehouse','Folder',3,0,NULL,'jamwarehouse',NULL,NULL,'2008-10-10 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,0),(4,3,'invoices/jamwarehouse/2008','Folder',3,0,NULL,'2008',NULL,NULL,'0000-00-00 00:00:00',NULL,NULL,'',NULL,NULL,NULL,0),(5,2,'invoices/knowledgetree','Folder',5,0,NULL,'knowledgetree',NULL,NULL,'0000-00-00 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,0),(8,1,'sdgfsdfg','Document',1,0,NULL,'abc.doc',NULL,NULL,'0000-00-00 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,0);
 /*!40000 ALTER TABLE `nodes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -968,14 +976,14 @@ DROP TABLE IF EXISTS `plugin_modules`;
 CREATE TABLE `plugin_modules` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `plugin_id` int(10) unsigned NOT NULL default '0',
-  `module_type` enum('Action','Trigger','GroupingProperty','AuthenticationProvider') NOT NULL,
+  `module_type` enum('Action','Trigger','Property','AuthenticationProvider','Table','Field','Translation','UnitTest') NOT NULL,
   `display_name` varchar(255) NOT NULL default ' ',
-  `status` int(11) NOT NULL default '0',
+  `status` enum('Enabled','Disabled','Deleted') NOT NULL default 'Enabled',
   `classname` varchar(255) NOT NULL default ' ',
   `path` text NOT NULL,
   `module_config` text,
   `ordering` int(11) NOT NULL default '0',
-  `can_disable` tinyint(3) unsigned NOT NULL default '0',
+  `can_disable` tinyint(4) NOT NULL default '0',
   `namespace` varchar(255) NOT NULL default ' ',
   `dependencies` text NOT NULL,
   PRIMARY KEY  (`id`),
@@ -990,7 +998,7 @@ CREATE TABLE `plugin_modules` (
 
 LOCK TABLES `plugin_modules` WRITE;
 /*!40000 ALTER TABLE `plugin_modules` DISABLE KEYS */;
-INSERT INTO `plugin_modules` VALUES (1800,248,'','',0,'Security_Group','','s:182:\"a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.system.administrator.plugin.core','s:7:\"s:0:\"\";\";'),(1801,248,'','',0,'Security_Group','','s:176:\"a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.unit.administrator.plugin.core','s:7:\"s:0:\"\";\";'),(1802,248,'','',0,'Repository_Metadata_Field','','s:147:\"a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.taggable.plugin.core','s:7:\"s:0:\"\";\";'),(1803,248,'AuthenticationProvider','Hashed Password Provider',0,'HashedAuthenticationProvider','ktapi2/Plugins/Core/Authentication/HashedAuthentication.php','s:7:\"s:0:\"\";\";',0,1,'authentication.provider.hashed.password.plugin.core','s:7:\"s:0:\"\";\";'),(1810,254,'Action','_tr(Test Action)',0,'TestAction','ktapi2/Tests/Plugin/Test/TestAction.inc.php','s:7:\"s:0:\"\";\";',0,1,'action.test.plugin.test','s:7:\"s:0:\"\";\";'),(1811,254,'','tag',0,'Base_Tag','ktapi2/Tests/Plugin/Test/BaseTag.inc.php','s:2:\"N;\";',0,1,'table.tag.plugin.test','s:7:\"s:0:\"\";\";'),(1812,254,'','CustomDocumentNo',0,'Document','','s:85:\"a:2:{s:9:\"tablename\";s:13:\"Base_Document\";s:9:\"fieldname\";s:18:\"custom_document_no\";}\";',0,1,'field.base_document.custom_document_no.plugin.test','s:7:\"s:0:\"\";\";'),(1813,254,'','Français',0,'fr_FR','ktapi2/Tests/Plugin/Test/TestLanguage.po','s:7:\"s:0:\"\";\";',0,1,'translation.fr_fr.plugin.test','s:7:\"s:0:\"\";\";'),(1814,254,'Trigger','_tr(Test Trigger)',0,'TestTrigger','ktapi2/Tests/Plugin/Test/TestTrigger.inc.php','s:7:\"s:0:\"\";\";',0,1,'trigger.test.plugin.test','s:7:\"s:0:\"\";\";'),(1815,254,'','TestUnitTest',0,'TestUnitTest','ktapi2/Tests/Plugin/Test/TestUnitTest.inc.php','s:7:\"s:0:\"\";\";',0,1,'unittest.testunittest.plugin.test','s:7:\"s:0:\"\";\";');
+INSERT INTO `plugin_modules` VALUES (3658,564,'Property','','Enabled','Security_Group','','s:182:\"a:5:{s:12:\"display_name\";s:20:\"System Administrator\";s:6:\"getter\";s:21:\"isSystemAdministrator\";s:6:\"setter\";s:22:\"setSystemAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.system.administrator.plugin.core','s:7:\"s:0:\"\";\";'),(3659,564,'Property','','Enabled','Security_Group','','s:176:\"a:5:{s:12:\"display_name\";s:18:\"Unit Administrator\";s:6:\"getter\";s:19:\"isUnitAdministrator\";s:6:\"setter\";s:20:\"setUnitAdministrator\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.unit.administrator.plugin.core','s:7:\"s:0:\"\";\";'),(3660,564,'Property','','Enabled','Repository_Metadata_Field','','s:147:\"a:5:{s:12:\"display_name\";s:8:\"Taggable\";s:6:\"getter\";s:10:\"isTaggable\";s:6:\"setter\";s:11:\"setTaggable\";s:4:\"type\";s:7:\"boolean\";s:7:\"default\";b:0;}\";',0,1,'member.property.taggable.plugin.core','s:7:\"s:0:\"\";\";'),(3661,564,'AuthenticationProvider','Hashed Password Provider','Enabled','HashedAuthenticationProvider','ktapi2/Plugins/Core/Authentication/HashedAuthentication.php','s:7:\"s:0:\"\";\";',0,1,'authentication.provider.hashed.password.plugin.core','s:7:\"s:0:\"\";\";');
 /*!40000 ALTER TABLE `plugin_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1012,7 +1020,6 @@ CREATE TABLE `plugin_relations` (
 
 LOCK TABLES `plugin_relations` WRITE;
 /*!40000 ALTER TABLE `plugin_relations` DISABLE KEYS */;
-INSERT INTO `plugin_relations` VALUES ('plugin.testdiff','plugin.test');
 /*!40000 ALTER TABLE `plugin_relations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1031,7 +1038,7 @@ CREATE TABLE `plugins` (
   `can_delete` tinyint(3) unsigned NOT NULL default '1',
   `ordering` int(11) NOT NULL default '0',
   `namespace` varchar(255) NOT NULL default ' ',
-  `dependencies` text NOT NULL,
+  `config` text NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `namespace_idx` (`namespace`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1042,7 +1049,7 @@ CREATE TABLE `plugins` (
 
 LOCK TABLES `plugins` WRITE;
 /*!40000 ALTER TABLE `plugins` DISABLE KEYS */;
-INSERT INTO `plugins` VALUES (248,'_tr(KT Core Plugin)','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(254,'_tr(Test Plugin)','ktapi2/Tests/Plugin/Test/TestPlugin.inc.php',0,0,1,1,0,'plugin.test','a:2:{s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:1:{i:0;s:16:\"Base_Tag.inc.php\";}}'),(255,'_tr(Test 2 Diff Plugin)','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:2:{s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:8:\"includes\";a:0:{}}');
+INSERT INTO `plugins` VALUES (564,'KT Core Plugin','ktapi2/Plugins/Core/CorePlugin.inc.php',0,0,1,1,0,'plugin.core','a:7:{s:9:\"namespace\";s:4:\"core\";s:12:\"display_name\";s:14:\"KT Core Plugin\";s:11:\"description\";s:15:\"My test plugin.\";s:7:\"version\";s:3:\"0.1\";s:8:\"includes\";a:1:{i:0;s:16:\"Base_Tag.inc.php\";}s:12:\"dependencies\";a:0:{}s:10:\"db_version\";i:0;}'),(570,'Test Plugin','ktapi2/Tests/Plugin/Test2Upgrade/Test2Plugin.inc.php',0,0,1,1,0,'plugin.test','a:7:{s:9:\"namespace\";s:4:\"test\";s:12:\"display_name\";s:11:\"Test Plugin\";s:10:\"db_version\";i:1;s:11:\"description\";s:0:\"\";s:7:\"version\";s:3:\"0.1\";s:12:\"dependencies\";a:0:{}s:8:\"includes\";a:0:{}}'),(571,'Test 2 Diff Plugin','ktapi2/Tests/Plugin/Test2Different/Test2DifferentPlugin.inc.php',0,1,1,0,0,'plugin.testdiff','a:8:{s:9:\"namespace\";s:8:\"testdiff\";s:12:\"display_name\";s:18:\"Test 2 Diff Plugin\";s:11:\"description\";s:22:\"My Test 2 Diff Plugin.\";s:8:\"includes\";a:1:{i:0;s:16:\"Base_Tag.inc.php\";}s:12:\"dependencies\";a:1:{i:0;s:11:\"plugin.test\";}s:10:\"can_delete\";b:0;s:7:\"version\";s:4:\"1.0a\";s:10:\"db_version\";i:2;}');
 /*!40000 ALTER TABLE `plugins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1373,6 +1380,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (792,'admin','Test User 1','test1@knowledgetree.com','','EN','2008-07-06 17:04:21',0,0,'Enabled',15,'a:1:{s:8:\"password\";s:32:\"202cb962ac59075b964b07152d234b70\";}','2008-07-06 17:04:21');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1718,4 +1726,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2008-06-24 22:48:24
+-- Dump completed on 2008-07-06 17:07:00

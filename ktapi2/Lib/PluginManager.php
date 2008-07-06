@@ -16,10 +16,6 @@
  */
 final class PluginManager
 {
-    const DISABLED_STATUS = 'Disabled';
-    const ENABLED_STATUS = 'Enabled';
-    const UNAVAILABLE_STATUS = 'Unavailable';
-
     /**
      * Locations where plugins may be stored
      *
@@ -35,7 +31,7 @@ final class PluginManager
     private
     function __construct()
     {
-        throw new KTapiException('Cannot instantiate a static utility class!');
+        ValidationUtil::staticClass();
     }
 
     /**
@@ -52,10 +48,7 @@ final class PluginManager
             $location = KT_ROOT_DIR . $location . DIRECTORY_SEPARATOR;
         }
 
-        if (!is_dir($location))
-        {
-            throw new KTapiException(_kt('Plugin location does not exist: %s', $location));
-        }
+        ValidationUtil::directoryExists($location);
 
         self::$pluginLocations[] = $location;
     }
@@ -90,7 +83,7 @@ final class PluginManager
             catch(Doctrine_Exception $ex)
             {
                 $logger->error(_str('Exception: %s', $ex->getMessage()));
-                throw $ex;
+                throw new KTAPI_Database_DoctrineException($ex);
             }
             catch(Exception $ex)
             {
@@ -119,7 +112,7 @@ final class PluginManager
                 ->from('Base_PluginModuleRelation pmr')
                 ->leftJoin('pmr.PluginModule pm')
                 ->where('pm.namespace IS NULL OR pm.status != :status')
-                ->execute(array(':status' => PluginManager::ENABLED_STATUS ));
+                ->execute(array(':status' => PluginStatus::ENABLED ));
 
         $namespaces = _extractArray($rows, 'namespace');
 
@@ -129,7 +122,7 @@ final class PluginManager
 
             $query = Doctrine_Query::create();
             $rows = $query->update('Base_PluginModule bpm')
-                ->set('bpm.status', ':status', array(':status'=>PluginManager::DISABLED_STATUS ))
+                ->set('bpm.status', ':status', array(':status'=>PluginStatus::DISABLED ))
                 ->whereIn('bpm.namespace',$namespaces)
                 ->execute();
             $disabled += $rows->count();
@@ -141,7 +134,7 @@ final class PluginManager
                 ->from('Base_PluginRelation pr')
                 ->leftJoin('pr.Plugin p ')
                 ->where('p.namespace IS NULL OR p.status != :status')
-                ->execute(array(':status' => PluginManager::ENABLED_STATUS ));
+                ->execute(array(':status' => PluginStatus::ENABLED ));
 
         $namespaces = _extractArray($rows, 'namespace');
 
@@ -149,7 +142,7 @@ final class PluginManager
         {
             $query = Doctrine_Query::create();
             $rows = $query->update('Base_Plugin bp')
-                ->set('bp.status', '?', array(PluginManager::DISABLED_STATUS))
+                ->set('bp.status', '?', array(PluginStatus::DISABLED))
                 ->whereIn('bp.namespace',$namespaces)
                 ->execute();
             $disabled += $rows;
@@ -177,7 +170,7 @@ final class PluginManager
             $plugins = array_merge($plugins, self::probePluginLocation($location));
         }
 
-        return $plugins;
+        return array_unique($plugins);
     }
 
     /**
@@ -206,14 +199,15 @@ final class PluginManager
             $logger->debug(_str('Probing location %s', $location));
         }
 
+        $plugins = array();
         if (!is_dir($location))
         {
             $logger->error(_str('Plugin location does not exist: %s', $location));
-            throw new KTapiException(_kt('Plugin location does not exist: %s', $location));
+            return $plugins;
         }
 
         $probe = glob($location . '*Plugin.inc.php');
-        $plugins = array();
+
         foreach($probe as $pluginPath)
         {
             require_once($pluginPath);
@@ -222,7 +216,7 @@ final class PluginManager
 
             if (!class_exists($className))
             {
-                $logger->warn(_str('Plugin class %s does not exist in %s', $className, $pluginPath));
+                $logger->warn(_str('Plugin class %s does not exist in %s.', $className, $pluginPath));
                 continue;
             }
 
@@ -230,7 +224,7 @@ final class PluginManager
 
             if (!$plugin instanceof Plugin)
             {
-                $logger->warn(_str('Class %s is expected to be derived from Plugin in %s', $className, $pluginPath));
+                $logger->warn(_str('Class %s is expected to be derived from Plugin in %s.', $className, $pluginPath));
                 continue;
             }
 
@@ -289,24 +283,18 @@ final class PluginManager
             $logger->debug(_str('Installing plugin: %s', $path));
         }
 
-        if (!file_exists($path))
-        {
-            throw new KTapiException(_kt('Plugin path does not exist: %s', $path));
-        }
+        ValidationUtil::fileExists($path, 'plugin path');
+
         require_once($path);
 
         $pluginClass = basename(substr($path, 0, -8)); // stripping .inc.php
-        if (!class_exists($pluginClass))
-        {
-            throw new KTapiException(_kt('Class does not exist: %s', $pluginClass));
-        }
+
+        ValidationUtil::classExists($pluginClass, $path);
+
         $class = new $pluginClass();
 
-        if (!$class instanceof Plugin)
-        {
-            // TODO: possible consider compatability with KTPlugin
-            throw new KTapiException(_kt('Plugin is not compatible. The class passed is %s', get_class($class)));
-        }
+        // TODO: possible consider compatability with KTPlugin
+        ValidationUtil::validateType($class, 'Plugin');
 
         $namespace = $class->getNamespace();
 
@@ -380,7 +368,8 @@ final class PluginManager
         {
             if (isset($options['silent']) && !$options['silent'])
             {
-                throw new KTapiException(_kt('No effect by uninstall of plugin with namespace: %s', $namespace));
+                throw new KTAPI_Database_ChangeExpectedException();
+//                throw new KTAPI_Database_ChangeExpectedException('No effect by uninstall of plugin with namespace: %s', $namespace);
             }
         }
         self::removePluginRelations($namespace);
@@ -404,19 +393,13 @@ final class PluginManager
         {
             $namespace = array($namespace);
         }
-        if (!is_array($namespace))
-        {
-            throw new Exception('Array of namespaces expected');
-        }
-        if (!in_array($status, array(PluginManager::ENABLED_STATUS, PluginManager::DISABLED_STATUS)))
-        {
-            throw  new Exception('Status must be Enabled or Disabled.');
-        }
+        ValidationUtil::arrayExpected($namespace, 'namespace');
+        ValidationUtil::arrayValueExpected($status, array(PluginStatus::ENABLED, PluginStatus::DISABLED),'status');
 
         $condition = ' AND bpm.can_disable = :can_disable';
         $conditionParams = array(':can_disable'=> 1);
 
-        $overwrite = ($status == PluginManager::DISABLED_STATUS && isset($options['force_overwrite']) && $options['force_overwrite']);
+        $overwrite = ($status == PluginStatus::DISABLED && isset($options['force_overwrite']) && $options['force_overwrite']);
 
         if ($overwrite)
         {
@@ -425,7 +408,7 @@ final class PluginManager
         }
         $namespace = "'" . implode("','", $namespace) . "'";
 
-        $logMessage = (($status == PluginManager::DISABLED_STATUS)? 'Disabling' : 'Enabling') . ' plugins with namespaces: ';
+        $logMessage = (($status == PluginStatus::DISABLED)? 'Disabling' : 'Enabling') . ' plugins with namespaces: ';
         if (isset($options['logMessage']))
         {
             $logMessage = $options['logMessage'];
@@ -442,7 +425,8 @@ final class PluginManager
 
         if ($overwrite && $rows === 0)
         {
-            throw new KTapiException(_kt('No effect by when changing status to %s on module with namespace: %s', $status, $namespace));
+            throw new KTAPI_Database_ChangeExpectedException();
+            //throw new KTapiException(_kt('No effect by when changing status to %s on module with namespace: %s', $status, $namespace));
         }
 
         if (isset($options['noValidate']) && $options['noValidate'])
@@ -451,21 +435,24 @@ final class PluginManager
             return self::validateRelations();
     }
 
+    /**
+     * Instanciate a module.
+     *
+     * @param string $namespace
+     * @return mixed A class derived from PluginModule.
+     */
     public static
-    function getModule($namespace)
+    function getModule($namespace, $expectedType = null)
     {
-        if (empty($namespace) || !is_string($namespace))
-        {
-            throw new Exception('Namespace not specified.');
-        }
+        ValidationUtil::stringExpected($namespace, 'namespace');
 
         try
         {
-            $module = Util_Doctrine::simpleOneQuery('Base_PluginModule', array('namespace'=> $namespace));
+            $module = DoctrineUtil::simpleOneQuery('Base_PluginModule', array('namespace'=> $namespace));
         }
         catch(Exception $ex)
         {
-            throw new Exception('Module not found');
+            throw new KTAPI_UnknownModuleException($namespace);
         }
 
         $path = $module->path;
@@ -477,17 +464,17 @@ final class PluginManager
 
         $classname = $module->classname;
 
-        if (empty($classname))
-        {
-            // TODO: test this
-            throw new Exception('Class expected!');
-        }
-        if (!class_exists($classname))
-        {
-            throw new Exception('Class could not be resolved.');
-        }
+        ValidationUtil::stringExpected($classname, 'classname');
+        ValidationUtil::classExists($classname, $path);
 
         $obj = new $classname($module);
+
+        ValidationUtil::validateType($obj, $classname);
+
+        if (isset($expectedType))
+        {
+            ValidationUtil::validateType($obj, $expectedType);
+        }
 
         return $obj;
     }
@@ -504,7 +491,7 @@ final class PluginManager
     public static
     function enableModule($namespace, $options=array())
     {
-        return self::setModuleStatus($namespace,PluginManager::ENABLED_STATUS,$options);
+        return self::setModuleStatus($namespace,PluginStatus::ENABLED,$options);
     }
 
     /**
@@ -520,7 +507,7 @@ final class PluginManager
     public static
     function disableModule($namespace, $options=array())
     {
-        return self::setModuleStatus($namespace,PluginManager::DISABLED_STATUS,$options);
+        return self::setModuleStatus($namespace,PluginStatus::DISABLED,$options);
     }
 
     /**
@@ -536,7 +523,8 @@ final class PluginManager
         $count = Doctrine_Query::create()
                 ->from('Base_PluginModule bpm')
                 ->innerJoin('bpm.Plugin bp')
-                ->where('bpm.namespace = :namespace AND bpm.status = :status AND bp.status = :status',array(':namespace'=>$namespace, ':status'=>PluginManager::ENABLED_STATUS ))
+                ->where('bpm.namespace = :namespace AND bpm.status = :status AND bp.status = :status',
+                    array(':namespace'=>$namespace, ':status'=>PluginStatus::ENABLED ))
                 ->count();
         return ($count > 0);
     }
@@ -558,7 +546,8 @@ final class PluginManager
 
         if ($rows === 0)
         {
-            throw new KTapiException(_kt('No effect when changing ordering to %d on module with namespace: %s', $order, $namespace));
+            throw new KTAPI_Database_ChangeExpectedException();
+//            throw new KTapiException(_kt('No effect when changing ordering to %d on module with namespace: %s', $order, $namespace));
         }
     }
 
@@ -579,19 +568,13 @@ final class PluginManager
         {
             $namespace = array($namespace);
         }
-        if (!is_array($namespace))
-        {
-            throw new Exception('Array of namespaces expected');
-        }
-        if (!in_array($status, array(PluginManager::ENABLED_STATUS, PluginManager::DISABLED_STATUS)))
-        {
-            throw  new Exception('Status must be Enabled or Disabled.');
-        }
+        ValidationUtil::arrayExpected($namespace, 'namespace');
+        ValidationUtil::arrayValueExpected($status, array(PluginStatus::ENABLED, PluginStatus::DISABLED));
 
         $condition = ' AND bp.can_disable = :can_disable';
         $conditionParams = array(':can_disable'=> 1);
 
-        $overwrite = ($status == PluginManager::DISABLED_STATUS && isset($options['force_overwrite']) && $options['force_overwrite']);
+        $overwrite = ($status == PluginStatus::DISABLED  && isset($options['force_overwrite']) && $options['force_overwrite']);
 
         if ($overwrite)
         {
@@ -601,7 +584,7 @@ final class PluginManager
 
         $namespace = "'" . implode("','", $namespace) . "'";
 
-        $logMessage = (($status == PluginManager::DISABLED_STATUS)? 'Disabling' : 'Enabling') . ' plugins with namespaces: ';
+        $logMessage = (($status == PluginStatus::DISABLED )? 'Disabling' : 'Enabling') . ' plugins with namespaces: ';
         if (isset($options['logMessage']))
         {
             $logMessage = $options['logMessage'];
@@ -617,7 +600,8 @@ final class PluginManager
 
         if ($overwrite && $rows === 0)
         {
-            throw new KTapiException(_kt('No effect when changing status to %s on plugin with namespace: %s', $status, $namespace));
+            throw new KTAPI_Database_ChangeExpectedException();
+//            throw new KTapiException(_kt('No effect when changing status to %s on plugin with namespace: %s', $status, $namespace));
         }
 
         if (isset($options['noValidate']) && $options['noValidate'])
@@ -639,7 +623,7 @@ final class PluginManager
     public static
     function disablePlugin($namespace, $options = array())
     {
-        return self::setPluginStatus($namespace, PluginManager::DISABLED_STATUS, $options);
+        return self::setPluginStatus($namespace, PluginStatus::DISABLED, $options);
     }
 
     /**
@@ -653,7 +637,7 @@ final class PluginManager
     public static
     function enablePlugin($namespace, $options = array())
     {
-        return self::setPluginStatus($namespace, PluginManager::ENABLED_STATUS , $options);
+        return self::setPluginStatus($namespace, PluginStatus::ENABLED , $options);
     }
 
     /**
@@ -690,7 +674,7 @@ final class PluginManager
                 ->from('Base_Plugin bp')
                 ->where('bp.namespace = :namespace AND bp.status = :status')
                 ->limit(1)
-                ->execute(array(':namespace'=>$namespace, ':status'=>PluginManager::ENABLED_STATUS ));
+                ->execute(array(':namespace'=>$namespace, ':status'=>PluginStatus::ENABLED ));
         return ($rows->count() > 0);
     }
 
@@ -809,41 +793,12 @@ final class PluginManager
         return $plugins;
     }
 
-
-
     /**
-     * Get an action by its namespace
+     * This is used as part of the reflective
      *
-     * @param string $namespace
-     * @return Action
+     * @param unknown_type $classname
+     * @return unknown
      */
-    public static
-    function getAction($namespace)
-    {
-        $table = Doctrine::getTable('Plugin_Module');
-        $action = $table->findOneByNamespace($namespace);
-        return $action;
-    }
-
-    /**
-     * Get a trigger by its namespace
-     *
-     * @param string $namespace
-     * @return Trigger
-     */
-    public static
-    function getTrigger($namespace)
-    {
-        $table = Doctrine::getTable('Plugin_Module');
-        $trigger = $table->findOneByNamespace($namespace);
-        return $trigger;
-    }
-
-    public static
-    function getActionsByCategory($namespace)
-    {
-    }
-
     public static
     function getGroupingProperties($classname)
     {
@@ -859,10 +814,9 @@ final class PluginManager
                     ->from('Plugin_Module m')
                     ->where('m.classname = :classname AND m.module_type = :module_type',
                                 array(':classname'=>$classname,':module_type'=>'Property'))
-//                    ->useResultCache(true)
                     ->execute();
 
-        $groupProperties  = Util_Doctrine::getObjectArrayFromCollection($rows, 'MemberPropertyModule');
+        $groupProperties  = DoctrineUtil::getObjectArrayFromCollection($rows, 'MemberPropertyModule');
         $ns = array();
         $funcs = array();
         $props = array();
@@ -888,12 +842,41 @@ final class PluginManager
             {
                 $funcs[$setter] = $namespace;
             }
-
         }
 
         $properties[$classname] = array('namespaces'=>$ns, 'funcs' =>$funcs, 'properties'=>$props);
 
         return $properties[$classname];
     }
+
+    public static
+    function getAllActions()
+    {
+        $actions = DoctrineUtil::simpleQuery('Base_PluginModule',
+                        array('module_type'=>'Action', 'status'=>PluginStatus::ENABLED));
+
+        foreach($actions as $idx => $action)
+        {
+            $path = KT_ROOT_DIR . $action->path;
+            if (!file_exists($path))
+            {
+                continue;
+            }
+
+            require_once($path);
+
+            $classname = $action->classname;
+            ValidationUtil::classExists($classname, $path);
+
+            $action = new $classname($action);
+            ValidationUtil::validateType($action, $classname);
+
+            $actions[$idx] = $action;
+        }
+
+
+        return $actions;
+    }
+
 }
 ?>

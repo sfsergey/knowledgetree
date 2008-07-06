@@ -1,12 +1,31 @@
 <?php
 
-class Util_KT
+class KTUtil
 {
     public static
     function init()
     {
 
     }
+
+    public static
+    function writeFile($filename, $content)
+    {
+        $result = file_put_contents($filename, $content);
+
+        if ($result === false)
+        {
+            throw new Exception('Could not write file.');
+        }
+    }
+
+    public static
+    function url()
+    {
+        $host = $_SERVER['HTTP_HOST'];
+        $port = $_SERVER['SERVER_PROTOCOL'];
+    }
+
 }
 
 /**
@@ -19,7 +38,7 @@ class Util_KT
  */
 function _kt($format)
 {
-    return Util_i18n::translate(func_get_args());
+    return i18nUtil::translate(func_get_args());
 }
 
 /**

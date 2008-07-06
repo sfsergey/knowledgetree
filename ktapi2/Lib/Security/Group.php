@@ -39,7 +39,7 @@ class Security_Group extends BaseGrouping
     public
     function addSubgroup($group, $options = array())
     {
-        $group = Util_Security::validateGroup($group);
+        $group = SecurityUtil::validateGroup($group);
 
         return parent::addSubmember($group, $options);
     }
@@ -53,7 +53,7 @@ class Security_Group extends BaseGrouping
     public
     function hasSubgroup($group)
     {
-        $group = Util_Security::validateGroup($group);
+        $group = SecurityUtil::validateGroup($group);
 
         return $this->checkMembership($this->getId(), $group->getId());
     }
@@ -67,7 +67,7 @@ class Security_Group extends BaseGrouping
     public
     function isMemberOf($group)
     {
-        $group = Util_Security::validateGroup($group);
+        $group = SecurityUtil::validateGroup($group);
 
         return $this->checkMembership($group->getId(), $this->getId());
     }
@@ -80,7 +80,7 @@ class Security_Group extends BaseGrouping
     public
     function removeSubgroup($group)
     {
-        $group = Util_Security::validateGroup($group);
+        $group = SecurityUtil::validateGroup($group);
 
         return $this->removeSubmember($group);
     }
@@ -106,7 +106,7 @@ class Security_Group extends BaseGrouping
     public
     function assignToUnit($unit)
     {
-        $unit = Util_Security::validateUnit($unit);
+        $unit = SecurityUtil::validateUnit($unit);
 
         $this->setUnit($unit->getId());
         $this->save();

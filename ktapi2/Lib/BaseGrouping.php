@@ -13,7 +13,7 @@ class BaseGrouping extends KTAPI_BaseMember
     protected static
     function get($baseClass, $instanceClass, $id)
     {
-        return Util_Doctrine::getEntityByIds($baseClass, $instanceClass, 'member_id', $id);
+        return DoctrineUtil::getEntityByIds($baseClass, $instanceClass, 'member_id', $id);
     }
 
     /**
@@ -27,7 +27,7 @@ class BaseGrouping extends KTAPI_BaseMember
     function getByGroupingName($baseClass, $instanceClass, $groupName, $unitId = null)
     {
         // TODO: must cater for unitId
-        return Util_Doctrine::getEntityByField($baseClass, $instanceClass, array('name' => $groupName));
+        return DoctrineUtil::getEntityByField($baseClass, $instanceClass, array('name' => $groupName));
     }
 
 
@@ -140,7 +140,7 @@ class BaseGrouping extends KTAPI_BaseMember
 
         $classname = get_class($this);
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, $classname);
+        return DoctrineUtil::getObjectArrayFromCollection($rows, $classname);
     }
 
     /**
@@ -252,7 +252,7 @@ class BaseGrouping extends KTAPI_BaseMember
     protected
     function setUnit($unit)
     {
-        $unit = Util_Security::validateUnit($unit);
+        $unit = SecurityUtil::validateUnit($unit);
         $this->base->unit_id = $unit->getId();
     }
 
@@ -331,7 +331,7 @@ class BaseGrouping extends KTAPI_BaseMember
         }
         $rows = $this->base->EffectiveUsers;
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_User', 'member_id');
+        return DoctrineUtil::getObjectArrayFromCollection($rows, 'Security_User', 'member_id');
 
     }
 
@@ -344,7 +344,7 @@ class BaseGrouping extends KTAPI_BaseMember
     public
     function hasEffectiveUser($user)
     {
-        $user = Util_Security::validateUser($user);
+        $user = SecurityUtil::validateUser($user);
 
         $userId = $user->getId();
 
@@ -367,7 +367,7 @@ class BaseGrouping extends KTAPI_BaseMember
 
         $pk = array($groupId, $userId);
 
-        $effective = Util_Doctrine::findByPrimary('Base_MemberEffectiveUser', $pk, $throwException);
+        $effective = DoctrineUtil::findByPrimary('Base_MemberEffectiveUser', $pk, $throwException);
 
         return $effective;
     }
@@ -381,7 +381,7 @@ class BaseGrouping extends KTAPI_BaseMember
     public
     function addUser($user)
     {
-        $user = Util_Security::validateUser($user);
+        $user = SecurityUtil::validateUser($user);
 
         $groupId = $this->getId();
         $userId = $user->getId();
@@ -404,6 +404,8 @@ class BaseGrouping extends KTAPI_BaseMember
             $db->rollback();
             throw $ex;
         }
+        $this->base->clearRelated();
+        $user->clearRelated();
     }
 
     /**
@@ -436,7 +438,7 @@ class BaseGrouping extends KTAPI_BaseMember
     public
     function removeUser($user)
     {
-        $user = Util_Security::validateUser($user);
+        $user = SecurityUtil::validateUser($user);
 
         $groupId = $this->getId();
         $userId = $user->getId();
@@ -446,7 +448,7 @@ class BaseGrouping extends KTAPI_BaseMember
         try
         {
             $db->beginTransaction();
-            $effective = Util_Doctrine::deleteByPrimary('Base_MemberSubMember', $pk);
+            $effective = DoctrineUtil::deleteByPrimary('Base_MemberSubMember', $pk);
 
             $this->removeEffectiveUser($userId);
             $db->commit();
@@ -517,7 +519,7 @@ class BaseGrouping extends KTAPI_BaseMember
     public
     function hasUser($user)
     {
-        $user = Util_Security::validateUser($user);
+        $user = SecurityUtil::validateUser($user);
 
         return $this->checkMembership($this->getId(), $user->getId());
     }

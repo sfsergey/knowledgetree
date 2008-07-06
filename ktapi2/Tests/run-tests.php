@@ -51,11 +51,14 @@ class UnitTests extends TestSuite
         PluginManager::readAllPluginLocations();
 
         $this->addFile('Api/Config.php');
-        $this->addFile('Api/Authentication/HashedPassword.php');
         $this->addFile('Api/UserAndGroups.php');
+
+
         $this->addFile('Api/Roles.php');
         $this->addFile('Api/Units.php');
+
         $this->addFile('Api/Metadata.php');
+        $this->addFile('Api/Authentication/HashedPassword.php');
     }
 
     function addFile($file)

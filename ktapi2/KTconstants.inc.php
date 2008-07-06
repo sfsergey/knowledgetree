@@ -6,7 +6,9 @@ final class Length
     const FILENAME      = 512;
     const NAMESPACE     = 100;
     const NAME          = 255;
-    const LANGUAGE_ID = 5;
+    const LANGUAGE_ID   = 5;
+    const VALUE         = 1024;
+    const EXTENSION     = 100;
 }
 
 final class ClientType
@@ -128,6 +130,23 @@ final class PluginModuleType
 
 }
 
+class NodeType
+{
+    const DOCUMENT = 'Document';
+    const FOLDER = 'Folder';
+    const SHORTCUT = 'Shortcut';
+    const CONTENT = 'Content';
+
+    public static
+    function get()
+    {
+        return array(
+            0=> NodeType::DOCUMENT,
+            1=> NodeType::FOLDER,
+            2=> NodeType::SHORTCUT,
+            3=> NodeType::CONTENT);
+    }
+}
 
 class GroupType
 {

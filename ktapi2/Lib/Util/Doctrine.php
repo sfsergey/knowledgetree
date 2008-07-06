@@ -1,6 +1,6 @@
 <?php
 
-class Util_Doctrine
+class DoctrineUtil
 {
     /**
      * Initialise doctrine classes
@@ -60,13 +60,8 @@ class Util_Doctrine
     static public
     function getColumnFromArray($column, $array)
     {
-        if(!is_array($array)){
-            throw new KTapiException(_kt('Array expected.'));
-        }
-
-        if(empty($column)) {
-            throw new KTapiException(_kt('Column name must be specified.'));
-        }
+        ValidationUtil::arrayExpected($array, 'array', ValidationUtil::ALLOW_EMPTY);
+        ValidationUtil::valueExpected($column, 'column');
 
         $temp = array();
         foreach ($array as $row) {
@@ -78,14 +73,8 @@ class Util_Doctrine
     static public
     function getEntityByField($baseClass, $instanceClass, $pair)
     {
-        if (!is_array($pair))
-        {
-            throw new Exception('Pair array expected.');
-        }
-        if (empty($pair))
-        {
-            throw new Exception('Non empty array expected.');
-        }
+        ValidationUtil::arrayExpected($pair, 'pair');
+
         $query = Doctrine_Query::create();
         $query = $query->select('c.*')
                 ->from($baseClass . ' c')
@@ -94,19 +83,12 @@ class Util_Doctrine
         $i = 0;
         foreach($pair as $fieldname=>$value)
         {
-            if ($i++)
-            {
-                $query->addWhere(' AND ');
-            }
-            $query->addWhere('c.' . $fieldname . ' = :value', array(':value'=>$value));
+            $where = (($i++ > 0)? ' AND ':'') .   'c.' . $fieldname . ' = :value';
+            $query->addWhere( $where, array(':value'=>$value));
         }
 
         $rows = $query->execute();
-
-        if ($rows->count() == 0)
-        {
-            throw new KTapiException('No records found matching the criteria.');
-        }
+        ValidationUtil::recordsExpected($rows);
 
         return new $instanceClass($rows[0]);
     }
@@ -118,15 +100,7 @@ class Util_Doctrine
         {
             $id = array($id);
         }
-        if (!is_array($id))
-        {
-            throw new KTapiException('Array expected.');
-        }
-
-        if (empty($id))
-        {
-            throw new KTapiException('Non empty array expected.');
-        }
+        ValidationUtil::arrayExpected($id, 'id');
 
         $query = Doctrine_Query::create();
         $rows = $query->select('c.*')
@@ -135,14 +109,12 @@ class Util_Doctrine
                 ->limit(count($id))
                 ->execute();
 
-        $records = Util_Doctrine::getObjectArrayFromCollection($rows, $instanceClass);
+        $records = DoctrineUtil::getObjectArrayFromCollection($rows, $instanceClass);
 
-        $count = count($records);
+        $count = ValidationUtil::recordsExpected($records);
 
         switch ($count)
         {
-            case 0:
-                throw new KTapiException(_str('No %s records(s) found matching id(s): %s.', $instanceClass, implode(',', $id)));
             case 1;
                 return $records[0];
             default:
@@ -153,10 +125,8 @@ class Util_Doctrine
     public static
     function createView($viewname, $query)
     {
-        if (!$query instanceof Doctrine_Query)
-        {
-            throw new KTapiException('Doctrine_Query object expected.');
-        }
+        ValidationUtil::validateType($query, 'Doctrine_Query');
+
         $view  = new Doctrine_View($query, $viewname);
 
         $view->create();
@@ -166,8 +136,9 @@ class Util_Doctrine
     function dropView($viewname)
     {
         $db = KTapi::getDb();
-        try {
-        $db->execute('DROP VIEW ' . $viewname);
+        try
+        {
+            $db->execute('DROP VIEW ' . $viewname);
         }
         catch(Exception $ex)
         {
@@ -179,7 +150,8 @@ class Util_Doctrine
     function dropTable($tablename)
     {
         $db = KTapi::getDb();
-        try {
+        try
+        {
             $db->export->dropTable($tablename);
          }
         catch(Exception $ex)
@@ -193,7 +165,8 @@ class Util_Doctrine
     function addPrimaryKey($tablename, $fields)
     {
         $db = KTapi::getDb();
-        try {
+        try
+        {
             $flds = array();
             foreach ($fields as $fld)
             {
@@ -249,7 +222,7 @@ class Util_Doctrine
 
         if ($throwException && $row === false)
         {
-            throw KTapiException('Could not delete row.');
+            throw new KTAPI_Database_Record_DeletionException('Could not delete record.');
         }
 
         return $row;
@@ -326,12 +299,31 @@ class Util_Doctrine
         $rows = $query->execute();
     }
 
+    /**
+     * Does a simple query on a table, where the condition is an array of fields thus must all match.
+     *
+     * $condition is an array of all matches. e.g. array(firstname=>'conrad', 'age'=>17) implies firstname = conrad and age= 17.
+     * $classname is the Doctrine_Record class that should be used to query the relevant table.
+     * $instanceClass is to help instanciate the correct wrapper class.
+     *
+     * @param string $classname
+     * @param array $condition
+     * @param string $instanceClass
+     * @param int $limit
+     * @return array
+     */
     public static
-    function simpleQuery($classname, $condition, $instanceClass = null)
+    function simpleQuery($classname, $condition, $instanceClass = null, $limit = null)
     {
         $query = Doctrine_Query::create()
             ->select('c.*')
             ->from($classname . ' c');
+
+        if (isset($limit))
+        {
+            $query->limit($limit);
+        }
+
         foreach($condition as $k=>$v)
         {
             $query->addWhere("c.$k = :$k", array(":$k"=>$v));
@@ -342,20 +334,40 @@ class Util_Doctrine
         return self::getObjectArrayFromCollection($rows, $instanceClass);
     }
 
+    /**
+     * This is aimed at performing a specific query where only one record should be returned.
+     *
+     * @param string $classname
+     * @param array $condition
+     * @param string $instanceClass
+     * @return mixed Normally descendant of Doctrine_Record
+     */
     public static
     function simpleOneQuery($classname, $condition, $instanceClass = null)
     {
-        $records = self::simpleQuery($classname, $condition, $instanceClass);
+        $records = self::simpleQuery($classname, $condition, $instanceClass, 1);
 
         switch (count($records))
         {
             case 1;
                 return $records[0];
             default:
-                throw new KTapiException(_str('No %s records(s) found matching conditions.', $classname));
+                throw new KTAPI_Database_Record_ExpectedException('No %s records(s) found matching conditions.', $classname);
         }
     }
 
+    /**
+     * Updates a class.
+     *
+     * $classname is the Doctrine_Record class that should be used to query the relevant table.
+     * $condition is an array of all matches. e.g. array(firstname=>'conrad', 'age'=>17) implies firstname = conrad and age= 17.
+     * $update is an array of fields that must be updated.
+     *
+     * @param string $classname
+     * @param array $update
+     * @param array $condition
+     * @return int Number of affected records.
+     */
 
     public static
     function update($classname, $update, $condition)

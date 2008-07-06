@@ -11,7 +11,7 @@ class Base_StorageLocation extends KTAPI_Record
     $this->addNamespace('storage_module_namespace');
     $this->addString('display_name');
     $this->addArray('location_config');
-    $this->addGeneralStatus('status');
+    $this->addGeneralStatus('status', true);
     $this->addIntegerWithDefault('num_files',0);
     $this->addInteger('disk_usage', 0);
   }

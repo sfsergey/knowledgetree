@@ -5,13 +5,14 @@ class MimeType extends KTAPI_Base
     public static
     function get($mimeType)
     {
-        return Util_Doctrine::getEntityByField('Base_MimeType', 'MimeType', array('name' => $mimeType));
+        return DoctrineUtil::getEntityByField('Base_MimeType', 'MimeType', array('mime_type' => $mimeType));
     }
 
     public static
     function getByExtension($extension)
     {
-        $mimeExt = new Base_MimeTypeExtension();
+        $db = KTapi::getDb();
+        $mimeExt = $db->getTable('Base_MimeTypeExtension');
         $mimeExt = $mimeExt->findOneByExtension($extension);
 
         if ($mimeExt === false)
@@ -35,7 +36,7 @@ class MimeType extends KTAPI_Base
 
         $rows = $query->execute();
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, 'MimeType');
+        return DoctrineUtil::getObjectArrayFromCollection($rows, 'MimeType');
     }
 
     private
@@ -57,6 +58,7 @@ class MimeType extends KTAPI_Base
             $mimeExt = new Base_MimeTypeExtension();
             $mimeExt->mime_type_id = $mimeId;
             $mimeExt->extension = strtolower(trim($extension));
+            $mimeExt->save();
         }
     }
 
@@ -81,14 +83,16 @@ class MimeType extends KTAPI_Base
         $mime->mime_type = $mimeType;
         $mime->icon = $icon;
         $mime->name = $name;
-        $mime->extensions = $extensions;
+        $mime->extensions = $extStr;
         $mime->group_member_id = $groupMemberId;
         $mime->extractor_namespace = $extractorNamespace;
         $mime->save();
 
-        $this->saveExtensions($extensions, $mime->id);
+        $mimeType = new MimeType($mime);
 
-        return new MIME_Type($mime);
+        $mimeType->saveExtensions($extensions, $mime->id);
+
+        return $mimeType;
     }
 
     public

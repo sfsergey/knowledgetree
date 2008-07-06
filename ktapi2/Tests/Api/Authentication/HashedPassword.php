@@ -2,33 +2,17 @@
 
 class HashedAuthenticationTestCase extends KTAPI_TestCase
 {
+    function setUp()
+    {
+        $db = KTapi::getDb();
+        $db->execute('DELETE FROM members');
+    }
 
     function testAuthentication()
     {
         $this->title();
 
-        // don't allow anonymous access for now
-        KTAPI_Config::set(KTAPI_Config::ALLOW_ANONYMOUS_ACCESS, false);
-
-        PluginManager::addPluginLocation('ktapi2/Plugins');
-        PluginManager::readAllPluginLocations();
-
-        try
-        {
-            $user = Security_User::getByUsername('admin');
-            $user->delete();
-        }
-        catch(Exception $ex)
-        {
-        }
-
-        try
-        {
-            $user = Security_User::create('admin', 'Test User 1', 'test1@knowledgetree.com', array('password'=>'123'));
-        }
-        catch(Exception $ex)
-        {
-        }
+        $user = Security_User::create('admin', 'Test User 1', 'test1@knowledgetree.com', array('password'=>'123'));
 
         $this->title('Security_Session::getSession()');
 
@@ -82,16 +66,20 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
         }
         $this->assertFalse(Security_Session::isAdminModeEnabled());
 
-        $this->title('$user->canChangePassword()');
+        $this->title('$user->canChangeAuthConfig()');
 
         $this->assertTrue($user->canChangeAuthConfig());
 
+        $this->title('$user->changeAuthConfig()');
         $user->changeAuthConfig(array('password'=>'new password'));
     }
 
     function testResume()
     {
         $this->title();
+
+        $user = Security_User::create('admin', 'Test User 1', 'test1@knowledgetree.com', array('password'=>'123'));
+
 
         $user1 = Security_User::getByUsername('admin');
         $user1->changeAuthConfig(array('password'=>'123'));
@@ -125,16 +113,8 @@ class HashedAuthenticationTestCase extends KTAPI_TestCase
     {
         $this->title();
 
-        try
-        {
-            $group = Security_Group::getByGroupName('sysadmin group');
-            $group->delete();
-        }
-        catch(Exception $ex)
-        {
-        }
-
         $group = Security_Group::create('sysadmin group');
+        $user = Security_User::create('admin', 'Test User 1', 'test1@knowledgetree.com', array('password'=>'123'));
 
 
         $user1 = Security_User::getByUsername('admin');

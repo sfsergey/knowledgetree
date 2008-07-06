@@ -14,10 +14,14 @@ abstract class Security_Authentication_Provider extends PluginModule
     public
     function register($plugin, $path)
     {
-        $namespace = strtolower('authentication.provider.' . $this->getProviderNamespace());
+        $providerConfig = $this->getProviderConfig();
+
+        $providerNamespace = ValidationUtil::arrayOptionExpected($providerConfig, 'provider_namespace');
+
+        $namespace = strtolower('authentication.provider.' . $providerNamespace);
 
         $className = get_class($this);
-        $displayName = $this->getDisplayName();
+        $displayName = ValidationUtil::arrayOptionExpected($providerConfig, 'display_name');
 
         $this->base = Plugin_Module::registerParams($plugin, 'AuthenticationProvider', $path,
             array(
@@ -28,32 +32,8 @@ abstract class Security_Authentication_Provider extends PluginModule
                 'dependencies'=>''));
     }
 
-    /**
-     * Returns the provider namespace.
-     *
-     * This function must be overridden!
-     *
-     * @return string
-     */
-    public
-    function getProviderNamespace()
-    {
-        throw new Exception('Namespace must be set by provider.');
-    }
-
-    /**
-     * Returns the display name for the plugin handler.
-     *
-     * Note that this string should return a string without _kt() in it.
-     *
-     * This function must be overridden!
-     * @return string
-     */
-    public
-    function getDisplayName()
-    {
-        throw new Exception('Display name must be set.');
-    }
+    protected abstract
+    function getProviderConfig();
 
     /**
      * This function must be overridden to authenticate with the authentication provider.

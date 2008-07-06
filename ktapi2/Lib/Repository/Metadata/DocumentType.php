@@ -33,7 +33,7 @@ class Repository_Metadata_DocumentType extends BaseGrouping
     public
     function addFieldset($fieldset, $options = array())
     {
-        $fieldset = Util_Metadata::validateFieldset($fieldset);
+        $fieldset = MetadataUtil::validateFieldset($fieldset);
 
         return parent::addSubmember($fieldset, $options);
     }
@@ -41,7 +41,7 @@ class Repository_Metadata_DocumentType extends BaseGrouping
     public
     function removeFieldset($fieldset, $options = array())
     {
-        $fieldset = Util_Metadata::validateFieldset($fieldset);
+        $fieldset = MetadataUtil::validateFieldset($fieldset);
 
         parent::removeSubmember($fieldset);
 

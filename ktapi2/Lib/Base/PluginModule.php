@@ -13,7 +13,7 @@ class Base_PluginModule extends KTAPI_Record
         $this->addString('display_name', 255);
         $this->addEnumeration('status', PluginStatus::get(), PluginStatus::ENABLED);
         $this->addString('classname', 255);
-        $this->addString('path', null);
+        $this->addString('path', Length::FULL_PATH);
         $this->addArray('module_config');
         $this->addIntegerWithDefault('ordering', 0);
         $this->addBooleanWithDefault('can_disable', 1);

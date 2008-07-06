@@ -3,21 +3,16 @@
 class TestPlugin extends Plugin
 {
     public
-    function getDisplayName()
+    function getConfig()
     {
-        return _kt('Test Plugin');
-    }
-
-    public
-    function getNamespace()
-    {
-        return 'plugin.test';
-    }
-
-    public
-    function getIncludes()
-    {
-        return array('Base_Tag.inc.php');
+        return array(
+            'namespace' => 'test',
+            'display_name' => 'Test Plugin',
+            'description' => 'My test plugin.',
+            'version' => '0.1',
+            'includes' => array('Base_Tag.inc.php'),
+            'dependencies' => array()
+        );
     }
 
     public

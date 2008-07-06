@@ -2,23 +2,8 @@
 
 abstract class Action extends PluginModule
 {
-    public abstract
-    function getCategoryNamespace();
-
     protected abstract
     function executeAction($context, $params);
-
-    public
-    function getNamespace()
-    {
-        throw new KTapiException(_kt('Namespace not specified.'));
-    }
-
-    public
-    function getDisplayName()
-    {
-        throw new KTapiException(_kt('Display name not specified.'));
-    }
 
     public
     function isActive()
@@ -72,16 +57,46 @@ abstract class Action extends PluginModule
     }
 
     public
+    function getDocumentation()
+    {
+        return $this->module->module_config['documentation'];
+    }
+
+    public abstract
+    function getConfig();
+
+    public
     function register($plugin, $path)
     {
-        $moduleType = ($this instanceof Trigger)?'Trigger':'Action';
+        $config = $this->getConfig();
+
+        $namespace = ValidationUtil::arrayKeyExpected('module_namespace', $config);
+        $documentation = ValidationUtil::arrayKeyExpected('documentation', $config);
+
+        if ($this instanceof Trigger)
+        {
+            $moduleType = 'Trigger';
+            $namespace = 'trigger.' . $namespace;
+
+            ValidationUtil::arrayKeyExpected('applies_to', $config);
+            ValidationUtil::arrayKeyExpected('depends_on', $config);
+        }
+        else
+        {
+            $moduleType = 'Action';
+            $namespace = 'action.' . $namespace;
+            $functionName = ValidationUtil::arrayKeyExpected('function', $config);
+
+            ValidationUtil::arrayKeyExpected('category_namespace', $config);
+            ValidationUtil::arrayKeyExpected('category_name', $config);
+        }
 
         $this->base = Plugin_Module::registerParams($plugin, $moduleType, $path,
             array(
-                'namespace'=>$this->getNamespace(),
+                'namespace'=>$namespace,
                 'classname'=>get_class($this),
-                'display_name'=>$this->getDisplayName(),
-                'module_config'=>'',
+                'display_name'=>$functionName,
+                'module_config'=>$config,
                 'dependencies'=>''));
     }
 }

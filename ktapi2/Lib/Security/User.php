@@ -6,13 +6,13 @@ class Security_User extends KTAPI_BaseMember
     public static
     function get($id)
     {
-        return Util_Doctrine::getEntityByIds('Base_User', 'Security_User', 'member_id', $id);
+        return DoctrineUtil::getEntityByIds('Base_User', 'Security_User', 'member_id', $id);
     }
 
     public static
     function getByUsername($username)
     {
-        return Util_Doctrine::getEntityByField('Base_User', 'Security_User', array('username' => $username ));
+        return DoctrineUtil::getEntityByField('Base_User', 'Security_User', array('username' => $username ));
     }
 
     public static
@@ -43,14 +43,20 @@ class Security_User extends KTAPI_BaseMember
         try
         {
             $user = self::getByUsername($username);
+            throw new KTAPI_Database_Record_UnexpectedException("User with username '%s' should not exist.", $username);
+        }
+        catch(KTAPI_Database_Record_ExpectedException $ex)
+        {
+            // thrown if the user did not exist.
+            // this is fine, we don't want the user to exist when creating...
+        }
+        catch(KTAPI_Database_Record_UnexpectedException $ex)
+        {
+            throw $ex;
         }
         catch(Exception $ex)
         {
-            // catch exception where user does not exist
-        }
-        if (isset($user))
-        {
-            throw new KTapiException(_kt('User with username %s already exists.', $username));
+            throw $ex;
         }
 
         $notifyUser = false;
@@ -64,10 +70,8 @@ class Security_User extends KTAPI_BaseMember
             $authSource = Security_Authentication_Source::getDefault();
         }
 
-        if (!$authSource instanceof Security_Authentication_Source)
-        {
-            throw new Exception('Unknown Authentication Source');
-        }
+
+        ValidationUtil::validateType($authSource, 'Security_Authentication_Source');
 
         $provider = $authSource->getProvider();
 
@@ -213,7 +217,7 @@ class Security_User extends KTAPI_BaseMember
 
         $class = get_class($this);
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');
+        return DoctrineUtil::getObjectArrayFromCollection($rows, 'Security_Group');
     }
 
     public
@@ -221,7 +225,7 @@ class Security_User extends KTAPI_BaseMember
     {
         $rows = $this->base->EffectiveGroups;
 
-        return Util_Doctrine::getObjectArrayFromCollection($rows, 'Security_Group');
+        return DoctrineUtil::getObjectArrayFromCollection($rows, 'Security_Group');
     }
 
     /**
@@ -270,12 +274,7 @@ class Security_User extends KTAPI_BaseMember
     {
         $source = $this->base->AuthenticationSource;
 
-        $provider = PluginManager::getModule($source->auth_module_namespace);
-
-        if (!$provider instanceof Security_Authentication_Provider )
-        {
-            throw new Exception('Security_Authentication_Provider expected');
-        }
+        $provider = PluginManager::getModule($source->auth_module_namespace, 'Security_Authentication_Provider');
 
         return $provider;
     }
@@ -307,7 +306,7 @@ class Security_User extends KTAPI_BaseMember
 
         if (!$provider->canChangeAuthConfig($this))
         {
-            throw new Exception('Cannot change authentication configuration');
+            throw new KTAPI_AuthenticationException('Cannot change authentication configuration');
         }
 
         return $provider->changeAuthConfig($this, $options);

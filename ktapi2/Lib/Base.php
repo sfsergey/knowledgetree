@@ -25,7 +25,7 @@ class KTAPI_Base
         }
         else
         {
-            throw new KTapiUnknownPropertyException($this, $property);
+            throw new KTAPI_UnknownPropertyException($property);
         }
     }
 
@@ -39,7 +39,7 @@ class KTAPI_Base
         }
         else
         {
-            throw new KTapiUnknownPropertyException($this, $property);
+            throw new KTAPI_UnknownPropertyException($this, $property);
         }
     }
 
@@ -47,6 +47,12 @@ class KTAPI_Base
     function save()
     {
         $this->base->save();
+    }
+
+    public
+    function clearRelated()
+    {
+        $this->base->clearRelated();
     }
 }
 

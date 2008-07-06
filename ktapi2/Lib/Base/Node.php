@@ -21,7 +21,7 @@ class Base_Node extends KTAPI_Record
     $this->addInteger('modified_by_id', false);
     $this->addTimestamp('modified_date', false);
     $this->addEnumeration('status', NodeStatus::get());
-    $this->addInteger('node_metadata_version_id', false);
+//    $this->addInteger('node_metadata_version_id', false);
     $this->addInteger('locked_by_id', false);
     $this->addTimestamp('locked_date', false);
     $this->addBooleanWithDefault('has_document_type_restriction', 0);

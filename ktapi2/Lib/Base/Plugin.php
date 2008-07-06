@@ -16,7 +16,7 @@ class Base_Plugin extends KTAPI_Record
         $this->addBooleanWithDefault('can_delete', 1);
         $this->addIntegerWithDefault('ordering',0);
         $this->addNamespace('namespace');
-        $this->addArray('dependencies');
+        $this->addArray('config');
 
     }
 

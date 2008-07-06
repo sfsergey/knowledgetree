@@ -14,7 +14,7 @@ class Base_AuthenticationSource extends KTAPI_Record
         $this->addString('auth_module_namespace', 100);
         $this->addString('display_name', 100);
         $this->addArray('auth_config');
-        $this->addGeneralStatus('status');
+        $this->addGeneralStatus('status', true);
         $this->addBooleanWithDefault('is_system', 0);
     }
 

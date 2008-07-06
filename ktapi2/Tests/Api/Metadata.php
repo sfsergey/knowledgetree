@@ -6,6 +6,7 @@ class MetadataTestCase extends KTAPI_TestCase
     {
         $db = KTapi::getDb();
         $db->execute('DELETE FROM members');
+        $db->execute('DELETE FROM mime_types');
     }
 
     function testMetadata()
@@ -49,7 +50,6 @@ class MetadataTestCase extends KTAPI_TestCase
     {
         MimeType::create('text/html', 'html','HTML page', array('htm','html'));
 
-
         $mime = MimeType::create('image/jpeg', 'image','JPEG Image', array('jpeg','jpg'));
         $mime->setExtensions(array('jpeg'));
         $mime->setName('JPG Image');
@@ -59,12 +59,12 @@ class MetadataTestCase extends KTAPI_TestCase
         $this->assertEqual($mime->getName(), 'HTML page');
 
         $mime = MimeType::getByExtension('jpeg');
-        $this->assertEqual($mime->getName(), 'JPEG Image');
+        $this->assertEqual($mime->getName(), 'JPG Image');
 
         $mimeTypes = MimeType::getAll();
         $this->assertTrue(count($mimeTypes), 2);
 
-        $mimeTypes = MimeType::getAll('JPEG');
+        $mimeTypes = MimeType::getAll('JPG');
         $this->assertTrue(count($mimeTypes), 1);
     }
 

@@ -3,21 +3,18 @@
 class TestTrigger extends Trigger
 {
     public
-    function getNamespace()
+    function getConfig()
     {
-        return 'trigger.test';
-    }
-
-    public
-    function getDisplayName()
-    {
-        return _kt('Test Trigger');
-    }
-
-    protected
-    function getApplicableNamespaces()
-    {
-        return array('action.document.checkin','action.document.add');
+        return array(
+            'module_namespace'=>'test',
+            'function' => 'test',
+            'display_name' => 'Test Action',
+            'documentation'=> 'general description of test().',
+            'category_namespace'=> 'test',
+            'category_name' => 'Test Category',
+            'applies_to' => array('action.document.checkin','action.document.add'),
+            'depends_on' => array()
+            );
     }
 
     function getParameters()

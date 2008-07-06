@@ -24,6 +24,7 @@ class ConfigTestCase extends KTAPI_TestCase
         $this->title('KTAPI_Config::create()');
 
         KTAPI_Config::delete(self::CONFIG_NAMESPACE);
+        KTAPI_Config::clearCache();
 
         KTAPI_Config::create(self::CONFIG_NAMESPACE , 'Test', 'Value', self::GROUP_NAMESPACE);
 

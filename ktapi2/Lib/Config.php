@@ -21,6 +21,14 @@ class KTAPI_Config
     const SMTP_PASSWORD         = 'smtp.password';
     const SMTP_SSL              = 'smtp.ssl';
 
+    const CACHE_DIRECTORY           = 'directory.cache';
+    const TEMPORARY_DIRECTORY       = 'directory.temp';
+
+    const ROOT_URL                  = 'url.root';
+
+    const BROWSE_PAGINATE_ITEMS     = 'browse.paginate.count';
+    const BROWSE_PAGINATE_OPTIONS     = 'browse.paginate.options';
+
 
     private static $config = null;
 
@@ -36,10 +44,16 @@ class KTAPI_Config
             return;
         }
 
-        self::$config = Doctrine_Query::create()
-                    ->from('Base_Config c INDEXBY c.config_namespace')
-                   // ->useResultCache(true)
-                    ->execute();
+        $query = Doctrine_Query::create()
+                    ->from('Base_Config c INDEXBY c.config_namespace');
+
+        self::$config = $query->execute();
+    }
+
+    public static
+    function clearCache()
+    {
+        self::$config = null;
     }
 
     /**
@@ -57,7 +71,7 @@ class KTAPI_Config
         if (isset(self::$config[$namespace]))
         {
             $config = self::$config[$namespace];
-            return Util_Type::encodeValue($config->value, $config->type);
+            return TypeUtil::encodeValue($config->value, $config->type);
         }
 
         if (isset($default))
@@ -65,7 +79,7 @@ class KTAPI_Config
             return $default;
         }
 
-        throw new KTapiConfigurationException('Unknown property');
+        throw new KTAPI_Configuration_UnknownNamespaceException($namespace);
     }
 
     /**
@@ -82,12 +96,12 @@ class KTAPI_Config
         if (isset(self::$config[$namespace]))
         {
             $config = self::$config[$namespace];
-            $config->value = Util_Type::decodeValue($config->value, $config->type);
+            $config->value = TypeUtil::decodeValue($value, $config->type);
             $config->save();
             return;
         }
 
-        throw new KTapiConfigurationException(_str('Unknown namespace %s', $namespace));
+        throw new KTAPI_Configuration_UnknownNamespaceException($namespace);
     }
 
     /**
@@ -115,9 +129,9 @@ class KTAPI_Config
         try
         {
             $config = self::get($namespace);
-            throw new KTapiConfigExistsException($namespace);
+            throw new KTAPI_Configuration_NamespaceExistsException($namespace);
         }
-        catch(KTapiConfigExistsException $ex)
+        catch(KTAPI_Configuration_NamespaceExistsException $ex)
         {
             throw $ex;
         }
@@ -145,19 +159,19 @@ class KTAPI_Config
     public static
     function getGroup($namespace)
     {
-        return Util_Doctrine::simpleOneQuery('Base_ConfigGroup', array('group_namespace'=>$namespace));
+        return DoctrineUtil::simpleOneQuery('Base_ConfigGroup', array('group_namespace'=>$namespace));
     }
 
     public static
     function deleteGroup($namespace)
     {
-        Util_Doctrine::simpleDelete('Base_ConfigGroup', array('group_namespace'=>$namespace));
+        DoctrineUtil::simpleDelete('Base_ConfigGroup', array('group_namespace'=>$namespace));
     }
 
     public static
     function delete($namespace)
     {
-        Util_Doctrine::simpleDelete('Base_Config', array('config_namespace'=>$namespace));
+        DoctrineUtil::simpleDelete('Base_Config', array('config_namespace'=>$namespace));
     }
 
 

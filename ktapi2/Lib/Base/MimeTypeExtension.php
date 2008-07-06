@@ -4,10 +4,10 @@ class Base_MimeTypeExtension extends KTAPI_Record
 {
     public function setDefinition()
     {
-        $this->setTableName('mime_types');
+        $this->setTableName('mime_type_extensions');
 
-        $this->addInteger('mime_type_id');
-        $this->addString('extension', 100);
+        $this->addIntegerPrimary('mime_type_id');
+        $this->addStringPrimary('extension', Length::EXTENSION);
     }
 
     public function setUp()

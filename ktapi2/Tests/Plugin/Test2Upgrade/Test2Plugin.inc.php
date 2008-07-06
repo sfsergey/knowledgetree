@@ -3,21 +3,13 @@
 class Test2Plugin extends Plugin
 {
     public
-    function getDisplayName()
+    function getConfig()
     {
-        return _kt('Test Plugin');
-    }
-
-    public
-    function getNamespace()
-    {
-        return 'plugin.test';
-    }
-
-    public
-    function getDbVersion()
-    {
-        return 1;
+        return array(
+            'namespace' => 'test',
+            'display_name' => 'Test Plugin',
+            'db_version' => 1
+        );
     }
 
     public

@@ -1,17 +1,10 @@
 <?php
 
-
-class Base_Tag extends Doctrine_Record
+class Base_Tag extends KTAPI_Record
 {
-
-    public function setTableDefinition()
+    public function setDefinition()
     {
         $this->setTableName('tag');
-        $this->hasColumn('id', 'integer', 4, array('unsigned' => 1, 'primary' => true, 'notnull' => true, 'autoincrement' => true));
-    }
-
-    public function setUp()
-    {
-        parent::setUp();
+        $this->addAutoInc('id');
     }
 }
